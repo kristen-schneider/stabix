@@ -38,7 +38,9 @@ add_executable(test_gwas
         src/utils.cpp
         test/test_index.cpp
         src/index.cpp
-        src/decompress.cpp)
+        src/decompress.cpp
+        test/test_header.cpp
+        src/header.cpp)
 
 add_subdirectory(/Users/krsc0813/CLionProjects/gwas_local/lib/googletest-1.14.0/ googletest-1.14.0)
 

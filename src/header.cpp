@@ -12,6 +12,11 @@
 
 using namespace std;
 
+/*
+ * Function to get the delimiter of a file
+ * @param line: string
+ * @return delimiter: char
+ */
 char get_delimiter(
         string line){
     char delimiter;
@@ -30,11 +35,16 @@ char get_delimiter(
     return delimiter;
 }
 
+/*
+ * Function to get the column names of a file
+ * @param line: string
+ * @param delimiter: char
+ * @return column_names_str: string
+ */
 string get_column_names(
         string line,
         char delimiter){
 
-//    line = "kjh  lkjlkh  lkjh  lkjlh";
     string column_names_str;
     // split line by delimiter and store in comma separated string
     stringstream ss(line);
@@ -50,6 +60,12 @@ string get_column_names(
     return column_names_str;
 }
 
+/*
+ * Function to get the column types of a file
+ * @param line: string
+ * @param delimiter: char
+ * @return column_types_str: string
+ */
 string get_column_types(
         string line,
         char delimiter) {
@@ -99,6 +115,12 @@ string get_zlib_header(){
 }
 */
 
+/*
+ * Function to parse header list
+ * @param header_list: vector<string>
+ * @param header_query: string
+ * @return header_query_list: vector<string>
+ */
 vector<string> parse_header_list(
         vector<string> header_list,
         string header_query){

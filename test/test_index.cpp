@@ -6,15 +6,6 @@
 
 using namespace std;
 
-//int sub(int a, int b) {
-//    return a - b;
-//}
-//
-//TEST(Sub, Test1) {
-//    ASSERT_EQ(sub(1, 1), 0);
-//    ASSERT_EQ(sub(1, 2), -1);
-//    ASSERT_EQ(sub(2, 1), 1);
-//}
 
 TEST(FindQueryStartByte, Test1) {
     map<string, map<string, tuple<string, string>>> index_map = {
@@ -26,6 +17,8 @@ TEST(FindQueryStartByte, Test1) {
     tuple<int, int> start_byte_block_2 = find_query_start_byte(1, 100, index_map);
     tuple<int, int> start_byte_block_3 = find_query_start_byte(2, 200, index_map);
     tuple<int, int> start_byte_block_4 = find_query_start_byte(2, 250, index_map);
+    tuple<int, int> start_byte_block_5 = find_query_start_byte(3, 300, index_map);
+    tuple<int, int> start_byte_block_6 = find_query_start_byte(3, 350, index_map);
 
     ASSERT_EQ(get<0>(start_byte_block_1), -1);
     ASSERT_EQ(get<1>(start_byte_block_1), -1);
@@ -35,6 +28,8 @@ TEST(FindQueryStartByte, Test1) {
     ASSERT_EQ(get<1>(start_byte_block_3), 1);
     ASSERT_EQ(get<0>(start_byte_block_4), 123);
     ASSERT_EQ(get<1>(start_byte_block_4), 1);
+    ASSERT_EQ(get<0>(start_byte_block_5), 456);
+    ASSERT_EQ(get<1>(start_byte_block_5), 2);
 
 }
 
