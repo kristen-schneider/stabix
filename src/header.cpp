@@ -42,8 +42,8 @@ vector<string> parse_header_list(
     switch_case["num columns"] = 0;
     switch_case["num blocks"] = 1;
     switch_case["column names"] = 2;
-    switch_case["block header lengths"] = 3;
-    switch_case["block lengths"] = 4;
+    switch_case["block header end bytes"] = 3;
+    switch_case["block end bytes"] = 4;
     switch_case["block sizes"] = 5;
 
     // switch statement for query element
