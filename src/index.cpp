@@ -13,6 +13,17 @@
 
 using namespace std;
 
+/*
+ * Get chromosome and genomic coordinates from compressed file
+ * @param compressed_file: string path to compressed file
+ * @param delimiter: char delimiter
+ * @param header_length: int length of header
+ * @param chrm_col: int column index of chromosome
+ * @param bp_col: int column index of genomic coordinates
+ * @param block_header_end_bytes: vector<string> list of byte offsets for end of block headers
+ * @param block_end_bytes: vector<string> list of byte offsets for end of blocks
+ * @return vector<tuple<int, int, int>> chrm_bp_byte chromosome, genomic coordinates, byte offset
+ */
 vector<tuple<int, int, int>> get_chrm_bp_byte(
         string compressed_file,
         char delimiter,

@@ -2,10 +2,8 @@
 #include <string>
 #include <vector>
 #include <zlib.h>
-#include <fstream>
 #include <sstream>
 #include <stdexcept>
-#include <iomanip>
 
 #include "utils.h"
 
@@ -13,6 +11,12 @@ using namespace std;
 
 string zlib_decompress(string compressed_string);
 
+/*
+ * Decompress a column using the specified codec
+ * @param compressed_column: string, the compressed column
+ * @param codec: string, the codec used to compress the column
+ * @return: string, the decompressed column
+ */
 string decompress_column(string compressed_column, string codec){
     string decompressed_column;
     if (codec == "zlib"){
@@ -25,7 +29,11 @@ string decompress_column(string compressed_column, string codec){
     }
 }
 
-// use zlib library to compress a string
+/*
+ * Decompress a string using zlib
+ * @param in_data: string, the zlib compressed string
+ * @return: string, the decompressed string
+ */
 string zlib_decompress(string in_data){
     // https://gist.github.com/gomons/9d446024fbb7ccb6536ab984e29e154a
 

@@ -61,7 +61,7 @@ void add_default_config_options(
 /*
  * Convert vector to string
  * @param vec: vector of strings
- * @return str: string
+ * @return str: string of comma separated values
  */
 string convert_vector_to_string(vector<string> vec){
     string str;
@@ -74,7 +74,7 @@ string convert_vector_to_string(vector<string> vec){
 
 /*
  * Convert string to vector
- * @param str: string
+ * @param str: string of comma separated values
  * @return vector of strings
  */
 vector<string> convert_string_to_vector(string str){
@@ -120,7 +120,7 @@ char * int_to_bytes(int value){
 /*
  * Split string by delimiter
  * @param str: string
- * @param delimiter: char
+ * @param delimiter: char to split by
  * @return vector of strings
  */
 vector<string> split_string(string str, char delimiter){
@@ -139,7 +139,7 @@ vector<string> split_string(string str, char delimiter){
  * Get index value of a string in a vector
  * @param vec: vector in which to look
  * @param str: string to search for
- * @return index: index
+ * @return index: index value of string in vector
  */
 int get_index(vector<string> vec, string str){
     int idx = -1;
@@ -155,8 +155,8 @@ int get_index(vector<string> vec, string str){
 /*
  * Function to get the column types of a file
  * @param line: string
- * @param delimiter: char
- * @return column_types_str: string
+ * @param delimiter: char to split by
+ * @return column_types_str: string of comma separated data types
  */
 string get_data_types(
         string line,
@@ -191,8 +191,8 @@ string get_data_types(
 
 /*
  * Function to get the delimiter of a file
- * @param line: string
- * @return delimiter: char
+ * @param line: string of first line of file
+ * @return delimiter: char to split by
  */
 char get_delimiter(
         string line){

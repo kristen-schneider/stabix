@@ -8,6 +8,14 @@
 
 using namespace std;
 
+/*
+ * Function to split a file into blocks
+ * @param gwas_file: string of gwas file
+ * @param num_columns: int of number of columns in gwas file
+ * @param block_size: int of block size
+ * @param delim: char of delimiter
+ * @return all_blocks: vector<vector<vector<string>>> of blocks in gwas file
+ */
 vector<vector<vector<string>>> make_blocks(
         string gwas_file,
         int num_columns,
@@ -78,13 +86,13 @@ vector<vector<vector<string>>> make_blocks(
     return all_blocks;
 }
 
+/*
+ * Function to compress a block
+ * @param block: vector<vector<string>> of block
+ * @param codecs_list: vector<string> of codecs
+ * @return compressed_block: vector<string> of compressed columns
+ */
 vector<string> get_block_header(vector<string> compressed_block){
-    /*
-     * Block headers store the end byte of each compressed column
-     * start byte = 0
-     * first column end = 0 + length of bitstring
-     * second column end = first column end + length of bitstring
-     */
     vector<string> block_header_column_end_bytes;
     int curr_byte_idx = 0;
     // iterate over all column bitstrings and store the end byte of each column

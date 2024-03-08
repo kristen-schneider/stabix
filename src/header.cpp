@@ -1,10 +1,6 @@
-#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <zlib.h>
-#include <fstream>
-#include <sstream>
 #include <map>
 
 #include "header.h"

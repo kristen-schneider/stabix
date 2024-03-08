@@ -2,12 +2,9 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <sstream>
 #include <algorithm>
 #include <iterator>
 #include <map>
-#include <bitset>
-#include <cmath>
 
 // include files from include directory
 #include "utils.h"

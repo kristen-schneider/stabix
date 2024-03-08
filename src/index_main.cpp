@@ -2,18 +2,15 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <sstream>
 #include <algorithm>
 #include <iterator>
 #include <map>
-#include <zlib.h>
 
-// include files from include directory
-#include "header.h"
-#include "utils.h"
-#include "blocks.h"
 #include "decompress.h"
+#include "header.h"
 #include "index.h"
+#include "utils.h"
+
 
 using namespace std;
 
@@ -25,8 +22,7 @@ int main(int argc, char* argv[]) {
     map<string, string> config_options;
     config_options = read_config_file(config_file);
     string gwas_file = config_options["gwas_file"];
-    int block_size = stoi(config_options["block_size"]);
-    string compressed_file = config_options["out_file"];
+    string compressed_file = gwas_file + ".grlz";
     vector<string> codecs_list = split_string(config_options["codecs"], ',');
 
     // 1. open compressed file
