@@ -10,27 +10,26 @@ project(gwas_run)
 # COMPRESSION
 add_executable(gwas_compress
         src/compress_main.cpp
-        src/utils.cpp
-        src/header.cpp
         src/blocks.cpp
         src/compress.cpp
-        src/decompress.cpp)
+        src/header.cpp
+        src/utils.cpp)
 
 # INDEXING
 add_executable(gwas_index
         src/index_main.cpp
-        src/utils.cpp
-        src/header.cpp
         src/decompress.cpp
-        src/index.cpp)
+        src/header.cpp
+        src/index.cpp
+        src/utils.cpp)
 
 # DECOMPRESSION
 add_executable(gwas_decompress
         src/decompress_main.cpp
+        src/decompress.cpp
         src/header.cpp
         src/index.cpp
-        src/utils.cpp
-        src/decompress.cpp)
+        src/utils.cpp)
 
 add_executable(test_gwas
         test/test_gwas.cpp
