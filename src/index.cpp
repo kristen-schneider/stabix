@@ -13,6 +13,17 @@
 
 using namespace std;
 
+/*
+ * Get chromosome and genomic coordinates from compressed file
+ * @param compressed_file: string path to compressed file
+ * @param delimiter: char delimiter
+ * @param header_length: int length of header
+ * @param chrm_col: int column index of chromosome
+ * @param bp_col: int column index of genomic coordinates
+ * @param block_header_end_bytes: vector<string> list of byte offsets for end of block headers
+ * @param block_end_bytes: vector<string> list of byte offsets for end of blocks
+ * @return vector<tuple<int, int, int>> chrm_bp_byte chromosome, genomic coordinates, byte offset
+ */
 vector<tuple<int, int, int>> get_chrm_bp_byte(
         string compressed_file,
         char delimiter,
@@ -29,7 +40,7 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
     // count how many bytes in the whole file
     file.seekg(0, ios::end);
     int file_size = file.tellg();
-    cout << "file size: " << file_size << endl;
+//    cout << "file size: " << file_size << endl;
 
     // start reading at beginning of file
     file.seekg(0, ios::beg);
@@ -63,7 +74,7 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         // decompress block header
         string block_header_bitstring = string(block_header_bytes, block_header_size);
         string decompressed_block_string = zlib_decompress(block_header_bitstring);
-        cout << "block: " << block_idx << " decompressed header: " << decompressed_block_string << endl;
+//        cout << "block: " << block_idx << " decompressed header: " << decompressed_block_string << endl;
         // split block header
         vector<string> curr_block_header_list = split_string(decompressed_block_string, ',');
         int chrm_column_byte_start =
@@ -84,7 +95,7 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         // decompress chromosome string
         string decompressed_chrm_string = zlib_decompress(chrm_string);
         vector<string> chrm_list = split_string(decompressed_chrm_string, delimiter);
-        cout << "decompressed chrm string: " << decompressed_chrm_string << endl;
+//        cout << "decompressed chrm string: " << decompressed_chrm_string << endl;
         int block_chrm_start = stoi(chrm_list[0]);
 
         // jump to start of chromosome column
@@ -98,7 +109,7 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         // decompress chromosome string
         string decompressed_bp_string = zlib_decompress(bp_string);
         vector<string> bp_list = split_string(decompressed_bp_string, delimiter);
-        cout << "decompressed bp string: " << decompressed_bp_string << endl;
+//        cout << "decompressed bp string: " << decompressed_bp_string << endl;
         int block_bp_start = stoi(bp_list[0]);
 
         // add chromosome and genomic coordinates to chrm_bp_byte

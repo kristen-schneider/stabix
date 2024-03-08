@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <zlib.h>
-#include <fstream>
 #include <sstream>
 #include <stdexcept>
 
@@ -12,6 +11,12 @@ using namespace std;
 
 string zlib_compress(string in_data);
 
+/*
+ * Function to compress a block
+ * @param block: vector<vector<string>> - block of data
+ * @param codecs_list: vector<string> - list of codecs to use for each column
+ * @return compressed_block: vector<string> - compressed block of data
+ */
 vector<string> compress_block(vector<vector<string>> block,
                               vector<string> codecs_list){
     vector<string> compressed_block;
@@ -29,8 +34,6 @@ vector<string> compress_block(vector<vector<string>> block,
             exit(1);
         }
     }
-
-
 //    // compress with a different codec for each column
 //    for (int i = 0; i < codecs_list.size(); i++){
 //        if (codecs_list[i] == "zlib"){
@@ -54,10 +57,13 @@ vector<string> compress_block(vector<vector<string>> block,
     return compressed_block;
 }
 
-// use zlib library to compress a string
+/*
+ * Function to compress a string
+ * @param in_data: string - input data
+ * @return outstring: string - compressed data using zlib
+ */
 string zlib_compress(string in_data){
     // https://gist.github.com/gomons/9d446024fbb7ccb6536ab984e29e154a
-
     z_stream zs;                        // z_stream is zlib's control structure
     memset(&zs, 0, sizeof(zs));
 

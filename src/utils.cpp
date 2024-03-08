@@ -40,9 +40,28 @@ map<string, string> read_config_file(
 }
 
 /*
+ * Add default config options if not present
+ * @param config_options
+ * @return void
+ */
+void add_default_config_options(
+        map<string, string> &config_options) {
+    // add default config options if option is empty
+    if (config_options["block_size"].empty()) {
+        config_options["block_size"] = "20";
+    }
+    if (config_options["query_type"].empty()) {
+        // exit program with error message
+        cout << "ERROR: query_type not specified in config file." << endl;
+        exit(1);
+    }
+}
+
+
+/*
  * Convert vector to string
  * @param vec: vector of strings
- * @return str: string
+ * @return str: string of comma separated values
  */
 string convert_vector_to_string(vector<string> vec){
     string str;
@@ -55,7 +74,7 @@ string convert_vector_to_string(vector<string> vec){
 
 /*
  * Convert string to vector
- * @param str: string
+ * @param str: string of comma separated values
  * @return vector of strings
  */
 vector<string> convert_string_to_vector(string str){
@@ -63,6 +82,8 @@ vector<string> convert_string_to_vector(string str){
     istringstream line_stream(str);
     string column_value;
     while (getline(line_stream, column_value, ',')) {
+        // remove newline character from column_value
+        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
         vec.push_back(column_value);
     }
     return vec;
@@ -99,7 +120,7 @@ char * int_to_bytes(int value){
 /*
  * Split string by delimiter
  * @param str: string
- * @param delimiter: char
+ * @param delimiter: char to split by
  * @return vector of strings
  */
 vector<string> split_string(string str, char delimiter){
@@ -107,6 +128,8 @@ vector<string> split_string(string str, char delimiter){
     istringstream line_stream(str);
     string column_value;
     while (getline(line_stream, column_value, delimiter)) {
+        // remove newline character from column_value
+        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
         vec.push_back(column_value);
     }
     return vec;
@@ -116,7 +139,7 @@ vector<string> split_string(string str, char delimiter){
  * Get index value of a string in a vector
  * @param vec: vector in which to look
  * @param str: string to search for
- * @return index: index
+ * @return index: index value of string in vector
  */
 int get_index(vector<string> vec, string str){
     int idx = -1;
@@ -128,3 +151,88 @@ int get_index(vector<string> vec, string str){
     }
     return idx;
 }
+
+/*
+ * Function to get the column types of a file
+ * @param line: string
+ * @param delimiter: char to split by
+ * @return column_types_str: string of comma separated data types
+ */
+string get_data_types(
+        string line,
+        char delimiter) {
+
+    string column_types_str;
+    // split line by delimiter find data type and store in comma separated string
+    stringstream ss(line);
+    string item;
+    while (getline(ss, item, delimiter)) {
+        // check if item is int
+        // check if item is float
+        // else  item stays as string
+        // if none of the above, throw error
+        // search for '.' in item
+        if (item.find('.') != string::npos) {
+            column_types_str += "float,";
+        } else {
+            try {
+                stoi(item);
+                column_types_str += "int,";
+            }
+            catch (invalid_argument &e) {
+                column_types_str += "string,";
+            }
+        }
+    }
+    // remove last comma
+    column_types_str.pop_back();
+    return column_types_str;
+}
+
+/*
+ * Function to get the delimiter of a file
+ * @param line: string of first line of file
+ * @return delimiter: char to split by
+ */
+char get_delimiter(
+        string line){
+    char delimiter;
+    // determine delimiter
+    if(line.find('\t') != string::npos){
+        delimiter = '\t';
+    } else if(line.find(',') != string::npos){
+        delimiter = ',';
+    } else if(line.find(' ') != string::npos){
+        delimiter = ' ';
+    } else {
+        cout << "Error: delimiter not found.\n"
+                " Please use files with delimiters as tab, comma, or space." << endl;
+        exit(1);
+    }
+    return delimiter;
+}
+
+//*
+// * Function to get the column names of a file
+// * @param line: string
+// * @param delimiter: char
+// * @return column_names_str: string
+// */
+//string get_column_names(
+//        string line,
+//        char delimiter){
+//
+//    string column_names_str;
+//    // split line by delimiter and store in comma separated string
+//    stringstream ss(line);
+//    string item;
+//    while(getline(ss, item, delimiter)){
+//        // remove carriage return from item
+//        item.erase(remove(item.begin(), item.end(), '\r'), item.end());
+//        column_names_str += item + ",";
+//    }
+//    // remove last comma
+//    column_names_str.pop_back();
+//
+//    return column_names_str;
+//}
