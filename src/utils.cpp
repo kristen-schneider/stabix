@@ -40,6 +40,25 @@ map<string, string> read_config_file(
 }
 
 /*
+ * Add default config options if not present
+ * @param config_options
+ * @return void
+ */
+void add_default_config_options(
+        map<string, string> &config_options) {
+    // add default config options if option is empty
+    if (config_options["block_size"].empty()) {
+        config_options["block_size"] = "20";
+    }
+    if (config_options["query_type"].empty()) {
+        // exit program with error message
+        cout << "ERROR: query_type not specified in config file." << endl;
+        exit(1);
+    }
+}
+
+
+/*
  * Convert vector to string
  * @param vec: vector of strings
  * @return str: string
@@ -63,6 +82,8 @@ vector<string> convert_string_to_vector(string str){
     istringstream line_stream(str);
     string column_value;
     while (getline(line_stream, column_value, ',')) {
+        // remove newline character from column_value
+        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
         vec.push_back(column_value);
     }
     return vec;
@@ -107,6 +128,8 @@ vector<string> split_string(string str, char delimiter){
     istringstream line_stream(str);
     string column_value;
     while (getline(line_stream, column_value, delimiter)) {
+        // remove newline character from column_value
+        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
         vec.push_back(column_value);
     }
     return vec;
@@ -189,27 +212,27 @@ char get_delimiter(
     return delimiter;
 }
 
-/*
- * Function to get the column names of a file
- * @param line: string
- * @param delimiter: char
- * @return column_names_str: string
- */
-string get_column_names(
-        string line,
-        char delimiter){
-
-    string column_names_str;
-    // split line by delimiter and store in comma separated string
-    stringstream ss(line);
-    string item;
-    while(getline(ss, item, delimiter)){
-        // remove carriage return from item
-        item.erase(remove(item.begin(), item.end(), '\r'), item.end());
-        column_names_str += item + ",";
-    }
-    // remove last comma
-    column_names_str.pop_back();
-
-    return column_names_str;
-}
+//*
+// * Function to get the column names of a file
+// * @param line: string
+// * @param delimiter: char
+// * @return column_names_str: string
+// */
+//string get_column_names(
+//        string line,
+//        char delimiter){
+//
+//    string column_names_str;
+//    // split line by delimiter and store in comma separated string
+//    stringstream ss(line);
+//    string item;
+//    while(getline(ss, item, delimiter)){
+//        // remove carriage return from item
+//        item.erase(remove(item.begin(), item.end(), '\r'), item.end());
+//        column_names_str += item + ",";
+//    }
+//    // remove last comma
+//    column_names_str.pop_back();
+//
+//    return column_names_str;
+//}
