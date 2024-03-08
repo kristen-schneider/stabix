@@ -27,3 +27,14 @@ char * int_to_bytes(int value);
 vector<string> split_string(string str, char delimiter);
 
 int get_index(vector<string> vec, string str);
+
+char get_delimiter(
+        string line);
+
+string get_column_names(
+        string line,
+        char delimiter);
+
+string get_data_types(
+        string line,
+        char delimiter);
