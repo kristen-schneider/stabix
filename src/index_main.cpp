@@ -84,6 +84,7 @@ int main(int argc, char* argv[]) {
         index << i << "," << get<0>(chrm_bp_byte[i]) << "," << get<1>(chrm_bp_byte[i]) << "," << get<2>(chrm_bp_byte[i]) << endl;
     }
     index.close();
+    file.close();
 
     cout << "Done." << endl << endl;
 

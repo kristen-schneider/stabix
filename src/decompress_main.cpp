@@ -20,7 +20,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
     // DECOMPRESSION STEPS
 
-    // 0. read config options
+    // 1. read config options
     string config_file = argv[1];
     cout << "Reading config options..." << endl;
     cout << "\t..." << config_file << endl;
@@ -29,33 +29,31 @@ int main(int argc, char* argv[]) {
     vector<string> col_codecs = split_string(config_options["codecs"], ',');
     cout << "Done." << endl << endl;
 
-    // 1. open compressed file
-    string compressed_file = config_options["out_file"];
-    cout << "Opening compressed file..." << endl;
-    cout << "\t..." << compressed_file << endl;
-    ifstream file(compressed_file);
-    cout << "Done." << endl << endl;
 
-    // 2. read first 4 bytes to get length of header
-    cout << "Reading first 4 bytes..." << endl;
-    // read only first 4 bytes from file and convert to int
+    // 2. open compressed file
+    cout << "Opening compressed file and reading header..." << endl;
+    string compressed_file = config_options["out_file"];
+    ifstream file(compressed_file);
+    // start at beginning and read 4 bytes
+    file.seekg(0, ios::beg);
     char header_length_bytes[4];
     file.read(header_length_bytes, 4);
+    // convert 4 bytes to int
     int header_length = bytes_to_int(header_length_bytes);
-    cout << "Done." << endl << endl;
+    cout << "header length: " << header_length << endl;
 
-    // 3. read and decompress header
-    cout << "Reading compressed file header..." << endl;
-    // read from bytes 5 to header_length
+    // read header_length bytes starting at byte 4
+    file.seekg(4, ios::beg);
     char header_bytes[header_length];
     file.read(header_bytes, header_length);
+    // convert header bytes to string
+    string header_string = string(header_bytes, header_length);
     // decompress header
-    string header = zlib_decompress(header_bytes);
+    string header = zlib_decompress(header_string);
+    cout << "header: " << header << endl;
     vector<string> header_list = split_string(header, ',');
-    // close file
-    file.close();
 
-    // parse header
+    // 3. parse header
     string num_columns = parse_header_list(header_list, "num columns")[0];
     string num_blocks = parse_header_list(header_list, "num blocks")[0];
     vector<string> column_names_list = parse_header_list(header_list, "column names");
