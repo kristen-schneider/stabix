@@ -39,6 +39,11 @@ map<string, string> read_config_file(
     return config_options;
 }
 
+/*
+ * Convert vector to string
+ * @param vec: vector of strings
+ * @return str: string
+ */
 string convert_vector_to_string(vector<string> vec){
     string str;
     for (int i = 0; i < vec.size(); i++){
@@ -48,6 +53,11 @@ string convert_vector_to_string(vector<string> vec){
     return str;
 }
 
+/*
+ * Convert string to vector
+ * @param str: string
+ * @return vector of strings
+ */
 vector<string> convert_string_to_vector(string str){
     vector<string> vec;
     istringstream line_stream(str);
@@ -58,7 +68,11 @@ vector<string> convert_string_to_vector(string str){
     return vec;
 }
 
-
+/*
+ * Convert bytes to int
+ * @param line: bytes
+ * @return value: int value
+ */
 int bytes_to_int(char bytes[4]){
     int value = 0;
     value += (unsigned char) bytes[0];
@@ -68,6 +82,11 @@ int bytes_to_int(char bytes[4]){
     return value;
 }
 
+/*
+ * Convert int to bytes
+ * @param value: int
+ * @return bytes: char *
+ */
 char * int_to_bytes(int value){
     char * bytes = new char[4];
     bytes[0] = (char) (value & 0xFF);
@@ -77,6 +96,12 @@ char * int_to_bytes(int value){
     return bytes;
 }
 
+/*
+ * Split string by delimiter
+ * @param str: string
+ * @param delimiter: char
+ * @return vector of strings
+ */
 vector<string> split_string(string str, char delimiter){
     vector<string> vec;
     istringstream line_stream(str);
@@ -89,6 +114,9 @@ vector<string> split_string(string str, char delimiter){
 
 /*
  * Get index value of a string in a vector
+ * @param vec: vector in which to look
+ * @param str: string to search for
+ * @return index: index
  */
 int get_index(vector<string> vec, string str){
     int idx = -1;

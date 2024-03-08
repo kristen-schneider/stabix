@@ -2,9 +2,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <sstream>
 #include <algorithm>
-#include <iterator>
 #include <map>
 #include <tuple>
 
@@ -113,9 +111,8 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
 /*
  * Read index file into map
  * @param index_file: string
- * @return index_map: map<string, map<string, string>>
+ * @return index_map: map<string, map<string, string>> chrm, bp, byte_offset, block_idx
  * chrm, bp, byte_offset
-
  */
 map<string, map<string, tuple<string, string>>> read_index_file(
         string index_file) {
@@ -150,6 +147,14 @@ map<string, map<string, tuple<string, string>>> read_index_file(
     return index_map;
 }
 
+/*
+ * Find start byte for query
+ * @param q_chrm: int
+ * @param q_bp: int
+ * @param index_map: map<string, map<string, tuple<string, string>>>
+ * @return tuple<int, int>
+ * start_byte, block_idx
+ */
 tuple<int, int> find_query_start_byte(
         int q_chrm,
         int q_bp,
