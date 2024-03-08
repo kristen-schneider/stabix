@@ -2,9 +2,11 @@ gwas_file:
   /Users/krsc0813/CLionProjects/gwas_local/data/small.tsv
 block_size:
   31
-out_file:
-  /Users/krsc0813/CLionProjects/gwas_local/data/small.tsv.grlz
-query_coordinates:
+query_type:
+  coordinate
+query_coordinate:
   1:693731-758144,1:799499-838732
+query_statistic:
+  p_value:0.05
 codecs:
   zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib
