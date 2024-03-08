@@ -101,3 +101,37 @@ TEST(BytesToIntTest, NegativeNumber) {
     int result = bytes_to_int(bytes);
     EXPECT_EQ(value, result);
 }
+
+TEST(GetIndexTest, PostiveTest) {
+    vector<string> vec = {"a", "b", "c", "d", "e"};
+    string str_a = "a";
+    string str_b = "b";
+    string str_c = "c";
+    string str_d = "d";
+    string str_e = "e";
+    int idx_a = get_index(vec, str_a);
+    int idx_b = get_index(vec, str_b);
+    int idx_c = get_index(vec, str_c);
+    int idx_d = get_index(vec, str_d);
+    int idx_e = get_index(vec, str_e);
+    EXPECT_EQ(0, idx_a);
+    EXPECT_NE(-1, idx_a);
+    EXPECT_EQ(1, idx_b);
+    EXPECT_NE(-1, idx_b);
+    EXPECT_EQ(2, idx_c);
+    EXPECT_NE(-1, idx_c);
+    EXPECT_EQ(3, idx_d);
+    EXPECT_NE(-1, idx_d);
+    EXPECT_EQ(4, idx_e);
+    EXPECT_NE(-1, idx_e);
+}
+
+TEST(GetIndexTest, NegativeTest) {
+    vector<string> vec = {"a", "b", "c", "d", "e"};
+    string str_a = "a";
+    string str_f = "f";
+    int idx_a = get_index(vec, str_a);
+    int idx_f = get_index(vec, str_f);
+    EXPECT_NE(1, idx_a);
+    EXPECT_EQ(-1, idx_f);
+}
