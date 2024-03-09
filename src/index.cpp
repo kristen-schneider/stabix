@@ -119,6 +119,30 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
     return chrm_bp_byte;
 }
 
+
+map<int, int> make_index_block_map(
+        string index_file) {
+    map<int, int> index_map;
+    ifstream file(index_file);
+    string line;
+    vector<string> header;
+    int line_count = 0;
+    while (getline(file, line)) {
+        if (line_count == 0) {
+            header = split_string(line, ',');
+        } else {
+            vector<string> line_list = split_string(line, ',');
+            int block_idx = stoi(line_list[0]);
+            string chrm = line_list[1];
+            string bp = line_list[2];
+            int byte_offset = stoi(line_list[3]);
+            index_map[block_idx] = byte_offset;
+        }
+        line_count++;
+    }
+    return index_map;
+}
+
 /*
  * Read index file into map
  * @param index_file: string
@@ -158,33 +182,121 @@ map<string, map<string, tuple<string, string>>> read_index_file(
     return index_map;
 }
 
-/*
- * Find start byte for query
- * @param q_chrm: int
- * @param q_bp: int
- * @param index_map: map<string, map<string, tuple<string, string>>>
- * @return tuple<int, int>
- * start_byte, block_idx
- */
-tuple<int, int> find_query_start_byte(
+int get_block_idx(
         int q_chrm,
         int q_bp,
-        map<string, map<string, tuple<string, string>>> index_map) {
-    int start_byte = -1;
-    int block_idx = -1;
-    for (auto const& chrm : index_map) {
+        map<string, map<string, tuple<string, string>>> index_file_map) {
+    int start_block_idx = -1;
+    for (auto const& chrm : index_file_map) {
         if (stoi(chrm.first) == q_chrm) {
             for (auto const& bp : chrm.second) {
-                if (stoi(bp.first) <= q_bp){
-                    start_byte = stoi(get<0>(bp.second));
-                    block_idx = stoi(get<1>(bp.second));
-                }
-                else {
-                    break;
+                if (stoi(bp.first) <= q_bp) {
+                    start_block_idx = stoi(get<1>(bp.second));
                 }
             }
-            return make_tuple(start_byte, block_idx);
+            return start_block_idx;
         }
     }
-    return make_tuple(start_byte, block_idx);
+    return start_block_idx;
 }
+
+int get_start_byte(
+        int block_idx,
+        map<int, int> index_block_map){
+    return index_block_map[block_idx];
+}
+
+
+vector<tuple<int, int>> get_start_end_block_idx(
+        vector<string>query_list,
+        map<string, map<string, tuple<string, string>>> index_file_map,
+        map<int, int> index_block_map) {
+    vector<tuple<int, int>> all_query_info;
+    for (int q_idx = 0; q_idx < query_list.size(); q_idx++) {
+        int q_chrm = stoi(split_string(query_list[q_idx], ':')[0]);
+        int q_bp_start = stoi(split_string(query_list[q_idx], ':')[1]);
+        int q_bp_end = stoi(split_string(split_string(query_list[q_idx], ':')[1], '-')[1]);
+        int start_block_idx = get_block_idx(q_chrm, q_bp_start, index_file_map);
+        int end_block_idx = get_block_idx(q_chrm, q_bp_end, index_file_map);
+        all_query_info.push_back(make_tuple(start_block_idx, end_block_idx));
+    }
+    return all_query_info;
+}
+
+///*
+// * Find start byte for query
+// * @param q_chrm: int
+// * @param q_bp: int
+// * @param index_map: map<string, map<string, tuple<string, string>>>
+// * @return tuple<int, int>
+// * start_byte, block_idx
+// */
+//vector<int> find_query_start_byte(
+//        int q_chrm,
+//        int q_bp,
+//        map<string, map<string, tuple<string, string>>> index_map) {
+//    int start_byte = -1;
+//    int block_idx = -1;
+//    for (auto const& chrm : index_map) {
+//        if (stoi(chrm.first) == q_chrm) {
+//            for (auto const& bp : chrm.second) {
+//                if (stoi(bp.first) <= q_bp){
+//                    start_byte = stoi(get<0>(bp.second));
+//                    block_idx = stoi(get<1>(bp.second));
+//                }
+//                else {
+//                    break;
+//                }
+//            }
+//            return make_tuple(start_byte, block_idx);
+//        }
+//    }
+//    return make_tuple(start_byte, block_idx);
+//}
+//
+//vector<vector<int>> find_query_bytes_blocks_(
+//        vector<string> query_list,
+//        map<int, int> index_map){
+//    vector<vector<int>> all_query_info;
+//    for (int q_idx = 0; q_idx < query_list.size(); q_idx++){
+//        int q_chrm = stoi(split_string(query_list[q_idx], ':')[0]);
+//        int q_bp_start = stoi(split_string(query_list[q_idx], ':')[1]);
+//        int q_bp_end = stoi(split_string(split_string(query_list[q_idx], ':')[1], '-')[1]);
+//        // byte_start is the first element in the tuple from index_map
+//        vector<int> query_bytes_blocks;
+//        int q_start_byte = get<0>(find_query_start_byte(q_chrm, q_bp_start, index_map));
+//        int q_end_byte = get<0>(find_query_start_byte(q_chrm, q_bp_end, index_map));
+//        int start_block_idx = get<1>(find_query_start_byte(q_chrm, q_bp_start, index_map));
+//        int end_block_idx = get<1>(find_query_start_byte(q_chrm, q_bp_end, index_map));
+//        query_bytes_blocks.push_back(q_start_byte);
+//        query_bytes_blocks.push_back(q_end_byte);
+//        query_bytes_blocks.push_back(start_block_idx);
+//        query_bytes_blocks.push_back(end_block_idx);
+//        all_query_info.push_back(query_bytes_blocks);
+//    }
+//
+//}
+//
+//
+//vector<tuple<tuple<int, int>, tuple<int, int>>> find_query_bytes_blocks_(
+//        vector<string> query_list,
+//        map<string, map<string, tuple<string, string>>> index_map) {
+//
+//    vector<tuple<tuple<int, int>, tuple<int, int>>> all_query_info;
+//
+//    for (int q_idx = 0; q_idx < query_list.size(); q_idx++) {
+//        int q_chrm = stoi(split_string(query_list[q_idx], ':')[0]);
+//        int q_bp_start = stoi(split_string(query_list[q_idx], ':')[1]);
+//        int q_bp_end = stoi(split_string(split_string(query_list[q_idx], ':')[1], '-')[1]);
+//        // byte_start is the first element in the tuple from index_map
+//        tuple<tuple<int, int>, tuple<int, int>> query_bytes_blocks;
+//        int q_start_byte = get<0>(find_query_start_byte(q_chrm, q_bp_start, index_map));
+//        int q_end_byte = get<0>(find_query_start_byte(q_chrm, q_bp_end, index_map));
+//        int start_block_idx = get<1>(find_query_start_byte(q_chrm, q_bp_start, index_map));
+//        int end_block_idx = get<1>(find_query_start_byte(q_chrm, q_bp_end, index_map));
+//        query_bytes_blocks = make_tuple(make_tuple(q_start_byte, q_end_byte),
+//                                        make_tuple(start_block_idx, end_block_idx));
+//        all_query_info.push_back(query_bytes_blocks);
+//    }
+//    return all_query_info;
+//}
