@@ -22,7 +22,29 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
 map<string, map<string, tuple<string, string>>> read_index_file(
         string index_file);
 
-tuple<int, int> find_query_start_byte(
+map<int, int> make_index_block_map(
+        string index_file);
+
+int get_block_idx(
         int q_chrm,
         int q_bp,
-        map<string, map<string, tuple<string, string>>> index_map);
+        map<string, map<string, tuple<string, string>>> index_file_map);
+
+vector<tuple<int, int>> get_start_end_block_idx(
+        vector<string>query_list,
+        map<string, map<string, tuple<string, string>>> index_file_map,
+        map<int, int> index_block_map);
+
+int get_start_byte(
+        int block_idx,
+        map<int, int> index_block_map);
+
+//vector<vector<int>> find_query_bytes_blocks_(
+//        vector<string> query_list,
+//        map<string, map<string, tuple<string, string>>> index_map);
+//
+//vector<int> find_query_start_byte(
+//        int q_chrm,
+//        int q_bp,
+//        map<int, int> index_map);
+
