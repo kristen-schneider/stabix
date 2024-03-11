@@ -120,6 +120,11 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
 }
 
 
+/*
+ * Make index block map
+ * @param index_file: string
+ * @return map<int, int> block_idx, byte_offset
+ */
 map<int, int> make_index_block_map(
         string index_file) {
     map<int, int> index_map;
@@ -149,9 +154,9 @@ map<int, int> make_index_block_map(
  * @return index_map: map<string, map<string, string>> chrm, bp, byte_offset, block_idx
  * chrm, bp, byte_offset
  */
-map<string, map<string, tuple<string, string>>> read_index_file(
+map<int, map<int, tuple<int, int>>> read_index_file(
         string index_file) {
-    map<string, map<string, tuple<string, string>>> index_map;
+    map<int, map<int, tuple<int, int>>> index_map;
     ifstream file(index_file);
     string line;
     vector<string> header;
@@ -161,11 +166,11 @@ map<string, map<string, tuple<string, string>>> read_index_file(
             header = split_string(line, ',');
         } else {
             vector<string> line_list = split_string(line, ',');
-            map<string, tuple<string, string>> line_map;
-            string block_idx = line_list[0];
-            string chrm = line_list[1];
-            string bp = line_list[2];
-            string byte_offset = line_list[3];
+            map<int, tuple<int, int>> line_map;
+            int block_idx = stoi(line_list[0]);
+            int chrm = stoi(line_list[1]);
+            int bp = stoi(line_list[2]);
+            int byte_offset = stoi(line_list[3]);
 
             line_map[bp] = make_tuple(byte_offset, block_idx);
             // if chromosome not in index_map, add it
@@ -185,13 +190,13 @@ map<string, map<string, tuple<string, string>>> read_index_file(
 int get_block_idx(
         int q_chrm,
         int q_bp,
-        map<string, map<string, tuple<string, string>>> index_file_map) {
+        map<int, map<int, tuple<int, int>>> index_file_map) {
     int start_block_idx = -1;
     for (auto const& chrm : index_file_map) {
-        if (stoi(chrm.first) == q_chrm) {
+        if (chrm.first == q_chrm) {
             for (auto const& bp : chrm.second) {
-                if (stoi(bp.first) <= q_bp) {
-                    start_block_idx = stoi(get<1>(bp.second));
+                if (q_bp >= bp.first) {
+                    start_block_idx = get<1>(bp.second);
                 }
             }
             return start_block_idx;
@@ -209,7 +214,7 @@ int get_start_byte(
 
 vector<tuple<int, int>> get_start_end_block_idx(
         vector<string>query_list,
-        map<string, map<string, tuple<string, string>>> index_file_map,
+        map<int, map<int, tuple<int, int>>> index_file_map,
         map<int, int> index_block_map) {
     vector<tuple<int, int>> all_query_info;
     for (int q_idx = 0; q_idx < query_list.size(); q_idx++) {

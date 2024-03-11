@@ -21,7 +21,32 @@ g++ -std=c++17 -o gwas_compress
     header.cpp
     utils.cpp 
     -lz
-    config.yml
 ```
 ### Indexing
+```angular2html
+g++ -std=c++17 -o gwas_index 
+    index_main.cpp
+    decompress.cpp
+    header.cpp
+    index.cpp
+    utils.cpp 
+    -lz
+```
 ### Querying
+```angular2html
+g++ -std=c++17 -o gwas_query 
+    decompression_main.cpp
+    decompress.cpp
+    header.cpp
+    index.cpp
+    query.cpp
+    utils.cpp 
+    -lz
+```
+
+### Usage
+```angular2html
+./gwas_compress config.yml
+./gwas_index config.yml
+./gwas_query config.yml
+```
