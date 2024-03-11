@@ -19,7 +19,7 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         vector<string> block_header_end_bytes,
         vector<string> block_end_bytes);
 
-map<string, map<string, tuple<string, string>>> read_index_file(
+map<int, map<int, tuple<int, int>>> read_index_file(
         string index_file);
 
 map<int, int> make_index_block_map(
@@ -28,11 +28,11 @@ map<int, int> make_index_block_map(
 int get_block_idx(
         int q_chrm,
         int q_bp,
-        map<string, map<string, tuple<string, string>>> index_file_map);
+        map<int, map<int, tuple<int, int>>> index_file_map);
 
 vector<tuple<int, int>> get_start_end_block_idx(
         vector<string>query_list,
-        map<string, map<string, tuple<string, string>>> index_file_map,
+        map<int, map<int, tuple<int, int>>> index_file_map,
         map<int, int> index_block_map);
 
 int get_start_byte(

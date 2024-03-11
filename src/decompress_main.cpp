@@ -29,6 +29,13 @@ int main(int argc, char* argv[]) {
     ofstream output_file;
     string output_file_name = config_options["gwas_file"] + ".query";
     output_file.open(output_file_name, ios::app);
+    if (!output_file.is_open()){
+        cout << "Error: could not open output file" << endl;
+        return 1;
+    }
+    // clear contents of output file
+    output_file.close();
+    output_file.open(output_file_name, ios::app);
 
     cout << "Done." << endl << endl;
 
@@ -71,7 +78,7 @@ int main(int argc, char* argv[]) {
         cout << "\t..." << index_file << endl;
         ifstream index(index_file);
         // make map of index file
-        map<string, map<string, tuple<string, string>>> index_file_map = read_index_file(index_file);
+        map<int, map<int, tuple<int, int>>> index_file_map = read_index_file(index_file);
         map<int, int> index_block_map = make_index_block_map(index_file);
         index.close();
         cout << "Done." << endl << endl;
@@ -88,6 +95,9 @@ int main(int argc, char* argv[]) {
         cout << "Decompressing all blocks for each query..." << endl;
         for (int q_idx = 0; q_idx < all_query_block_indexes.size(); q_idx ++){
             cout << "...decompressing query " << q_idx << "..." << query_list[q_idx] <<endl;
+
+            output_file << "Query: " << query_list[q_idx] << endl;
+
             tuple<int, int> query_start_end_byte = all_query_block_indexes[q_idx];
             int start_block_idx = get<0>(query_start_end_byte);
             int end_block_idx = get<1>(query_start_end_byte);
@@ -104,6 +114,9 @@ int main(int argc, char* argv[]) {
                     block_length = stoi(block_end_bytes_list[block_idx]) - stoi(block_end_bytes_list[block_idx-1]) - block_header_length;
                 }            int start_byte = get_start_byte(block_idx, index_block_map);
                 cout << "......decompressing block " << block_idx << endl;
+
+                output_file << "Block: " << block_idx << endl;
+
                 file.seekg(start_byte, ios::beg);
                 char block_header_bytes[block_header_length];
                 file.read(block_header_bytes, block_header_length);
@@ -149,10 +162,9 @@ int main(int argc, char* argv[]) {
                         output_file << block_list[record_i] << ',';
 //                        cout << block_list[record_i] << ',';
                     }
-                    cout << endl;
+//                    cout << endl;
                     output_file << endl;
                 }
-                output_file.close();
             }
         }
     }
@@ -160,5 +172,6 @@ int main(int argc, char* argv[]) {
         cout << "statistic-based indexing not yet set up" << endl;
     }
 
+    output_file.close();
     return 0;
 }

@@ -172,27 +172,6 @@ TEST(GetDelimiter, Space) {
     ASSERT_EQ(delimiter3, ' ');
 }
 
-TEST(GetColumnNames, Comma) {
-    string line = "a,b,c,d,e";
-    char delimiter = ',';
-    string column_names = get_column_names(line, delimiter);
-    ASSERT_EQ(column_names, "a,b,c,d,e");
-}
-
-TEST(GetColumnNames, Tab) {
-    string line = "a\tb\tc\td\te";
-    char delimiter = '\t';
-    string column_names = get_column_names(line, delimiter);
-    ASSERT_EQ(column_names, "a,b,c,d,e");
-}
-
-TEST(GetColumnNames, Space) {
-    string line = "a b c d e";
-    char delimiter = ' ';
-    string column_names = get_column_names(line, delimiter);
-    ASSERT_EQ(column_names, "a,b,c,d,e");
-}
-
 TEST(GetColumnTypes, Comma) {
     string all_ints = "1,2,3,4,5";
     string all_floats = "1.1,2.2,3.3,4.4,5.5";

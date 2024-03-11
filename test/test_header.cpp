@@ -11,8 +11,8 @@ TEST(ParseHeaderList, NumColumns) {
     string num_columns_query = "num columns";
     string num_blocks_query = "num blocks";
     string column_names_query = "column names";
-    string block_header_lengths_query = "block header lengths";
-    string block_lengths_query = "block lengths";
+    string block_header_lengths_query = "block header end bytes";
+    string block_lengths_query = "block end bytes";
     string block_sizes_query = "block sizes";
 
     vector<string> num_columns_query_list = parse_header_list(header_list, num_columns_query);
