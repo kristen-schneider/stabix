@@ -66,10 +66,24 @@ int main(int argc, char* argv[]) {
     cout << "\t...num columns: " << num_columns << endl;
     cout << "Done." << endl << endl;
 
+    // setting up variables for block compression
+    vector<vector<vector<string>>> all_blocks;
+    vector<vector<string>> compressed_blocks;
+    int num_blocks;
+
     // 2. sort file as needed
     // if query type is coordinate, sort file by chromosome and genomic position
     if (query_type == "coordinate") {
         cout << "File already sorted by chromosome and genomic position." << endl;
+
+        // 3. get blocks
+        cout << "Making blocks..." << endl;
+        all_blocks = make_blocks(gwas_file, num_columns, block_size, delimiter);
+        num_blocks = all_blocks.size();
+        cout << "\t...made " << num_blocks << " blocks of size " << block_size  << " or less." << endl;
+        cout << "Done." << endl << endl;
+
+
     }else if (query_type == "statistic") {
         string statistic = split_string(config_options["query_statistic"], ':')[0];
         int statistic_idx = get_index(column_names_list, statistic);
@@ -77,22 +91,14 @@ int main(int argc, char* argv[]) {
         cout << "Done." << endl << endl;
     }
 
-    // 3. get blocks
-    cout << "Making blocks..." << endl;
-    vector<vector<vector<string>>> all_blocks;
-    all_blocks = make_blocks(gwas_file, num_columns, block_size, delimiter);
-    int num_blocks = all_blocks.size();
-    cout << "\t...made " << num_blocks << " blocks of size " << block_size  << " or less." << endl;
-    cout << "Done." << endl << endl;
-
     // 4. compress blocks AND get second half of header
     cout << "Compressing blocks..." << endl;
-    vector<vector<string>> compressed_blocks;
     // compress each block and add to compressed_blocks
     for (auto const& block : all_blocks) {
         vector<string> compressed_block = compress_block(block, codecs_list);
         compressed_blocks.push_back(compressed_block);
     }
+
 
     // get block headers
     vector<vector<string>> block_headers;
