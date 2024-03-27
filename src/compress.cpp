@@ -6,8 +6,14 @@
 #include <stdexcept>
 
 #include "utils.h"
+// include headers from FastPFor
+#include "headers/codecfactory.h"
+#include "headers/deltautil.h"
+
 
 using namespace std;
+using namespace FastPForLib;
+
 
 string zlib_compress(string in_data);
 
@@ -102,8 +108,21 @@ string zlib_compress(string in_data){
     return outstring;
 }
 
-// use fastpfor library to compress a string
+/*
+ * use fastpfor library to compress a string
+ */
 string fastpfor_compress(string in_data){
     //
-    return in_data;
+    std::vector<uint32_t> data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    std::vector<uint32_t> compressedData;
+
+    FastPForLib::VariableByte vb;
+    vb.encodeArray(data.data(), data.size(), compressedData);
+
+    // Handle compressedData as needed
+
+    std::cout << "Original data size: " << sizeof(data[0]) * data.size() << " bytes\n";
+    std::cout << "Compressed data size: " << compressedData.size() * sizeof(compressedData[0]) << " bytes\n";
+
+    return 0;
 }
