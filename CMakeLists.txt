@@ -23,7 +23,7 @@ include_directories(lib/FastPFor)
 
 ## Link directories
 add_subdirectory(/Users/krsc0813/CLionProjects/gwas_local/lib/googletest-1.14.0/ googletest-1.14.0)
-add_subdirectory(/Users/krsc0813/CLionProjects/gwas_local/lib/FastPFor/ FastPFor)
+add_subdirectory(/Users/krsc0813/CLionProjects/gwas_local/lib/FastPFor/ lib/FastPFor)
 
 ### add external libraries
 #externalproject_add(FastPFor

@@ -1,0 +1,6 @@
+[submodule "googletest"]
+	path = googletest
+	url = https://github.com/google/googletest
+[submodule "FastPFor"]
+	path = FastPFor
+	url = https://github.com/lemire/FastPFor
