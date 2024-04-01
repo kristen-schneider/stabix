@@ -12,7 +12,7 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 MESSAGE( STATUS "CMAKE_BUILD_TYPE: " ${CMAKE_BUILD_TYPE} )
 
-list(APPEND CMAKE_MODULE_PATH "cmake_modules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules")
 include(AppendCompilerFlags)
 
 
@@ -23,7 +23,7 @@ set(PROJECT_DESCRIPTION "The FastPFOR C++ library: Fast integer compression")
 set(PROJECT_VERSION "0.1.9")
 
 include(DetectCPUFeatures)
-include("cmake_modules/environment.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/environment.cmake")
 
 
 message("Building for architecture: ${CMAKE_SYSTEM_PROCESSOR}")
@@ -238,7 +238,7 @@ install(EXPORT FastPFORExport
     FILE "FastPFORTargets.cmake"
     DESTINATION "${PACKAGE_CMAKE_INSTALL_DIR}"
     NAMESPACE "FastPFOR::")
-install(DIRECTORY "headers" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fastpfor")
+install(DIRECTORY "headers/" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fastpfor")
 install(FILES AUTHORS LICENSE README.md
     DESTINATION "${CMAKE_INSTALL_DOCDIR}")
 if(NOT CMAKE_VERSION VERSION_LESS 3.0.0)
