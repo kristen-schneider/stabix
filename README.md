@@ -12,41 +12,37 @@ The compression performed in blocks, with column-based codecs.<br>
 - **query_coordinate:** genomic coordinates to query, _1:693731-758144,1:799499-838732,..._
 - **query_statistic:** statistic threshold to query, _0.05_
 - **codecs:** codecs to use by column. Default: _zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib_
-### Compression
+
+### Build
 ```angular2html
-g++ -std=c++17 -o gwas_compress 
-    compress_main.cpp
-    blocks.cpp 
-    compress.cpp
-    header.cpp
-    utils.cpp 
-    -lz
-```
-### Indexing
-```angular2html
-g++ -std=c++17 -o gwas_index 
-    index_main.cpp
-    decompress.cpp
-    header.cpp
-    index.cpp
-    utils.cpp 
-    -lz
-```
-### Querying
-```angular2html
-g++ -std=c++17 -o gwas_query 
-    decompression_main.cpp
-    decompress.cpp
-    header.cpp
-    index.cpp
-    query.cpp
-    utils.cpp 
-    -lz
+mkdir build
+cd build
+
+cmake ..
 ```
 
-### Usage
+### Compile and run tests
 ```angular2html
-./gwas_compress config.yml
-./gwas_index config.yml
-./gwas_query config.yml
+cmake --build . --target test_gwas
+./build/bin/test_gwas
 ```
+
+### Compile and run compression
+```angular2html
+cmake --build . --target gwas_compress
+./build/bin/gwas_compress
+```
+
+### Compile and run index
+```angular2html
+cmake --build . --target gwas_index
+./build/bin/gwas_index
+```
+
+### Compile and run decompression
+```angular2html
+cmake --build . --target gwas_decompress
+./build/bin/gwas_decompress
+```
+
+
