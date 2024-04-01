@@ -6,7 +6,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 project(gwas_run)
 
 ## Include directories
-#include_directories(${ZLIB_INCLUDE_DIRS} include)
 include_directories(include)
 include_directories(lib)
 include_directories(lib/googletest/googletest/include)
@@ -41,6 +40,7 @@ add_executable(gwas_decompress
         src/index.cpp
         src/utils.cpp)
 
+# TESTING
 add_executable(test_gwas
         test/test_gwas.cpp
         test/test_utils.cpp
