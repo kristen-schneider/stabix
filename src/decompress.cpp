@@ -75,3 +75,32 @@ string zlib_decompress(string in_data){
 
     return outstring;
 }
+
+#include "FastPFor/headers/codecs.h"
+#include "FastPFor/headers/variablebyte.h"
+#include "FastPFor/headers/pfor.h"
+#include "FastPFor/headers/fastpfor.h"
+
+
+using namespace FastPForLib;
+
+/*
+ * use fastpfor library to decompress a string
+ */
+string fastpfor_decompress(uint32_t * in_data) {
+    // decode parameters: const uint32_t *in, size_t &length, uint32_t *out, const size_t nvalue
+    // decode returns uint32_t
+    FastPForLib::VariableByte vb;
+    uint32_t * out_data = new uint32_t[1000];
+    size_t length = 1000;
+    size_t nvalue = 1000;
+    vb.decodeArray(in_data, length, out_data, nvalue);
+    string out_string = "";
+    for (int i = 0; i < nvalue; i++) {
+        out_string += to_string(out_data[i]);
+        out_string += ",";
+    }
+
+    return out_string;
+
+}

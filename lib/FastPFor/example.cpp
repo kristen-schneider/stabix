@@ -9,8 +9,8 @@
 //  this example may require changes.
 //
 
-#include "headers/codecfactory.h"
-#include "headers/deltautil.h"
+#include "FastPFor/headers/codecfactory.h"
+#include "FastPFor/headers/deltautil.h"
 
 int main() {
   using namespace FastPForLib;

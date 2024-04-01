@@ -6,14 +6,8 @@
 #include <stdexcept>
 
 #include "utils.h"
-// include headers from FastPFor
-#include "headers/codecfactory.h"
-#include "headers/deltautil.h"
-
 
 using namespace std;
-using namespace FastPForLib;
-
 
 string zlib_compress(string in_data);
 
@@ -108,21 +102,41 @@ string zlib_compress(string in_data){
     return outstring;
 }
 
+
+#include "FastPFor/headers/codecs.h"
+#include "FastPFor/headers/variablebyte.h"
+#include "FastPFor/headers/pfor.h"
+
+using namespace FastPForLib;
+
 /*
  * use fastpfor library to compress a string
  */
-string fastpfor_compress(string in_data){
-    //
-    std::vector<uint32_t> data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    std::vector<uint32_t> compressedData;
-
+uint32_t* fastpfor_compress(string in_data){
     FastPForLib::VariableByte vb;
-    vb.encodeArray(data.data(), data.size(), compressedData);
+    // encodeArray parameters: const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue
+    // in: input array
+    // length: length of input array
+    // out: output array
+    // nvalue: length of output array
+    // returns: number of bytes written
+    const uint32_t *in = (const uint32_t *)in_data.data();
+    size_t length = in_data.size();
+    uint32_t *out = new uint32_t[length];
+    size_t nvalue = 0;
+    vb.encodeArray(in, length, out, nvalue);
+
+    cout << "nvalue: " << nvalue << endl;
+    cout << "out: " << out << endl;
+    for (int i = 0; i < nvalue; i++){
+        cout << out[i] << " ";
+    }
+
+    return out;
 
     // Handle compressedData as needed
 
-    std::cout << "Original data size: " << sizeof(data[0]) * data.size() << " bytes\n";
-    std::cout << "Compressed data size: " << compressedData.size() * sizeof(compressedData[0]) << " bytes\n";
+//    std::cout << "Original data size: " << sizeof(data[0]) * data.size() << " bytes\n";
+//    std::cout << "Compressed data size: " << compressedData.size() * sizeof(compressedData[0]) << " bytes\n";
 
-    return 0;
 }

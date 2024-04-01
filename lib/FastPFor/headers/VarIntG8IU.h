@@ -16,7 +16,7 @@
 #include <emmintrin.h>
 #elif defined(__aarch64__)
 /* GCC-compatible compiler, targeting ARM with NEON */
-#include <simde/x86/sse3.h>
+#include "simde/x86/sse3.h"
 #endif
 #include "codecs.h"
 #ifdef __GNUC__

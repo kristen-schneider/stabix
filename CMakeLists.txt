@@ -13,7 +13,7 @@ project(gwas_run)
 include_directories(include)
 include_directories(lib/)
 include_directories(lib/googletest-1.14.0)
-include_directories(lib/FastPFor)
+#include_directories(lib/FastPFor)
 #include_directories(lib/FastPFor/headers)
 #include_directories(${CMAKE_BINARY_DIR}/FastPFor/headers/)
 #include_directories(lib/FastPFor/headers)
@@ -23,7 +23,7 @@ include_directories(lib/FastPFor)
 
 ## Link directories
 add_subdirectory(/Users/krsc0813/CLionProjects/gwas_local/lib/googletest-1.14.0/ googletest-1.14.0)
-add_subdirectory(/Users/krsc0813/CLionProjects/gwas_local/lib/FastPFor/ lib/FastPFor)
+#add_subdirectory(/Users/krsc0813/CLionProjects/gwas_local/lib/FastPFor/ lib/FastPFor)
 
 ### add external libraries
 #externalproject_add(FastPFor
@@ -74,7 +74,9 @@ add_executable(test_gwas
         src/index.cpp
         src/decompress.cpp
         test/test_header.cpp
-        src/header.cpp)
+        src/header.cpp
+        test/test_compress.cpp
+        src/compress.cpp)
 
 #ExternalProject_Get_Property(FastPFor INSTALL_DIR)
 #ExternalProject_Get_Property(simde INSTALL_DIR)
@@ -83,11 +85,11 @@ add_executable(test_gwas
 #target_include_directories(gwas_compress PRIVATE ${INSTALL_DIR}/include)
 
 # Additional configuration if needed, e.g., linking libraries, "adding -lz"
-target_link_libraries(gwas_compress z /Users/krsc0813/CLionProjects/gwas_local/lib/FastPFor/build/libFastPFOR.a)
-#target_link_libraries(gwas_compress z)
+#target_link_libraries(gwas_compress z /Users/krsc0813/CLionProjects/gwas_local/lib/FastPFor/build/libFastPFOR.a)
+target_link_libraries(gwas_compress z)
 #target_link_libraries(gwas_index z)
 #target_link_libraries(gwas_decompress z)
-#target_link_libraries(test_gwas gtest gtest_main z)
+target_link_libraries(test_gwas gtest gtest_main z)
 
 
 
