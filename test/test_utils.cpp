@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "utils.h"
-#include "gtest/gtest.h"
+#include "googletest/googletest/include/gtest/gtest.h"
 
 using namespace std;
 

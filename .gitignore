@@ -3,4 +3,4 @@
 cmake-build-debug/
 test/cmaketxt
 lib/simde/
-bin/
+build/
