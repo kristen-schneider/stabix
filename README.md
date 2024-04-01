@@ -19,27 +19,29 @@ mkdir build
 cd build
 
 cmake ..
+
+make
 ```
 
-### Compile and run tests
+### Compile and run TESTS
 ```angular2html
 cmake --build . --target test_gwas
 ./build/bin/test_gwas
 ```
 
-### Compile and run compression
+### Compile and run COMPRESSION
 ```angular2html
 cmake --build . --target gwas_compress
 ./build/bin/gwas_compress
 ```
 
-### Compile and run index
+### Compile and run INDEX
 ```angular2html
 cmake --build . --target gwas_index
 ./build/bin/gwas_index
 ```
 
-### Compile and run decompression
+### Compile and run DECOMPRESSION
 ```angular2html
 cmake --build . --target gwas_decompress
 ./build/bin/gwas_decompress
