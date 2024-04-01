@@ -55,8 +55,8 @@ add_executable(test_gwas
 
 # Additional configuration if needed, e.g., linking libraries, "adding -lz"
 target_link_libraries(gwas_compress z)
-#target_link_libraries(gwas_index z)
-#target_link_libraries(gwas_decompress z)
+target_link_libraries(gwas_index z)
+target_link_libraries(gwas_decompress z)
 target_link_libraries(test_gwas gtest gtest_main z)
 
 
