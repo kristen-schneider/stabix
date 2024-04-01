@@ -12,7 +12,7 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 MESSAGE( STATUS "CMAKE_BUILD_TYPE: " ${CMAKE_BUILD_TYPE} )
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules")
+list(APPEND CMAKE_MODULE_PATH "cmake_modules")
 include(AppendCompilerFlags)
 
 
@@ -23,7 +23,7 @@ set(PROJECT_DESCRIPTION "The FastPFOR C++ library: Fast integer compression")
 set(PROJECT_VERSION "0.1.9")
 
 include(DetectCPUFeatures)
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/environment.cmake")
+include("cmake_modules/environment.cmake")
 
 
 message("Building for architecture: ${CMAKE_SYSTEM_PROCESSOR}")
@@ -118,15 +118,15 @@ MESSAGE( STATUS "CMAKE_C_FLAGS_RELEASE: " ${CMAKE_C_FLAGS_RELEASE} )
 # library target
 include_directories(headers)
 add_library(FastPFOR STATIC
-    src/bitpacking.cpp
-    src/bitpackingaligned.cpp
-    src/bitpackingunaligned.cpp
-    src/horizontalbitpacking.cpp
-    src/simdunalignedbitpacking.cpp
-    src/codecfactory.cpp
-    src/simdbitpacking.cpp
-    src/varintdecode.c
-    src/streamvbyte.c)
+        src/bitpacking.cpp
+        src/bitpackingaligned.cpp
+        src/bitpackingunaligned.cpp
+        src/horizontalbitpacking.cpp
+        src/simdunalignedbitpacking.cpp
+        src/codecfactory.cpp
+        src/simdbitpacking.cpp
+        src/varintdecode.c
+        src/streamvbyte.c)
 set_target_properties(FastPFOR PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 
@@ -216,10 +216,10 @@ add_custom_target(check unit DEPENDS unit)
 
 
 add_executable(FastPFOR_unittest
-    unittest/test_composite.cpp
-    unittest/test_driver.cpp
-    unittest/test_fastpfor.cpp
-    unittest/test_variablebyte.cpp)
+        unittest/test_composite.cpp
+        unittest/test_driver.cpp
+        unittest/test_fastpfor.cpp
+        unittest/test_variablebyte.cpp)
 target_link_libraries(FastPFOR_unittest gtest FastPFOR)
 enable_testing()
 add_test("unit" unit)
@@ -238,7 +238,7 @@ install(EXPORT FastPFORExport
     FILE "FastPFORTargets.cmake"
     DESTINATION "${PACKAGE_CMAKE_INSTALL_DIR}"
     NAMESPACE "FastPFOR::")
-install(DIRECTORY "headers/" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fastpfor")
+install(DIRECTORY "headers" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fastpfor")
 install(FILES AUTHORS LICENSE README.md
     DESTINATION "${CMAKE_INSTALL_DOCDIR}")
 if(NOT CMAKE_VERSION VERSION_LESS 3.0.0)
