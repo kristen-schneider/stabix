@@ -12,7 +12,8 @@ project(gwas_run)
 #include_directories(${ZLIB_INCLUDE_DIRS} include)
 include_directories(include)
 include_directories(lib/)
-include_directories(lib/googletest-1.14.0)
+include_directories(lib/googletest)
+#include_directories(lib/googletest-1.14.0)
 #include_directories(lib/FastPFor)
 #include_directories(lib/FastPFor/headers)
 #include_directories(${CMAKE_BINARY_DIR}/FastPFor/headers/)
@@ -22,7 +23,8 @@ include_directories(lib/googletest-1.14.0)
 
 
 ## Link directories
-add_subdirectory(/Users/krsc0813/CLionProjects/gwas_local/lib/googletest-1.14.0/ googletest-1.14.0)
+add_subdirectory(lib/googletest)
+#add_subdirectory(/Users/krsc0813/CLionProjects/gwas_local/lib/googletest-1.14.0/ googletest-1.14.0)
 #add_subdirectory(/Users/krsc0813/CLionProjects/gwas_local/lib/FastPFor/ lib/FastPFor)
 
 ### add external libraries

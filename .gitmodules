@@ -1,3 +1,6 @@
-[submodule "googletest"]
-	path = googletest
+[submodule "lib/googletest"]
+	path = lib/googletest
 	url = https://github.com/google/googletest
+[submodule "lib/FastPFor"]
+	path = lib/FastPFor
+	url = https://github.com/lemire/FastPFor.git
