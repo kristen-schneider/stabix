@@ -59,14 +59,29 @@ void add_default_config_options(
 
 
 /*
- * Convert vector to string
+ * Convert vector string to string
  * @param vec: vector of strings
  * @return str: string of comma separated values
  */
-string convert_vector_to_string(vector<string> vec){
-    string str;
+string convert_vector_str_to_string(vector<string> vec){
+    string str = "";
     for (int i = 0; i < vec.size(); i++){
         str += vec[i] + ",";
+    }
+    str.pop_back();
+    return str;
+}
+
+/*
+ * Convert vector of ints to string
+ * @param vec: vector of integers
+ * @return str: string of comma separated values
+ */
+string convert_vector_int_to_string(
+        vector<uint32_t> vec){
+    string str;
+    for (int i = 0; i < vec.size(); i++) {
+        str += to_string(vec[i]) + ",";
     }
     str.pop_back();
     return str;
@@ -210,6 +225,20 @@ char get_delimiter(
         exit(1);
     }
     return delimiter;
+}
+
+/*
+ * Function to convert a vector of strings to vector of integers
+ * @param vec: vector of strings
+ * @return vector of integers
+ */
+vector<uint32_t> convert_vector_to_int(
+        vector<string> vec){
+    vector<uint32_t> vec_int;
+    for (int i = 0; i < vec.size(); i++){
+        vec_int.push_back(stoi(vec[i]));
+    }
+    return vec_int;
 }
 
 //*

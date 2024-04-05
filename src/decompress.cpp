@@ -10,6 +10,7 @@
 using namespace std;
 
 string zlib_decompress(string compressed_string);
+vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data);
 
 /*
  * Decompress a column using the specified codec
@@ -18,10 +19,16 @@ string zlib_decompress(string compressed_string);
  * @return: string, the decompressed column
  */
 string decompress_column(string compressed_column, string codec){
-    string decompressed_column;
+    string decompressed_column_str;
     if (codec == "zlib"){
-        decompressed_column = zlib_decompress(compressed_column);
-        return decompressed_column;
+        decompressed_column_str = zlib_decompress(compressed_column);
+        return decompressed_column_str;
+    }
+    else if (codec == "fpfVB"){
+        vector<uint32_t> decompressed_column;
+        decompressed_column = fastpfor_vb_decompress((uint32_t*)compressed_column.c_str());
+        decompressed_column_str = convert_vector_int_to_string(decompressed_column);
+        return decompressed_column_str;
     }
     else {
         cout << "ERROR: Codec not recognized: " << codec << endl;
@@ -86,20 +93,17 @@ using namespace FastPForLib;
 /*
  * use fastpfor library to decompress a string
  */
-string fastpfor_decompress(uint32_t * in_data) {
-    // decode parameters: const uint32_t *in, size_t &length, uint32_t *out, const size_t nvalue
-    // decode returns uint32_t
+vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data) {
     FastPForLib::VariableByte vb;
-    uint32_t * out_data = new uint32_t[1000];
-    size_t length = 1000;
-    size_t nvalue = 1000;
-    vb.decodeArray(in_data, length, out_data, nvalue);
-    string out_string = "";
-    for (int i = 0; i < nvalue; i++) {
-        out_string += to_string(out_data[i]);
-        out_string += ",";
-    }
 
-    return out_string;
+    size_t compressedSize = 1000;
+    vector<uint32_t> decompressed(compressedSize);
+    size_t decompressedSize; // variable to store the number of decompressed values
+    vb.decodeArray(in_data, compressedSize, decompressed.data(), decompressedSize);
+
+    // Resize the decompressed vector to fit the actual decompressed data
+    decompressed.resize(decompressedSize);
+
+    return decompressed;
 
 }

@@ -17,8 +17,11 @@ map<string, string> read_config_file(
 void add_default_config_options(
         map<string, string> &config_options);
 
-string convert_vector_to_string(
+string convert_vector_str_to_string(
         vector<string> vec);
+
+string convert_vector_int_to_string(
+        vector<uint32_t> vec);
 
 vector<string> convert_string_to_vector(
         string str);
@@ -41,3 +44,6 @@ char get_delimiter(
 string get_data_types(
         string line,
         char delimiter);
+
+vector<uint32_t> convert_vector_to_int(
+        vector<string> vec);

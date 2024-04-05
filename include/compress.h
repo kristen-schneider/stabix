@@ -14,4 +14,4 @@ using namespace std;
 
 vector<string> compress_block(vector<vector<string>> block, vector<string> codecs_list);
 string zlib_compress(string in_data);
-uint32_t* fastpfor_compress(string in_data);
+uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data);

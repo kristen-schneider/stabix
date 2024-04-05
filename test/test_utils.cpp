@@ -45,22 +45,28 @@ TEST(SplitStringTest, SpaceDelimiter) {
     EXPECT_EQ("e", vec[4]);
 }
 
-TEST(ConvertVectorToStringTest, CommaDelimiter) {
+TEST(ConvertVectorStrToStringTest, CommaDelimiter) {
     vector<string> vec = {"a", "b", "c", "d", "e"};
-    string str = convert_vector_to_string(vec);
+    string str = convert_vector_str_to_string(vec);
     EXPECT_EQ("a,b,c,d,e", str);
 }
 
-TEST(ConvertVectorToStringTest, TabDelimiter) {
+TEST(ConvertVectorStrToStringTest, TabDelimiter) {
     vector<string> vec = {"a", "b", "c", "d", "e"};
-    string str = convert_vector_to_string(vec);
+    string str = convert_vector_str_to_string(vec);
     EXPECT_EQ("a,b,c,d,e", str);
 }
 
-TEST(ConvertVectorToStringTest, SpaceDelimiter) {
+TEST(ConvertVectorStrToStringTest, SpaceDelimiter) {
     vector<string> vec = {"a", "b", "c", "d", "e"};
-    string str = convert_vector_to_string(vec);
+    string str = convert_vector_str_to_string(vec);
     EXPECT_EQ("a,b,c,d,e", str);
+}
+
+TEST(ConvertVectorIntToStringTest, PositiveNumbers) {
+    vector<uint32_t> vec = {1, 2, 3, 4, 5};
+    string str = convert_vector_int_to_string(vec);
+    EXPECT_EQ("1,2,3,4,5", str);
 }
 
 TEST(ConvertStringToVectorTest, CommaDelimiter) {

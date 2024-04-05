@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     cout << "\t...gwas_file: " << gwas_file << endl;
     cout << "\t...block_size: " << block_size << endl;
     cout << "\t...query_type: " << query_type << endl;
-    cout << "\t...codecs_list: " << convert_vector_to_string(codecs_list) << endl;
+    cout << "\t...codecs_list: " << convert_vector_str_to_string(codecs_list) << endl;
     cout << "\t...compressed_file: " << compressed_file << endl;
 
     cout << "Done." << endl << endl;
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
     char delimiter = get_delimiter(line_1);
     // get column names
     vector<string> column_names_list = split_string(line_1, delimiter);
-    string column_names_str = convert_vector_to_string(column_names_list);
+    string column_names_str = convert_vector_str_to_string(column_names_list);
     cout << "\t...column names: " << column_names_str << endl;
     // get number of columns
     int num_columns = column_names_list.size();
@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
     // compress block headers
     vector<string> compressed_block_headers;
     for (auto const& block_header : block_headers) {
-        string string_block_header = convert_vector_to_string(block_header);
+        string string_block_header = convert_vector_str_to_string(block_header);
         string compressed_block_header = zlib_compress(string_block_header);
         compressed_block_headers.push_back(compressed_block_header);
     }
@@ -139,8 +139,8 @@ int main(int argc, char* argv[]) {
     }
 
 //    // print block header lengths and block lengths
-//    cout << "block header lengths: " << convert_vector_to_string(block_header_end_bytes) << endl;
-//    cout << "block lengths: " << convert_vector_to_string(block_end_bytes) << endl;
+//    cout << "block header lengths: " << convert_vector_str_to_string(block_header_end_bytes) << endl;
+//    cout << "block lengths: " << convert_vector_str_to_string(block_end_bytes) << endl;
 
 
     // get size of first and last block
@@ -152,14 +152,14 @@ int main(int argc, char* argv[]) {
             to_string(num_columns),
             to_string(num_blocks),
             column_names_str,
-            convert_vector_to_string(block_header_end_bytes),
-            convert_vector_to_string(block_end_bytes),
+            convert_vector_str_to_string(block_header_end_bytes),
+            convert_vector_str_to_string(block_end_bytes),
             block_sizes
     };
 
     // 6. compress header
     cout << "Compressing header..." << endl;
-    string header_str = convert_vector_to_string(header);
+    string header_str = convert_vector_str_to_string(header);
     string compressed_header = zlib_compress(header_str);
 //    cout << "compressed header length: " << compressed_header.length() << endl;
     cout << "Done." << endl << endl;

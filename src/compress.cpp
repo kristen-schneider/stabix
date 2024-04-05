@@ -6,56 +6,64 @@
 #include <stdexcept>
 
 #include "utils.h"
+#include "decompress.h"
 
 using namespace std;
 
-string zlib_compress(string in_data);
+//string zlib_compress(string in_data);
+//uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data);
 
-/*
- * Function to compress a block
- * @param block: vector<vector<string>> - block of data
- * @param codecs_list: vector<string> - list of codecs to use for each column
- * @return compressed_block: vector<string> - compressed block of data
- */
-vector<string> compress_block(vector<vector<string>> block,
-                              vector<string> codecs_list){
-    vector<string> compressed_block;
-
-    for (int col_i = 0; col_i < block.size(); col_i++){
-        if (codecs_list[col_i] == "zlib"){
-            // convert each column in a block to a string
-            string column_string = convert_vector_to_string(block[col_i]);
-            // compress each column in a block
-            string compressed_string = zlib_compress(column_string);
-            compressed_block.push_back(compressed_string);
-        }
-        else {
-            cout << "ERROR: Codec not recognized: " << codecs_list[col_i] << endl;
-            exit(1);
-        }
-    }
-//    // compress with a different codec for each column
-//    for (int i = 0; i < codecs_list.size(); i++){
-//        if (codecs_list[i] == "zlib"){
-//            // convert each column in a block to a string
-//            vector<string> column_strings;
-//            for (int i = 0; i < block.size(); i++){
-//                column_strings.push_back(convert_vector_to_string(block[i]));
-//            }
+///*
+// * Function to compress a block
+// * @param block: vector<vector<string>> - block of data
+// * @param codecs_list: vector<string> - list of codecs to use for each column
+// * @return compressed_block: vector<string> - compressed block of data
+// */
+//vector<string> compress_block(vector<vector<string>> block,
+//                              vector<string> codecs_list){
+//    vector<string> compressed_block;
 //
-//            // compress each column in a block
-//            for (int i = 0; i < column_strings.size(); i++){
-//                compressed_block.push_back(zlib_compress(column_strings[i]));
-//            }
+//    for (int col_i = 0; col_i < block.size(); col_i++){
+//        if (codecs_list[col_i] == "zlib"){
+//            // convert column from vector of strings to one string
+//            string column_string = convert_vector_str_to_string(block[col_i]);
+//            // compress string with zlib
+//            string compressed_string = zlib_compress(column_string);
+//            compressed_block.push_back(compressed_string);
+//        }
+//        else if(codecs_list[col_i] == "fpfVB"){
+//            // convert column from vector of strings to vector of integers
+//            vector<uint32_t> column_ints = convert_vector_to_int(block[col_i]);
+//            // compress vector of integers with fastpfor
+//            uint32_t* compressed_ints = fastpfor_vb_compress(column_ints);
 //        }
 //        else {
-//            cout << "ERROR: Codec not recognized: " << codecs_list[i] << endl;
+//            cout << "ERROR: Codec not recognized: " << codecs_list[col_i] << endl;
 //            exit(1);
 //        }
 //    }
-
-    return compressed_block;
-}
+////    // compress with a different codec for each column
+////    for (int i = 0; i < codecs_list.size(); i++){
+////        if (codecs_list[i] == "zlib"){
+////            // convert each column in a block to a string
+////            vector<string> column_strings;
+////            for (int i = 0; i < block.size(); i++){
+////                column_strings.push_back(convert_vector_str_to_string(block[i]));
+////            }
+////
+////            // compress each column in a block
+////            for (int i = 0; i < column_strings.size(); i++){
+////                compressed_block.push_back(zlib_compress(column_strings[i]));
+////            }
+////        }
+////        else {
+////            cout << "ERROR: Codec not recognized: " << codecs_list[i] << endl;
+////            exit(1);
+////        }
+////    }
+//
+//    return compressed_block;
+//}
 
 /*
  * Function to compress a string
@@ -111,31 +119,30 @@ using namespace FastPForLib;
 /*
  * use fastpfor library to compress a string
  */
-uint32_t* fastpfor_compress(string in_data){
+uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data){
     FastPForLib::VariableByte vb;
-    // encodeArray parameters: const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue
-    // in: input array
-    // length: length of input array
-    // out: output array
-    // nvalue: length of output array
-    // returns: number of bytes written
-    const uint32_t *in = (const uint32_t *)in_data.data();
-    size_t length = in_data.size();
-    uint32_t *out = new uint32_t[length];
-    size_t nvalue = 0;
-    vb.encodeArray(in, length, out, nvalue);
 
-    cout << "nvalue: " << nvalue << endl;
-    cout << "out: " << out << endl;
-    for (int i = 0; i < nvalue; i++){
-        cout << out[i] << " ";
-    }
+    // Compress the integer array
+    vector<uint32_t> compressed(in_data.size() * 2); // Allocate space for compressed data
+    size_t compressedSize; // variable to store the number of compressed values
+    vb.encodeArray(in_data.data(), in_data.size(), compressed.data(), compressedSize);
 
-    return out;
+    // Resize the compressed vector to fit the actual compressed data
+    compressed.resize(compressedSize);
 
-    // Handle compressedData as needed
+    // allocate memory for compressed data
+    uint32_t* compressed_data = new uint32_t[compressed.size()];
+    copy(compressed.begin(), compressed.end(), compressed_data);
 
-//    std::cout << "Original data size: " << sizeof(data[0]) * data.size() << " bytes\n";
-//    std::cout << "Compressed data size: " << compressedData.size() * sizeof(compressedData[0]) << " bytes\n";
+//    // decompress
+//    vector<uint32_t> decompressed(in_data.size());
+//    size_t decompressedSize; // variable to store the number of decompressed values
+//    vb.decodeArray(compressed.data(), compressed.size(), decompressed.data(), decompressedSize);
+//    cout << "Decompressed integers: ";
+//    for (int i : decompressed) {
+//        cout << i << " ";
+//    }
+//    cout << std::endl;
 
+    return compressed_data;
 }

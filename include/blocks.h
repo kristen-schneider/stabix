@@ -22,3 +22,6 @@ vector<string> get_block_header(
 
 int get_block_length(
         vector<string> compressed_block);
+
+vector<string> compress_block(vector<vector<string>> block,
+                              vector<string> codecs_list);

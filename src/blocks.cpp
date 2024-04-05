@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "utils.h"
+#include "compress.h"
 
 using namespace std;
 
@@ -110,4 +111,58 @@ int get_block_length(vector<string> compressed_block){
         block_length_bytes += column.length();
     }
     return block_length_bytes;
+}
+
+/*
+ * Function to compress a block
+ * @param block: vector<vector<string>> - block of data
+ * @param codecs_list: vector<string> - list of codecs to use for each column
+ * @return compressed_block: vector<string> - compressed block of data
+ */
+vector<string> compress_block(vector<vector<string>> block,
+                              vector<string> codecs_list){
+    vector<string> compressed_block;
+
+    for (int col_i = 0; col_i < block.size(); col_i++){
+        if (codecs_list[col_i] == "zlib"){
+            // convert column from vector of strings to one string
+            string column_string = convert_vector_str_to_string(block[col_i]);
+            // compress string with zlib
+            string compressed_string = zlib_compress(column_string);
+            compressed_block.push_back(compressed_string);
+        }
+        else if(codecs_list[col_i] == "fpfVB"){
+            // convert column from vector of strings to vector of integers
+            vector<uint32_t> column_ints = convert_vector_to_int(block[col_i]);
+            // compress vector of integers with fastpfor
+            uint32_t* compressed_ints = fastpfor_vb_compress(column_ints);
+            delete[] compressed_ints;
+        }
+        else {
+            cout << "ERROR: Codec not recognized: " << codecs_list[col_i] << endl;
+            exit(1);
+        }
+
+    }
+//    // compress with a different codec for each column
+//    for (int i = 0; i < codecs_list.size(); i++){
+//        if (codecs_list[i] == "zlib"){
+//            // convert each column in a block to a string
+//            vector<string> column_strings;
+//            for (int i = 0; i < block.size(); i++){
+//                column_strings.push_back(convert_vector_str_to_string(block[i]));
+//            }
+//
+//            // compress each column in a block
+//            for (int i = 0; i < column_strings.size(); i++){
+//                compressed_block.push_back(zlib_compress(column_strings[i]));
+//            }
+//        }
+//        else {
+//            cout << "ERROR: Codec not recognized: " << codecs_list[i] << endl;
+//            exit(1);
+//        }
+//    }
+
+    return compressed_block;
 }

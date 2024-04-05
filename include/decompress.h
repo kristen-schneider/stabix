@@ -14,4 +14,4 @@ using namespace std;
 
 string decompress_column(string compressed_column, string codec);
 string zlib_decompress(string in_data);
-string fastpfor_decompress(uint32_t * in_data);
+vector<uint32_t> fastpfor_vb_decompress(uint32_t * in_data);
