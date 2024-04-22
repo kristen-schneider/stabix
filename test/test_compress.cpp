@@ -16,29 +16,62 @@ TEST(zlibCompress, simple) {
 TEST(zlibCompress, column){
     string col = "1,2,3,4,5";
     string compressed_str = zlib_compress(col);
-    string decompressed_str = decompress_column(compressed_str, "zlib");
+    string decompressed_str = decompress_column(compressed_str, "zlib", 0);
     ASSERT_EQ(decompressed_str, col);
 }
 
-TEST(fpfVB, simple) {
-    vector<uint32_t> col = {1, 2, 3, 4, 5};
-    uint32_t* compressed_str = fastpfor_vb_compress(col);
-    vector<uint32_t> decompressed_col = fastpfor_vb_decompress(compressed_str);
+TEST(fpfVB, small) {
+    vector<uint32_t> col = {0, 1, 2, 3, 4, 5};
+    size_t compressedSize = 0; // Define compressedSize
+
+    uint32_t* compressed_str = fastpfor_vb_compress(col, compressedSize);
+    vector<uint32_t> decompressed_col = fastpfor_vb_decompress(compressed_str, 6);
 
     for (int i = 0; i < col.size(); i++){
         ASSERT_EQ(col[i], decompressed_col[i]);
     }
-    for (int i = 0; i < decompressed_col.size(); i++){
-        cout << col[i] << " " << decompressed_col[i] << endl;
+}
+
+TEST(fpfVB, medium){
+    vector<uint32_t> col;
+    // Create a vector of 500 random integers
+    for (int i = 0; i < 100; i++){
+        col.push_back(rand() % 1000);
+    }
+    size_t compressedSize = 0; // Define compressedSize
+
+    uint32_t* compressed_str = fastpfor_vb_compress(col, compressedSize);
+    vector<uint32_t> decompressed_col = fastpfor_vb_decompress(compressed_str, 500);
+
+    for (int i = 0; i < col.size(); i++){
         ASSERT_EQ(col[i], decompressed_col[i]);
     }
 
-    int x;
 }
 
-//TEST(fpfVB, column){
-//    vector<uint32_t> col = {1, 2, 3, 4, 5};
-//    uint32_t* compressed_str = fastpfor_vb_compress(col);
-//    string decompressed_str = decompress_column((char*)compressed_str, "fpfVB");
-//    ASSERT_EQ(decompressed_str, "1,2,3,4,5");
-//}
+TEST(fpfVB, large){
+    vector<uint32_t> col;
+    // Create a vector of 500 random integers
+    for (int i = 0; i < 500; i++){
+        col.push_back(rand() % 1000);
+    }
+    size_t compressedSize = 0; // Define compressedSize
+
+    uint32_t* compressed_str = fastpfor_vb_compress(col, compressedSize);
+    vector<uint32_t> decompressed_col = fastpfor_vb_decompress(compressed_str, 1000);
+
+    for (int i = 0; i < col.size(); i++){
+        ASSERT_EQ(col[i], decompressed_col[i]);
+    }
+
+}
+
+
+TEST(fpfVB, column){
+    vector<uint32_t> col = {0, 1, 2, 3, 4, 5};
+    size_t compressedSize = 0; // Define compressedSize
+
+    uint32_t* compressed_str = fastpfor_vb_compress(col, compressedSize);
+    string decompressed_str = decompress_column((char*)compressed_str, "fpfVB", 6);
+    ASSERT_EQ(decompressed_str, "0,1,2,3,4,5");
+}
