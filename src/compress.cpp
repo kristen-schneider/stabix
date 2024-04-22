@@ -113,22 +113,25 @@ string zlib_compress(string in_data){
 
 #include "FastPFor/headers/variablebyte.h"
 #include "FastPFor/headers/pfor.h"
+#include "FastPFor/headers/simdvariablebyte.h"
+#include "FastPFor/headers/optpfor.h"
+
 
 using namespace FastPForLib;
 
 /*
- * use fastpfor library to compress a string
+ * use fastpfor variable byte to compress a vector of integers
  */
-uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data){
+uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data, size_t& compressedSize){
     FastPForLib::VariableByte vb;
 
     // Compress the integer array
     vector<uint32_t> compressed(in_data.size() * 2); // Allocate space for compressed data
-    size_t compressedSize; // variable to store the number of compressed values
+//    size_t compressedSize; // variable to store the number of compressed values
     vb.encodeArray(in_data.data(), in_data.size(), compressed.data(), compressedSize);
 
     // Resize the compressed vector to fit the actual compressed data
-    compressed.resize(compressedSize);
+//    compressed.resize(compressedSize);
 
     // allocate memory for compressed data
     uint32_t* compressed_data = new uint32_t[compressed.size()];
@@ -146,3 +149,66 @@ uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data){
 
     return compressed_data;
 }
+
+/*
+ * use fastpfor variable byte delta to compress a vector of integers
+ */
+vector<uint32_t> fastpfor_vb_delta_compress(vector<uint32_t> in_data, size_t& compressedSize){
+    FastPForLib::VariableByte vb;
+    vector<uint32_t> deltas;
+    deltas.reserve(in_data.size());
+
+    // Compute deltas between consecutive values
+    for (size_t i = 1; i < in_data.size(); ++i) {
+        deltas.push_back(in_data[i] - in_data[i - 1]);
+    }
+
+    // Encode deltas using FastPFor's variable byte encoding
+    vector<uint32_t> encoded_deltas(in_data.size() * 2);
+    size_t encoded_size;
+    vb.encodeArray(deltas.data(), deltas.size(), encoded_deltas.data(), encoded_size);
+    encoded_deltas.resize(encoded_size);
+
+    return encoded_deltas;
+}
+
+
+///*
+// * use fastpfor library to decompress a string
+// */
+//vector<uint32_t> fastpfor_simbd_vb_compress(const std::vector<uint32_t>& input_data) {
+//    FastPForLib::SIMDVariableByte vb;
+//
+//    // Compress the integer array
+//    vector<uint32_t> compressed(input_data.size() * 2); // Allocate space for compressed data
+//    size_t compressedSize; // variable to store the number of compressed values
+//    vb.encodeArray(input_data.data(), input_data.size(), compressed.data(), compressedSize);
+//
+//    // Resize the compressed vector to fit the actual compressed data
+//    compressed.resize(compressedSize);
+//
+//    return compressed;
+//}
+//
+///*
+// * use fastpfor optpfor to compress a vector of integers
+// */
+//vector<uint32_t> optfor_compress(const std::vector<uint32_t>& input_data) {
+//    FastPForLib::OPTPFor optpfor;
+//    vector<uint32_t> compressed_data(input_data.size() * 2); // Allocate space for compressed data
+//    size_t compressed_size;
+//    optpfor.encodeArray(input_data.data(), input_data.size(), compressed_data.data(), compressed_size);
+//    compressed_data.resize(compressed_size); // Resize to actual compressed size
+//    return compressed_data;
+//}
+//
+//vector<uint32_t> bp_compress(const std::vector<uint32_t>& input_data) {
+//    BP32<true> bp32; // Use BP32 for 32-bit data, BP64 for 64-bit data
+//    std::vector<uint32_t> compressed_data(input_data.size() * 2); // Allocate space for compressed data
+//    size_t compressed_size;
+//    bp32.encodeArray(input_data.data(), input_data.size(), compressed_data.data(), compressed_size);
+//    compressed_data.resize(compressed_size); // Resize to actual compressed size
+//    return compressed_data;
+//}
+
+
