@@ -135,8 +135,9 @@ vector<string> compress_block(vector<vector<string>> block,
             // convert column from vector of strings to vector of integers
             vector<uint32_t> column_ints = convert_vector_to_int(block[col_i]);
             // compress vector of integers with fastpfor
-            uint32_t* compressed_ints = fastpfor_vb_compress(column_ints);
-            delete[] compressed_ints;
+            size_t compressedSize = 0;
+            uint32_t* compressed_ints = fastpfor_vb_compress(column_ints, compressedSize);
+//            delete[] compressed_ints;
         }
         else {
             cout << "ERROR: Codec not recognized: " << codecs_list[col_i] << endl;

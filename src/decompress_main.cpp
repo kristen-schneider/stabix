@@ -92,6 +92,7 @@ int main(int argc, char* argv[]) {
         cout << "Done." << endl << endl;
 
         // 5. decompress all blocks for each query
+        size_t compressedSize = 0; // Define compressedSize
         cout << "Decompressing all blocks for each query..." << endl;
         for (int q_idx = 0; q_idx < all_query_block_indexes.size(); q_idx ++){
             cout << "...decompressing query " << q_idx << "..." << query_list[q_idx] <<endl;
@@ -142,7 +143,7 @@ int main(int argc, char* argv[]) {
                     }
                     string col_bitstring = block_bitstring.substr(curr_block_byte, col_bytes);
                     curr_block_byte += col_bytes;
-                    string col_decompressed = decompress_column(col_bitstring, col_codec);
+                    string col_decompressed = decompress_column(col_bitstring, col_codec, compressedSize);
 //                    cout << ".........column " << col_idx << ": " << col_decompressed << endl;
                     decompressed_block.push_back(col_decompressed);
                 }
