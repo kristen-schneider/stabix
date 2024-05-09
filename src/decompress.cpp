@@ -10,7 +10,7 @@
 using namespace std;
 
 string zlib_decompress(string compressed_string);
-vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data, size_t compressedSize);
+vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data, size_t uncompressedSize);
 vector<uint32_t> fastpfor_vb_delta_decompress(const std::vector<uint32_t>& encoded_deltas);
 
 /*
@@ -94,15 +94,15 @@ using namespace FastPForLib;
 /*
  * use fastpfor library to decompress a string
  */
-vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data, size_t compressedSize) {
+vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data, size_t uncompressedSize) {
     FastPForLib::VariableByte vb;
+    vector<uint32_t> decompressed(uncompressedSize);
+    uint32_t compressedSize = in_data->size();
 
-    vector<uint32_t> decompressed(compressedSize);
-    size_t decompressedSize; // variable to store the number of decompressed values
-    vb.decodeArray(in_data, compressedSize, decompressed.data(), decompressedSize);
+    vb.decodeArray(in_data, compressedSize, decompressed.data(), uncompressedSize);
 
     // Resize the decompressed vector to fit the actual decompressed data
-    decompressed.resize(decompressedSize);
+    decompressed.resize(uncompressedSize);
 
     return decompressed;
 
