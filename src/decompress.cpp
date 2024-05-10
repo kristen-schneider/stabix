@@ -97,7 +97,11 @@ using namespace FastPForLib;
 vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data, size_t uncompressedSize) {
     FastPForLib::VariableByte vb;
     vector<uint32_t> decompressed(uncompressedSize);
-    uint32_t compressedSize = in_data->size();
+//    uint32_t compressedSize = in_data->size();
+    size_t compressedSize = 0;
+    while (in_data[compressedSize] != 0) {
+        compressedSize++;
+    }
 
     vb.decodeArray(in_data, compressedSize, decompressed.data(), uncompressedSize);
 
