@@ -10,7 +10,7 @@
 using namespace std;
 
 string zlib_decompress(string compressed_string);
-vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data, size_t uncompressedSize);
+vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data, size_t uncompressedSize, size_t block_size);
 vector<uint32_t> fastpfor_vb_delta_decompress(const std::vector<uint32_t>& encoded_deltas);
 
 /*
@@ -27,7 +27,8 @@ string decompress_column(string compressed_column, string codec, size_t compress
     }
     else if (codec == "fpfVB"){
         vector<uint32_t> decompressed_column;
-        decompressed_column = fastpfor_vb_decompress((uint32_t*)compressed_column.c_str(), compressedSize);
+        size_t uncompressedSize = compressedSize * 2;
+        decompressed_column = fastpfor_vb_decompress((uint32_t*)compressed_column.c_str(), compressedSize, uncompressedSize);
         decompressed_column_str = convert_vector_int_to_string(decompressed_column);
         return decompressed_column_str;
     }
@@ -93,20 +94,20 @@ using namespace FastPForLib;
 
 /*
  * use fastpfor library to decompress a string
- */
-vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data, size_t uncompressedSize) {
-    FastPForLib::VariableByte vb;
-    vector<uint32_t> decompressed(uncompressedSize);
-//    uint32_t compressedSize = in_data->size();
-    size_t compressedSize = 0;
-    while (in_data[compressedSize] != 0) {
-        compressedSize++;
-    }
+ * @param in_data: uint32_t*, the compressed data
+ * @param compressed: size_t, the size of the compressed data
 
-    vb.decodeArray(in_data, compressedSize, decompressed.data(), uncompressedSize);
+ */
+vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data,
+                                        size_t compressedSize,
+                                        size_t block_size) {
+    FastPForLib::VariableByte vb;
+//    size_t uncompressedSize = compressedSize * 2;
+    vector<uint32_t> decompressed(block_size);
+    vb.decodeArray(in_data, compressedSize, decompressed.data(), block_size);
 
     // Resize the decompressed vector to fit the actual decompressed data
-    decompressed.resize(uncompressedSize);
+    decompressed.resize(block_size);
 
     return decompressed;
 
