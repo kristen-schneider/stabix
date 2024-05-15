@@ -19,7 +19,10 @@ vector<uint32_t> fastpfor_vb_delta_decompress(const std::vector<uint32_t>& encod
  * @param codec: string, the codec used to compress the column
  * @return: string, the decompressed column
  */
-string decompress_column(string compressed_column, string codec, size_t compressedSize){
+string decompress_column(string compressed_column,
+                         string codec,
+                         size_t compressedSize,
+                         size_t block_size){
     string decompressed_column_str;
     if (codec == "zlib"){
         decompressed_column_str = zlib_decompress(compressed_column);
@@ -27,8 +30,9 @@ string decompress_column(string compressed_column, string codec, size_t compress
     }
     else if (codec == "fpfVB"){
         vector<uint32_t> decompressed_column;
-        size_t uncompressedSize = compressedSize * 2;
-        decompressed_column = fastpfor_vb_decompress((uint32_t*)compressed_column.c_str(), compressedSize, uncompressedSize);
+        decompressed_column = fastpfor_vb_decompress((uint32_t*)compressed_column.c_str(),
+                                                     compressedSize,
+                                                     block_size);
         decompressed_column_str = convert_vector_int_to_string(decompressed_column);
         return decompressed_column_str;
     }
