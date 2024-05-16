@@ -19,6 +19,10 @@ string decompress_column(string compressed_column,
 
 string zlib_decompress(string in_data);
 
+vector<uint32_t> fastpfor_vb_decompress_OLD(uint32_t* in_data,
+                                        size_t compressedSize,
+                                        size_t block_size);
+
 vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data,
                                         size_t compressedSize,
                                         size_t block_size);
