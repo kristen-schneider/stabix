@@ -9,6 +9,8 @@
 
 using namespace std;
 
+char * int_to_bytes(int value);
+
 /*
  * Read config file
  * @param config_file
@@ -92,7 +94,7 @@ string convert_vector_int_to_string(
  * @param str: string of comma separated values
  * @return vector of strings
  */
-vector<string> convert_string_to_vector(string str){
+vector<string> convert_string_to_vector_string(string str){
     vector<string> vec;
     istringstream line_stream(str);
     string column_value;
@@ -102,6 +104,25 @@ vector<string> convert_string_to_vector(string str){
         vec.push_back(column_value);
     }
     return vec;
+}
+
+
+/*
+* Convert string to vector
+* @param str: string of comma separated values
+* @return vector of int
+*/
+vector<uint32_t> convert_vector_string_to_vector_unsignedlong(string str){
+    vector<uint32_t> out_vec;
+    istringstream line_stream(str);
+    string column_value;
+    while (getline(line_stream, column_value, ',')) {
+        // remove newline character from column_value
+        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
+        // convert data to uint32_t
+        out_vec.push_back(stoul(column_value));
+    }
+    return out_vec;
 }
 
 /*

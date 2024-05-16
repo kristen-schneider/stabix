@@ -71,13 +71,23 @@ TEST(ConvertVectorIntToStringTest, PositiveNumbers) {
 
 TEST(ConvertStringToVectorTest, CommaDelimiter) {
     string str = "a,b,c,d,e";
-    vector<string> vec = convert_string_to_vector(str);
+    vector<string> vec = convert_string_to_vector_string(str);
     EXPECT_EQ(5, vec.size());
     EXPECT_EQ("a", vec[0]);
     EXPECT_EQ("b", vec[1]);
     EXPECT_EQ("c", vec[2]);
     EXPECT_EQ("d", vec[3]);
     EXPECT_EQ("e", vec[4]);
+}
+
+TEST(convertStringToUint32Tst, CommaDelimiter) {
+    string str = "2206368128,2273740164,35208";
+    vector<uint32_t> expected_vector = {2206368128, 2273740164, 35208};
+    vector<uint32_t> vec = convert_vector_string_to_vector_unsignedlong(str);
+    EXPECT_EQ(expected_vector.size(), vec.size());
+    for (int i = 0; i < expected_vector.size(); i++) {
+        EXPECT_EQ(expected_vector[i], vec[i]);
+    }
 }
 
 TEST(IntToBytesTest, PositiveNumber) {

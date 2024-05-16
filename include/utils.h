@@ -23,7 +23,13 @@ string convert_vector_str_to_string(
 string convert_vector_int_to_string(
         vector<uint32_t> vec);
 
-vector<string> convert_string_to_vector(
+vector<string> convert_string_to_vector_string(
+        string str);
+
+vector<uint32_t> convert_string_to_vector_int(
+        string str);
+
+vector<uint32_t> convert_vector_string_to_vector_unsignedlong(
         string str);
 
 int bytes_to_int(
