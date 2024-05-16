@@ -30,7 +30,9 @@ string decompress_column(string compressed_column,
         return decompressed_column_str;
     }
     else if (codec == "fpfVB"){
-//        vector<uint32_t> compressed_column_ints = split_string(compressed_column, ',');
+        uint32_t * compressed_column_ints = convert_string_to_vector_uint32(compressed_column, ',');
+        vector<uint32_t> decompressed_column = fastpfor_vb_decompress(compressed_column_ints, compressedSize, block_size);
+        decompressed_column_str = convert_vector_uint32_to_string(decompressed_column.data(), decompressed_column.size());
 
         return decompressed_column_str;
     }
