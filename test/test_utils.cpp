@@ -83,7 +83,7 @@ TEST(ConvertStringToVectorTest, CommaDelimiter) {
 TEST(convertStringToUint32_t, CommaDelimiter) {
     string str = "2206368128,2273740164,35208";
     vector<uint32_t> expected_vector = {2206368128, 2273740164, 35208};
-    vector<uint32_t> vec = convert_vector_string_to_vector_unsignedlong(str);
+    vector<uint32_t> vec = convert_string_to_vector_unsignedlong(str);
     EXPECT_EQ(expected_vector.size(), vec.size());
     for (int i = 0; i < expected_vector.size(); i++) {
         EXPECT_EQ(expected_vector[i], vec[i]);

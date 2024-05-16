@@ -13,11 +13,9 @@
 
 using namespace std;
 
-vector<string> header_first_half(
-        string in_file);
-
-string get_gzip_header();
-
 vector<string> parse_header_list(
         vector<string> header_list,
         string header_query);
+
+string remove_zlib_header(
+        string compressed_string);

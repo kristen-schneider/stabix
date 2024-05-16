@@ -33,7 +33,7 @@ using namespace std;
 //        }
 //        else if(codecs_list[col_i] == "fpfVB"){
 //            // convert column from vector of strings to vector of integers
-//            vector<uint32_t> column_ints = convert_vector_to_int(block[col_i]);
+//            vector<uint32_t> column_ints = convert_vector_string_to_vector_int(block[col_i]);
 //            // compress vector of integers with fastpfor
 //            uint32_t* compressed_ints = fastpfor_vb_compress(column_ints);
 //        }
