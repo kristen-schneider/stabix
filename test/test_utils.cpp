@@ -80,7 +80,7 @@ TEST(ConvertStringToVectorTest, CommaDelimiter) {
     EXPECT_EQ("e", vec[4]);
 }
 
-TEST(convertStringToUint32Tst, CommaDelimiter) {
+TEST(convertStringToUint32_t, CommaDelimiter) {
     string str = "2206368128,2273740164,35208";
     vector<uint32_t> expected_vector = {2206368128, 2273740164, 35208};
     vector<uint32_t> vec = convert_vector_string_to_vector_unsignedlong(str);
@@ -89,6 +89,19 @@ TEST(convertStringToUint32Tst, CommaDelimiter) {
         EXPECT_EQ(expected_vector[i], vec[i]);
     }
 }
+
+TEST(convertUint32_tToString, CommaDelimiter){
+    size_t compressed_size = 3;
+    uint32_t * compressed_arrr = new uint32_t[compressed_size];
+    compressed_arrr[0] = 2206368128;
+    compressed_arrr[1] = 2273740164;
+    compressed_arrr[2] = 35208;
+    string expected_string = "2206368128,2273740164,35208";
+    string str = convert_vector_uint32_to_string(compressed_arrr, compressed_size);
+    EXPECT_EQ(expected_string, str);
+}
+
+
 
 TEST(IntToBytesTest, PositiveNumber) {
     int value = 123456789;
