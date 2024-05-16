@@ -105,6 +105,11 @@ vector<string> get_block_header(vector<string> compressed_block){
     return block_header_column_end_bytes;
 }
 
+/*
+ * Function to get the length of a block
+ * @param compressed_block: vector<string> of compressed columns
+ * @return block_length_bytes: int of block length in bytes
+ */
 int get_block_length(vector<string> compressed_block){
     int block_length_bytes = 0;
     for (auto const& column : compressed_block) {
@@ -133,7 +138,7 @@ vector<string> compress_block(vector<vector<string>> block,
         }
         else if(codecs_list[col_i] == "fpfVB"){
             // convert column from vector of strings to vector of integers
-            vector<uint32_t> column_ints = convert_vector_to_int(block[col_i]);
+            vector<uint32_t> column_ints = convert_vector_string_to_vector_int(block[col_i]);
             // compress vector of integers with fastpfor
             size_t compressedSize = 0;
             uint32_t* compressed_arr = fastpfor_vb_compress(column_ints, compressedSize);
@@ -147,25 +152,5 @@ vector<string> compress_block(vector<vector<string>> block,
         }
 
     }
-//    // compress with a different codec for each column
-//    for (int i = 0; i < codecs_list.size(); i++){
-//        if (codecs_list[i] == "zlib"){
-//            // convert each column in a block to a string
-//            vector<string> column_strings;
-//            for (int i = 0; i < block.size(); i++){
-//                column_strings.push_back(convert_vector_str_to_string(block[i]));
-//            }
-//
-//            // compress each column in a block
-//            for (int i = 0; i < column_strings.size(); i++){
-//                compressed_block.push_back(zlib_compress(column_strings[i]));
-//            }
-//        }
-//        else {
-//            cout << "ERROR: Codec not recognized: " << codecs_list[i] << endl;
-//            exit(1);
-//        }
-//    }
-
     return compressed_block;
 }

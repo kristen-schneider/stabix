@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <algorithm>
 #include <iterator>
 #include <map>
 
@@ -10,7 +9,6 @@
 #include "header.h"
 #include "index.h"
 #include "utils.h"
-
 
 using namespace std;
 

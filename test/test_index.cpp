@@ -7,8 +7,8 @@
 using namespace std;
 
 
-TEST(TestIndex, Test1) {
-
+TEST(TestIndex, TestGetBlockIdx) {
+    // test get_block_idx function
     // chrm, bp, byte, block_idx
     map<int, map<int, tuple<int, int>>> index_file_map = {
             {1, {

@@ -8,26 +8,6 @@
 
 using namespace std;
 
-
-/*
-string get_zlib_header(){
-    string zlib_header = "";
-    int example_int = 1;
-    string example_string = "1";
-    char example_char = '1';
-
-    // compress example_int with zlib_compress
-    string compressed_int = zlib_compress(to_string(example_int));
-    // compress example_string with zlib_compress
-    string compressed_string = zlib_compress(example_string);
-    // compress example_char with zlib_compress
-    string compressed_char = zlib_compress(to_string(example_char));
-
-
-    return gzip_header;
-}
-*/
-
 /*
  * Function to parse header list
  * @param header_list: vector<string>
@@ -80,4 +60,14 @@ vector<string> parse_header_list(
     }
 
     return header_query_list;
+}
+
+/*
+ * Function to remove the common header from
+ * a string compressed with zlib
+ */
+string remove_zlib_header(string compressed_string){
+    string zlib_header = "x\234";
+    string zlib_header_removed = compressed_string.substr(zlib_header.length());
+    return zlib_header_removed;
 }

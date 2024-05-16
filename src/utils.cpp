@@ -11,6 +11,7 @@ using namespace std;
 
 char * int_to_bytes(
         int value);
+
 vector<string> split_string(
         string str, char delimiter);
 
@@ -60,140 +61,6 @@ void add_default_config_options(
         cout << "ERROR: query_type not specified in config file." << endl;
         exit(1);
     }
-}
-
-
-/*
- * Convert vector string to string
- * @param vec: vector of strings
- * @return str: string of comma separated values
- */
-string convert_vector_str_to_string(vector<string> vec){
-    string str = "";
-    for (int i = 0; i < vec.size(); i++){
-        str += vec[i] + ",";
-    }
-    str.pop_back();
-    return str;
-}
-
-/*
- * Convert vector of ints to string
- * @param vec: vector of integers
- * @return str: string of comma separated values
- */
-string convert_vector_int_to_string(
-        vector<uint32_t> vec){
-    string str;
-    for (int i = 0; i < vec.size(); i++) {
-        str += to_string(vec[i]) + ",";
-    }
-    str.pop_back();
-    return str;
-}
-
-string convert_vector_uint32_to_string(
-        uint32_t * compressed_arr,
-        size_t compressed_size){
-    string compressed_string;
-    for (int i = 0; i < compressed_size; i++){
-        compressed_string += to_string(compressed_arr[i]) + ",";
-    }
-    compressed_string.pop_back();
-    return compressed_string;
-}
-
-/*
- * Convert string to vector
- * @param str: string of comma separated values
- * @return vector of strings
- */
-vector<string> convert_string_to_vector_string(string str){
-    vector<string> vec;
-    istringstream line_stream(str);
-    string column_value;
-    while (getline(line_stream, column_value, ',')) {
-        // remove newline character from column_value
-        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
-        vec.push_back(column_value);
-    }
-    return vec;
-}
-
-uint32_t * convert_string_to_vector_uint32(string in_string, char delimiter){
-    // split string by comma
-    vector<string> vec = split_string(in_string, delimiter);
-    // convert string to vector of uint32_t
-    uint32_t * compressed_arr = new uint32_t[vec.size()];
-    for (int i = 0; i < vec.size(); i++){
-        compressed_arr[i] = stoul(vec[i]);
-    }
-    return compressed_arr;
-}
-
-
-/*
-* Convert string to vector
-* @param str: string of comma separated values
-* @return vector of int
-*/
-vector<uint32_t> convert_vector_string_to_vector_unsignedlong(string str){
-    vector<uint32_t> out_vec;
-    istringstream line_stream(str);
-    string column_value;
-    while (getline(line_stream, column_value, ',')) {
-        // remove newline character from column_value
-        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
-        // convert data to uint32_t
-        out_vec.push_back(stoul(column_value));
-    }
-    return out_vec;
-}
-
-/*
- * Convert bytes to int
- * @param line: bytes
- * @return value: int value
- */
-int bytes_to_int(char bytes[4]){
-    int value = 0;
-    value += (unsigned char) bytes[0];
-    value += (unsigned char) bytes[1] << 8;
-    value += (unsigned char) bytes[2] << 16;
-    value += (unsigned char) bytes[3] << 24;
-    return value;
-}
-
-/*
- * Convert int to bytes
- * @param value: int
- * @return bytes: char *
- */
-char * int_to_bytes(int value){
-    char * bytes = new char[4];
-    bytes[0] = (char) (value & 0xFF);
-    bytes[1] = (char) ((value >> 8) & 0xFF);
-    bytes[2] = (char) ((value >> 16) & 0xFF);
-    bytes[3] = (char) ((value >> 24) & 0xFF);
-    return bytes;
-}
-
-/*
- * Split string by delimiter
- * @param str: string
- * @param delimiter: char to split by
- * @return vector of strings
- */
-vector<string> split_string(string str, char delimiter){
-    vector<string> vec;
-    istringstream line_stream(str);
-    string column_value;
-    while (getline(line_stream, column_value, delimiter)) {
-        // remove newline character from column_value
-        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
-        vec.push_back(column_value);
-    }
-    return vec;
 }
 
 /*
@@ -274,11 +141,144 @@ char get_delimiter(
 }
 
 /*
+ * Convert vector string to string
+ * @param vec: vector of strings
+ * @return str: string of comma separated values
+ */
+string convert_vector_str_to_string(vector<string> vec){
+    string str = "";
+    for (int i = 0; i < vec.size(); i++){
+        str += vec[i] + ",";
+    }
+    str.pop_back();
+    return str;
+}
+
+/*
+ * Convert vector of ints to string
+ * @param vec: vector of integers
+ * @return str: string of comma separated values
+ */
+string convert_vector_int_to_string(
+        vector<uint32_t> vec){
+    string str;
+    for (int i = 0; i < vec.size(); i++) {
+        str += to_string(vec[i]) + ",";
+    }
+    str.pop_back();
+    return str;
+}
+
+string convert_vector_uint32_to_string(
+        uint32_t * compressed_arr,
+        size_t compressed_size){
+    string compressed_string;
+    for (int i = 0; i < compressed_size; i++){
+        compressed_string += to_string(compressed_arr[i]) + ",";
+    }
+    compressed_string.pop_back();
+    return compressed_string;
+}
+
+/*
+ * Convert string to vector
+ * @param str: string of comma separated values
+ * @return vector of strings
+ */
+vector<string> convert_string_to_vector_string(string str){
+    vector<string> vec;
+    istringstream line_stream(str);
+    string column_value;
+    while (getline(line_stream, column_value, ',')) {
+        // remove newline character from column_value
+        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
+        vec.push_back(column_value);
+    }
+    return vec;
+}
+
+uint32_t * convert_string_to_vector_uint32(string in_string, char delimiter){
+    // split string by comma
+    vector<string> vec = split_string(in_string, delimiter);
+    // convert string to vector of uint32_t
+    uint32_t * compressed_arr = new uint32_t[vec.size()];
+    for (int i = 0; i < vec.size(); i++){
+        compressed_arr[i] = stoul(vec[i]);
+    }
+    return compressed_arr;
+}
+
+
+/*
+* Convert string to vector
+* @param str: string of comma separated values
+* @return vector of int
+*/
+vector<uint32_t> convert_string_to_vector_unsignedlong(string str){
+    vector<uint32_t> out_vec;
+    istringstream line_stream(str);
+    string column_value;
+    while (getline(line_stream, column_value, ',')) {
+        // remove newline character from column_value
+        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
+        // convert data to uint32_t
+        out_vec.push_back(stoul(column_value));
+    }
+    return out_vec;
+}
+
+/*
+ * Convert bytes to int
+ * @param line: bytes
+ * @return value: int value
+ */
+int bytes_to_int(char bytes[4]){
+    int value = 0;
+    value += (unsigned char) bytes[0];
+    value += (unsigned char) bytes[1] << 8;
+    value += (unsigned char) bytes[2] << 16;
+    value += (unsigned char) bytes[3] << 24;
+    return value;
+}
+
+/*
+ * Convert int to bytes
+ * @param value: int
+ * @return bytes: char *
+ */
+char * int_to_bytes(int value){
+    char * bytes = new char[4];
+    bytes[0] = (char) (value & 0xFF);
+    bytes[1] = (char) ((value >> 8) & 0xFF);
+    bytes[2] = (char) ((value >> 16) & 0xFF);
+    bytes[3] = (char) ((value >> 24) & 0xFF);
+    return bytes;
+}
+
+/*
+ * Split string by delimiter
+ * @param str: string
+ * @param delimiter: char to split by
+ * @return vector of strings
+ */
+vector<string> split_string(string str, char delimiter){
+    vector<string> vec;
+    istringstream line_stream(str);
+    string column_value;
+    while (getline(line_stream, column_value, delimiter)) {
+        // remove newline character from column_value
+        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
+        vec.push_back(column_value);
+    }
+    return vec;
+}
+
+/*
  * Function to convert a vector of strings to vector of integers
  * @param vec: vector of strings
  * @return vector of integers
  */
-vector<uint32_t> convert_vector_to_int(
+vector<uint32_t> convert_vector_string_to_vector_int(
         vector<string> vec){
     vector<uint32_t> vec_int;
     for (int i = 0; i < vec.size(); i++){
@@ -286,28 +286,3 @@ vector<uint32_t> convert_vector_to_int(
     }
     return vec_int;
 }
-
-//*
-// * Function to get the column names of a file
-// * @param line: string
-// * @param delimiter: char
-// * @return column_names_str: string
-// */
-//string get_column_names(
-//        string line,
-//        char delimiter){
-//
-//    string column_names_str;
-//    // split line by delimiter and store in comma separated string
-//    stringstream ss(line);
-//    string item;
-//    while(getline(ss, item, delimiter)){
-//        // remove carriage return from item
-//        item.erase(remove(item.begin(), item.end(), '\r'), item.end());
-//        column_names_str += item + ",";
-//    }
-//    // remove last comma
-//    column_names_str.pop_back();
-//
-//    return column_names_str;
-//}
