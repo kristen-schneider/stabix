@@ -101,7 +101,17 @@ TEST(convertUint32_tToString, CommaDelimiter){
     EXPECT_EQ(expected_string, str);
 }
 
-
+TEST(convertStringToVectorUint, CmommaDelimiter){
+    string str = "2206368128,2273740164,35208";
+    uint32_t * expected_vector = new uint32_t[3];
+    expected_vector[0] = 2206368128;
+    expected_vector[1] = 2273740164;
+    expected_vector[2] = 35208;
+    uint32_t * vec = convert_string_to_vector_uint32(str, ',');
+    for (int i = 0; i < 3; i++){
+        EXPECT_EQ(expected_vector[i], vec[i]);
+    }
+}
 
 TEST(IntToBytesTest, PositiveNumber) {
     int value = 123456789;

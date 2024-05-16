@@ -36,6 +36,10 @@ vector<uint32_t> convert_string_to_vector_int(
 vector<uint32_t> convert_vector_string_to_vector_unsignedlong(
         string str);
 
+uint32_t * convert_string_to_vector_uint32(
+        string in_string,
+        char delimiter);
+
 int bytes_to_int(
         char bytes[4]);
 

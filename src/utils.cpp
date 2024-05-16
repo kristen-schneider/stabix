@@ -9,7 +9,10 @@
 
 using namespace std;
 
-char * int_to_bytes(int value);
+char * int_to_bytes(
+        int value);
+vector<string> split_string(
+        string str, char delimiter);
 
 /*
  * Read config file
@@ -117,7 +120,7 @@ vector<string> convert_string_to_vector_string(string str){
     return vec;
 }
 
-uint32_t convert_string_to_vector_uint32(string in_string, char delimiter){
+uint32_t * convert_string_to_vector_uint32(string in_string, char delimiter){
     // split string by comma
     vector<string> vec = split_string(in_string, delimiter);
     // convert string to vector of uint32_t
@@ -125,7 +128,7 @@ uint32_t convert_string_to_vector_uint32(string in_string, char delimiter){
     for (int i = 0; i < vec.size(); i++){
         compressed_arr[i] = stoul(vec[i]);
     }
-    return *compressed_arr;
+    return compressed_arr;
 }
 
 
