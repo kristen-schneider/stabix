@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.27)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_PREFIX_PATH libzippp/bin)
-find_package(libzippp 6.0.0 REQUIRED)
 
 project(gwas_run)
 
@@ -12,11 +10,11 @@ project(gwas_run)
 include_directories(include)
 include_directories(lib)
 include_directories(lib/googletest/googletest/include)
-include_directories(lib/FastPFor/headers)
+#include_directories(lib/FastPFor)
 
 ## Link directories
 add_subdirectory(lib/googletest)
-add_subdirectory(lib/FastPFor)
+#add_subdirectory(lib/FastPFor)
 
 ### Add the executables
 # COMPRESSION
@@ -57,10 +55,7 @@ add_executable(test_gwas
         src/compress.cpp)
 
 # Additional configuration if needed, e.g., linking libraries, "adding -lz"
-target_link_libraries(gwas_compress z PUBLIC libzippp::libzippp PUBLIC FastPFOR)
+target_link_libraries(gwas_compress z)
 target_link_libraries(gwas_index z)
 target_link_libraries(gwas_decompress z)
 target_link_libraries(test_gwas gtest gtest_main z)
-
-
-

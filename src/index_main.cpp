@@ -52,8 +52,8 @@ int main(int argc, char* argv[]) {
     string num_columns = parse_header_list(header_list, "num columns")[0];
     string num_blocks = parse_header_list(header_list, "num blocks")[0];
     vector<string> column_names_list = parse_header_list(header_list, "column names");
-    vector<string> block_header_lengths_list = parse_header_list(header_list, "block header lengths");
-    vector<string> block_lengths_list = parse_header_list(header_list, "block lengths");
+    vector<string> block_header_lengths_list = parse_header_list(header_list, "block header end bytes");
+    vector<string> block_lengths_list = parse_header_list(header_list, "block end bytes");
     vector<string> block_sizes_list = parse_header_list(header_list, "block sizes");
 
     cout << "Done." << endl << endl;
@@ -69,7 +69,8 @@ int main(int argc, char* argv[]) {
             chrm_idx,
             bp_idx,
             block_header_lengths_list,
-            block_lengths_list);
+            block_lengths_list,
+            codecs_list);
 
     // write chrm_bp_byte to index file
     string index_file = compressed_file + ".idx";

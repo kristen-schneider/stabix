@@ -71,13 +71,46 @@ TEST(ConvertVectorIntToStringTest, PositiveNumbers) {
 
 TEST(ConvertStringToVectorTest, CommaDelimiter) {
     string str = "a,b,c,d,e";
-    vector<string> vec = convert_string_to_vector(str);
+    vector<string> vec = convert_string_to_vector_string(str);
     EXPECT_EQ(5, vec.size());
     EXPECT_EQ("a", vec[0]);
     EXPECT_EQ("b", vec[1]);
     EXPECT_EQ("c", vec[2]);
     EXPECT_EQ("d", vec[3]);
     EXPECT_EQ("e", vec[4]);
+}
+
+TEST(convertStringToUint32_t, CommaDelimiter) {
+    string str = "2206368128,2273740164,35208";
+    vector<uint32_t> expected_vector = {2206368128, 2273740164, 35208};
+    vector<uint32_t> vec = convert_vector_string_to_vector_unsignedlong(str);
+    EXPECT_EQ(expected_vector.size(), vec.size());
+    for (int i = 0; i < expected_vector.size(); i++) {
+        EXPECT_EQ(expected_vector[i], vec[i]);
+    }
+}
+
+TEST(convertUint32_tToString, CommaDelimiter){
+    size_t compressed_size = 3;
+    uint32_t * compressed_arrr = new uint32_t[compressed_size];
+    compressed_arrr[0] = 2206368128;
+    compressed_arrr[1] = 2273740164;
+    compressed_arrr[2] = 35208;
+    string expected_string = "2206368128,2273740164,35208";
+    string str = convert_vector_uint32_to_string(compressed_arrr, compressed_size);
+    EXPECT_EQ(expected_string, str);
+}
+
+TEST(convertStringToVectorUint, CmommaDelimiter){
+    string str = "2206368128,2273740164,35208";
+    uint32_t * expected_vector = new uint32_t[3];
+    expected_vector[0] = 2206368128;
+    expected_vector[1] = 2273740164;
+    expected_vector[2] = 35208;
+    uint32_t * vec = convert_string_to_vector_uint32(str, ',');
+    for (int i = 0; i < 3; i++){
+        EXPECT_EQ(expected_vector[i], vec[i]);
+    }
 }
 
 TEST(IntToBytesTest, PositiveNumber) {

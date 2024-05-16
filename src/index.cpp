@@ -31,8 +31,13 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         int chrm_col,
         int bp_col,
         vector<string> block_header_end_bytes,
-        vector<string> block_end_bytes) {
+        vector<string> block_end_bytes,
+        vector<string> codecs_list) {
     vector<tuple<int, int, int>> chrm_bp_byte;
+
+    // get codecs for each column
+    string chrm_codec = codecs_list[chrm_col];
+    string bp_codec = codecs_list[bp_col];
 
     // open gwas file
     ifstream file(compressed_file);
@@ -84,7 +89,9 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         int bp_column_byte_start = stoi(block_header_end_bytes[block_idx]) + stoi(curr_block_header_list[bp_col - 1]);
         int bp_column_length = stoi(curr_block_header_list[bp_col]) - stoi(curr_block_header_list[bp_col - 1]);
 
+
         // jump to start of chromosome column
+
         curr_byte_offset = header_bytes + chrm_column_byte_start;
         file.seekg(curr_byte_offset, ios::beg);
         // read in chromosome column
@@ -93,24 +100,36 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         // convert chromosome bytes to string
         string chrm_string = string(chrm_bytes, chrm_column_length);
         // decompress chromosome string
-        string decompressed_chrm_string = zlib_decompress(chrm_string);
-        vector<string> chrm_list = split_string(decompressed_chrm_string, delimiter);
-//        cout << "decompressed chrm string: " << decompressed_chrm_string << endl;
+        string decompressed_chrm_column = decompress_column(chrm_string,
+                                                          chrm_codec,
+                                                          chrm_column_length,
+                                                          chrm_column_length);
+        vector<string> chrm_list = split_string(decompressed_chrm_column, delimiter);
         int block_chrm_start = stoi(chrm_list[0]);
 
-        // jump to start of chromosome column
+//        string decompressed_chrm_string = zlib_decompress(chrm_string);
+//        vector<string> chrm_list = split_string(decompressed_chrm_string, delimiter);
+//        int block_chrm_start = stoi(chrm_list[0]);
+
+        // jump to start of bp column
         curr_byte_offset = header_bytes + bp_column_byte_start;
         file.seekg(curr_byte_offset, ios::beg);
-        // read in chromosome column
+        // read in bp column
         char bp_bytes[bp_column_length];
         file.read(bp_bytes, bp_column_length);
-        // convert chromosome bytes to string
+        // convert bp bytes to string
         string bp_string = string(bp_bytes, bp_column_length);
-        // decompress chromosome string
-        string decompressed_bp_string = zlib_decompress(bp_string);
-        vector<string> bp_list = split_string(decompressed_bp_string, delimiter);
-//        cout << "decompressed bp string: " << decompressed_bp_string << endl;
+        // decompress bp string
+        string decompressed_bp_column = decompress_column(bp_string,
+                                                          bp_codec,
+                                                          bp_column_length,
+                                                          bp_column_length);
+        vector<string> bp_list = split_string(decompressed_bp_column, delimiter);
         int block_bp_start = stoi(bp_list[0]);
+//        string decompressed_bp_string = zlib_decompress(bp_string);
+//        vector<string> bp_list = split_string(decompressed_bp_string, delimiter);
+////        cout << "decompressed bp string: " << decompressed_bp_string << endl;
+//        int block_bp_start = stoi(bp_list[0]);
 
         // add chromosome and genomic coordinates to chrm_bp_byte
         chrm_bp_byte.push_back(make_tuple(block_chrm_start, block_bp_start, block_start_byte));

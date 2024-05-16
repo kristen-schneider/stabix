@@ -9,6 +9,11 @@
 
 using namespace std;
 
+char * int_to_bytes(
+        int value);
+vector<string> split_string(
+        string str, char delimiter);
+
 /*
  * Read config file
  * @param config_file
@@ -87,12 +92,23 @@ string convert_vector_int_to_string(
     return str;
 }
 
+string convert_vector_uint32_to_string(
+        uint32_t * compressed_arr,
+        size_t compressed_size){
+    string compressed_string;
+    for (int i = 0; i < compressed_size; i++){
+        compressed_string += to_string(compressed_arr[i]) + ",";
+    }
+    compressed_string.pop_back();
+    return compressed_string;
+}
+
 /*
  * Convert string to vector
  * @param str: string of comma separated values
  * @return vector of strings
  */
-vector<string> convert_string_to_vector(string str){
+vector<string> convert_string_to_vector_string(string str){
     vector<string> vec;
     istringstream line_stream(str);
     string column_value;
@@ -102,6 +118,36 @@ vector<string> convert_string_to_vector(string str){
         vec.push_back(column_value);
     }
     return vec;
+}
+
+uint32_t * convert_string_to_vector_uint32(string in_string, char delimiter){
+    // split string by comma
+    vector<string> vec = split_string(in_string, delimiter);
+    // convert string to vector of uint32_t
+    uint32_t * compressed_arr = new uint32_t[vec.size()];
+    for (int i = 0; i < vec.size(); i++){
+        compressed_arr[i] = stoul(vec[i]);
+    }
+    return compressed_arr;
+}
+
+
+/*
+* Convert string to vector
+* @param str: string of comma separated values
+* @return vector of int
+*/
+vector<uint32_t> convert_vector_string_to_vector_unsignedlong(string str){
+    vector<uint32_t> out_vec;
+    istringstream line_stream(str);
+    string column_value;
+    while (getline(line_stream, column_value, ',')) {
+        // remove newline character from column_value
+        column_value.erase(remove(column_value.begin(), column_value.end(), '\r'), column_value.end());
+        // convert data to uint32_t
+        out_vec.push_back(stoul(column_value));
+    }
+    return out_vec;
 }
 
 /*
