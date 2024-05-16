@@ -122,7 +122,7 @@ using namespace FastPForLib;
 /*
  * use fastpfor variable byte to compress a vector of integers
  */
-uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data, size_t& compressedSize){
+uint32_t* fastpfor_vb_compress_OLD(vector<uint32_t> in_data, size_t& compressedSize){
     FastPForLib::VariableByte vb;
 
     // Compress the integer array
@@ -135,9 +135,10 @@ uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data, size_t& compressedSize)
 
     // allocate memory for compressed data
     uint32_t* compressed_data = new uint32_t[compressed.size()];
+
+    // create a string of compressed data bytes
     copy(compressed.begin(), compressed.end(), compressed_data);
 
-    // re
 
 //    // decompress
 //    vector<uint32_t> decompressed(in_data.size());
@@ -150,6 +151,22 @@ uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data, size_t& compressedSize)
 //    cout << std::endl;
 
     return compressed_data;
+}
+
+uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data, size_t& compressedSize){
+    FastPForLib::VariableByte vb;
+
+    // Compress the integer array
+    vector<uint32_t> compressed(in_data.size() * 2); // Allocate space for compressed data
+    vb.encodeArray(in_data.data(), in_data.size(), compressed.data(), compressedSize);
+    // resize compressed data
+    compressed.resize(compressedSize);
+
+    // return bitstring of compressed data
+    uint32_t* compressed_bitstring = new uint32_t[compressed.size()];
+    copy(compressed.begin(), compressed.end(), compressed_bitstring);
+
+    return compressed_bitstring;
 }
 
 /*

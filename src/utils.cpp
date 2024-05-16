@@ -89,6 +89,17 @@ string convert_vector_int_to_string(
     return str;
 }
 
+string convert_vector_uint32_to_string(
+        uint32_t * compressed_arr,
+        size_t compressed_size){
+    string compressed_string;
+    for (int i = 0; i < compressed_size; i++){
+        compressed_string += to_string(compressed_arr[i]) + ",";
+    }
+    compressed_string.pop_back();
+    return compressed_string;
+}
+
 /*
  * Convert string to vector
  * @param str: string of comma separated values
@@ -104,6 +115,17 @@ vector<string> convert_string_to_vector_string(string str){
         vec.push_back(column_value);
     }
     return vec;
+}
+
+uint32_t convert_string_to_vector_uint32(string in_string, char delimiter){
+    // split string by comma
+    vector<string> vec = split_string(in_string, delimiter);
+    // convert string to vector of uint32_t
+    uint32_t * compressed_arr = new uint32_t[vec.size()];
+    for (int i = 0; i < vec.size(); i++){
+        compressed_arr[i] = stoul(vec[i]);
+    }
+    return *compressed_arr;
 }
 
 

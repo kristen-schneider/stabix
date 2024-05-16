@@ -23,6 +23,10 @@ string convert_vector_str_to_string(
 string convert_vector_int_to_string(
         vector<uint32_t> vec);
 
+string convert_vector_uint32_to_string(
+        uint32_t * compressed_arr,
+        size_t compressedSize);
+
 vector<string> convert_string_to_vector_string(
         string str);
 
