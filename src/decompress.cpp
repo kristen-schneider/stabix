@@ -5,9 +5,12 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "FastPFor/headers/variablebyte.h"
+
 #include "utils.h"
 
 using namespace std;
+using namespace FastPForLib;
 
 string zlib_decompress(string compressed_string);
 vector<uint32_t> fastpfor_vb_decompress_OLD(uint32_t* in_data, size_t uncompressedSize, size_t block_size);
@@ -89,40 +92,18 @@ string zlib_decompress(string in_data){
     return outstring;
 }
 
-#include "FastPFor/headers/variablebyte.h"
-#include "FastPFor/headers/pfor.h"
-#include "FastPFor/headers/fastpfor.h"
-
-
-using namespace FastPForLib;
 
 /*
- * use fastpfor library to decompress a string
- * @param in_data: uint32_t*, the compressed data
- * @param compressed: size_t, the size of the compressed data
-
+ * Decompress a block using FastPFor's variable byte decoding
+ * @param in_data: uint32_t*, the compressed block
+ * @param compressedSize: size_t, the size of the compressed block
+ * @param block_size: size_t, the size of the block
+ * @return: vector<uint32_t>, the decompressed block
  */
-vector<uint32_t> fastpfor_vb_decompress_OLD(uint32_t* in_data,
-                                        size_t compressedSize,
-                                        size_t block_size) {
-    FastPForLib::VariableByte vb;
-//    size_t uncompressedSize = compressedSize * 2;
-    vector<uint32_t> decompressed(block_size);
-    size_t decompressedSize;
-    vb.decodeArray(in_data, compressedSize, decompressed.data(), decompressedSize);
-
-    // Resize the decompressed vector to fit the actual decompressed data
-    decompressed.resize(block_size);
-
-    return decompressed;
-
-}
-
 vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data,
                                         size_t compressedSize,
                                         size_t block_size) {
     FastPForLib::VariableByte vb;
-//    size_t uncompressedSize = compressedSize * 2;
     vector<uint32_t> decompressed(block_size);
     size_t decompressedSize;
     vb.decodeArray(in_data,
@@ -136,23 +117,23 @@ vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data,
     return decompressed;
 }
 
-vector<uint32_t> fastpfor_vb_delta_decompress(const std::vector<uint32_t>& encoded_deltas) {
-    FastPForLib::VariableByte vb;
-
-    // Decode deltas using FastPFor's variable byte decoding
-    vector<uint32_t> decoded_deltas(encoded_deltas.size() * 2);
-    size_t decoded_size;
-    vb.decodeArray(encoded_deltas.data(), encoded_deltas.size(), decoded_deltas.data(), decoded_size);
-    decoded_deltas.resize(decoded_size);
-
-    // Reconstruct original sequence by adding deltas to previous values
-    vector<uint32_t> original_sequence;
-    original_sequence.reserve(decoded_deltas.size() + 1);
-    uint32_t prev_value = 0; // Assuming the first value is 0, adjust if needed
-    for (const auto& delta : decoded_deltas) {
-        prev_value += delta;
-        original_sequence.push_back(prev_value);
-    }
-
-    return original_sequence;
-}
+//vector<uint32_t> fastpfor_vb_delta_decompress(const std::vector<uint32_t>& encoded_deltas) {
+//    FastPForLib::VariableByte vb;
+//
+//    // Decode deltas using FastPFor's variable byte decoding
+//    vector<uint32_t> decoded_deltas(encoded_deltas.size() * 2);
+//    size_t decoded_size;
+//    vb.decodeArray(encoded_deltas.data(), encoded_deltas.size(), decoded_deltas.data(), decoded_size);
+//    decoded_deltas.resize(decoded_size);
+//
+//    // Reconstruct original sequence by adding deltas to previous values
+//    vector<uint32_t> original_sequence;
+//    original_sequence.reserve(decoded_deltas.size() + 1);
+//    uint32_t prev_value = 0; // Assuming the first value is 0, adjust if needed
+//    for (const auto& delta : decoded_deltas) {
+//        prev_value += delta;
+//        original_sequence.push_back(prev_value);
+//    }
+//
+//    return original_sequence;
+//}

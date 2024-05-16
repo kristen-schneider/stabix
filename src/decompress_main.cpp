@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <algorithm>
 #include <iterator>
 #include <map>
 
@@ -157,7 +156,6 @@ int main(int argc, char* argv[]) {
                                                                 col_codec,
                                                                 compressedSize,
                                                                 block_size);
-//                    cout << ".........column " << col_idx << ": " << col_decompressed << endl;
                     decompressed_block.push_back(col_decompressed);
                 }
 
@@ -167,9 +165,7 @@ int main(int argc, char* argv[]) {
                     for (col_i = 0; col_i <= stoi(num_columns)-1; col_i++) {
                         vector<string> block_list = split_string(decompressed_block[col_i], ',');
                         output_file << block_list[record_i] << ',';
-//                        cout << block_list[record_i] << ',';
                     }
-//                    cout << endl;
                     output_file << endl;
                 }
             }

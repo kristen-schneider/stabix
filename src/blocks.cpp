@@ -105,6 +105,11 @@ vector<string> get_block_header(vector<string> compressed_block){
     return block_header_column_end_bytes;
 }
 
+/*
+ * Function to get the length of a block
+ * @param compressed_block: vector<string> of compressed columns
+ * @return block_length_bytes: int of block length in bytes
+ */
 int get_block_length(vector<string> compressed_block){
     int block_length_bytes = 0;
     for (auto const& column : compressed_block) {
@@ -147,25 +152,5 @@ vector<string> compress_block(vector<vector<string>> block,
         }
 
     }
-//    // compress with a different codec for each column
-//    for (int i = 0; i < codecs_list.size(); i++){
-//        if (codecs_list[i] == "zlib"){
-//            // convert each column in a block to a string
-//            vector<string> column_strings;
-//            for (int i = 0; i < block.size(); i++){
-//                column_strings.push_back(convert_vector_str_to_string(block[i]));
-//            }
-//
-//            // compress each column in a block
-//            for (int i = 0; i < column_strings.size(); i++){
-//                compressed_block.push_back(zlib_compress(column_strings[i]));
-//            }
-//        }
-//        else {
-//            cout << "ERROR: Codec not recognized: " << codecs_list[i] << endl;
-//            exit(1);
-//        }
-//    }
-
     return compressed_block;
 }
