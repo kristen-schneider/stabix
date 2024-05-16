@@ -25,10 +25,10 @@ int main(int argc, char* argv[]) {
     string query_type = config_options["query_type"];
     vector<string> col_codecs = split_string(config_options["codecs"], ',');
 
-    // open output file
+    // open output file in truncate mode
     ofstream output_file;
     string output_file_name = config_options["gwas_file"] + ".query";
-    output_file.open(output_file_name, ios::app);
+    output_file.open(output_file_name, ios::trunc);
     if (!output_file.is_open()){
         cout << "Error: could not open output file" << endl;
         return 1;
@@ -105,6 +105,14 @@ int main(int argc, char* argv[]) {
             int block_header_length;
             int block_length;
             for (int block_idx = start_block_idx; block_idx <= end_block_idx; block_idx++){
+                // block size is the same for all blocks except the last one
+                size_t block_size = -1;
+                if (block_idx < stoi(num_blocks)-1){
+                    block_size = stoi(block_sizes_list[0]);
+                }else if (block_idx == stoi(num_blocks)-1){
+                    block_size = stoi(block_sizes_list[1]);
+                }
+
                 vector<string> decompressed_block;
                 if (block_idx == 0){
                     block_header_length = stoi(block_header_end_bytes_list[block_idx]);
@@ -137,24 +145,22 @@ int main(int argc, char* argv[]) {
                     string col_codec = col_codecs[col_idx];
                     if (col_idx == 0){
                         col_bytes = stoi(block_header_list[col_idx]);
-                    }
-                    else {
+                    }else if (col_idx == stoi(num_columns)-1){
+                        col_bytes = block_length - stoi(block_header_list[col_idx-1]);
+                    }else {
                         col_bytes = stoi(block_header_list[col_idx]) - stoi(block_header_list[col_idx-1]);
                     }
                     string col_bitstring = block_bitstring.substr(curr_block_byte, col_bytes);
                     curr_block_byte += col_bytes;
-                    string col_decompressed = decompress_column(col_bitstring, col_codec, compressedSize);
+                    compressedSize = col_bitstring.size();
+                    string col_decompressed = decompress_column(col_bitstring,
+                                                                col_codec,
+                                                                compressedSize,
+                                                                block_size);
 //                    cout << ".........column " << col_idx << ": " << col_decompressed << endl;
                     decompressed_block.push_back(col_decompressed);
                 }
 
-                // print decompressed block normally
-                int block_size = -1;
-                if (block_idx < stoi(num_blocks)-1){
-                    block_size = stoi(block_sizes_list[0]);
-                }else if (block_idx == stoi(num_blocks)-1){
-                    block_size = stoi(block_sizes_list[1]);
-                }
                 int record_i = 0;
                 for (record_i = 0; record_i <= block_size-1; record_i++) {
                     int col_i = 0;
