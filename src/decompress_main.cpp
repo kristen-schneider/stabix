@@ -153,6 +153,7 @@ int main(int argc, char* argv[]) {
                     decompressed_block.push_back(col_decompressed);
                 }
 
+
 //                // write decompressed block to output file
 //                cout << "......writing decompressed block to output file" << endl;
 //                for (int record_i = 0; record_i <= block_size-1; record_i++) {

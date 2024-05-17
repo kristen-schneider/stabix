@@ -34,7 +34,9 @@ string decompress_column(string compressed_column,
     }
     else if (codec == "fpfVB"){
         uint32_t * compressed_column_ints = convert_string_to_vector_uint32(compressed_column, ',');
-        vector<uint32_t> decompressed_column = fastpfor_vb_decompress(compressed_column_ints, compressedSize, block_size);
+        vector<uint32_t> decompressed_column = fastpfor_vb_decompress(compressed_column_ints,
+                                                                      compressedSize,
+                                                                      block_size);
         decompressed_column_str = convert_vector_uint32_to_string(decompressed_column.data(), decompressed_column.size());
 
         return decompressed_column_str;
@@ -104,8 +106,8 @@ vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data,
                                         size_t compressedSize,
                                         size_t block_size) {
     FastPForLib::VariableByte vb;
+    size_t decompressedSize = compressedSize * 2;
     vector<uint32_t> decompressed(block_size);
-    size_t decompressedSize;
     vb.decodeArray(in_data,
                    compressedSize,
                    decompressed.data(),

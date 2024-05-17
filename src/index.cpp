@@ -31,7 +31,8 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         int bp_col,
         vector<string> block_header_end_bytes,
         vector<string> block_end_bytes,
-        vector<string> codecs_list) {
+        vector<string> codecs_list,
+        vector<string> block_sizes_list) {
     vector<tuple<int, int, int>> chrm_bp_byte;
 
     // get codecs for each column
@@ -57,6 +58,15 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
     // iterate through block_header_end_bytes and block_end_bytes
     // to get chromosome and genomic coordinates
     for (int block_idx = 0; block_idx < block_header_end_bytes.size(); block_idx++) {
+        // get block_size
+        size_t block_size;
+        // all blocks are the same size except the last one
+        if (block_idx == block_header_end_bytes.size() - 1) {
+            block_size = stoi(block_sizes_list[1]);
+        } else {
+            block_size = stoi(block_sizes_list[0]);
+        }
+
         // if first block, start after header
         if (block_idx == 0) {
             curr_byte_offset = header_bytes;
@@ -100,7 +110,7 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         string decompressed_chrm_column = decompress_column(chrm_string,
                                                           chrm_codec,
                                                           chrm_column_length,
-                                                          chrm_column_length);
+                                                          block_size);
         vector<string> chrm_list = split_string(decompressed_chrm_column, delimiter);
         int block_chrm_start = stoi(chrm_list[0]);
 
@@ -116,12 +126,14 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         string decompressed_bp_column = decompress_column(bp_string,
                                                           bp_codec,
                                                           bp_column_length,
-                                                          bp_column_length);
+                                                          block_size);
         vector<string> bp_list = split_string(decompressed_bp_column, delimiter);
         int block_bp_start = stoi(bp_list[0]);
 
         // add chromosome and genomic coordinates to chrm_bp_byte
         chrm_bp_byte.push_back(make_tuple(block_chrm_start, block_bp_start, block_start_byte));
+        cout << " finished block: " << block_idx << endl;
+
     }
 
     return chrm_bp_byte;

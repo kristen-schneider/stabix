@@ -68,7 +68,8 @@ int main(int argc, char* argv[]) {
             bp_idx,
             block_header_lengths_list,
             block_lengths_list,
-            codecs_list);
+            codecs_list,
+            block_sizes_list);
 
     // write chrm_bp_byte to index file
     string index_file = compressed_file + ".idx";
