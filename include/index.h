@@ -18,7 +18,8 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         int bp_col,
         vector<string> block_header_end_bytes,
         vector<string> block_end_bytes,
-        vector<string> codecs_list);
+        vector<string> codecs_list,
+        vector<string> block_sizes_list);
 
 map<int, map<int, tuple<int, int>>> read_index_file(
         string index_file);
