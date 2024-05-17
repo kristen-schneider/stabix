@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <execution>
 #include <vector>
 #include <fstream>
 #include <iterator>
@@ -32,10 +33,9 @@ int main(int argc, char* argv[]) {
         cout << "Error: could not open output file" << endl;
         return 1;
     }
-    // clear contents of output file
+    // clear contents of output file and close
     output_file.close();
     output_file.open(output_file_name, ios::app);
-
     cout << "Done." << endl << endl;
 
     // 1. open compressed file and read header
@@ -48,7 +48,6 @@ int main(int argc, char* argv[]) {
     file.read(header_length_bytes, 4);
     // convert 4 bytes to int
     int header_length = bytes_to_int(header_length_bytes);
-    cout << "header length: " << header_length << endl;
 
     // read header_length bytes starting at byte 4
     file.seekg(4, ios::beg);
@@ -58,7 +57,6 @@ int main(int argc, char* argv[]) {
     string header_string = string(header_bytes, header_length);
     // decompress header
     string header = zlib_decompress(header_string);
-    cout << "...header: " << header << endl;
     vector<string> header_list = split_string(header, ',');
 
     // 2. parse header
@@ -82,19 +80,15 @@ int main(int argc, char* argv[]) {
         index.close();
         cout << "Done." << endl << endl;
 
-
         // 4. get start byte, end byte, start block idx, and end block idx for each query
-        cout << "Getting start block idx and end block idx for each query..." << endl;
         vector<string> query_list = split_string(config_options["query_coordinate"], ',');
         vector<tuple<int, int>> all_query_block_indexes = get_start_end_block_idx(query_list, index_file_map, index_block_map);
-
-        cout << "Done." << endl << endl;
 
         // 5. decompress all blocks for each query
         size_t compressedSize = 0; // Define compressedSize
         cout << "Decompressing all blocks for each query..." << endl;
         for (int q_idx = 0; q_idx < all_query_block_indexes.size(); q_idx ++){
-            cout << "...decompressing query " << q_idx << "..." << query_list[q_idx] <<endl;
+            cout << "...decompressing query " << q_idx+1 << ": " << query_list[q_idx] <<endl;
 
             output_file << "Query: " << query_list[q_idx] << endl;
 
@@ -159,15 +153,15 @@ int main(int argc, char* argv[]) {
                     decompressed_block.push_back(col_decompressed);
                 }
 
-                int record_i = 0;
-                for (record_i = 0; record_i <= block_size-1; record_i++) {
-                    int col_i = 0;
-                    for (col_i = 0; col_i <= stoi(num_columns)-1; col_i++) {
-                        vector<string> block_list = split_string(decompressed_block[col_i], ',');
-                        output_file << block_list[record_i] << ',';
-                    }
-                    output_file << endl;
-                }
+//                // write decompressed block to output file
+//                cout << "......writing decompressed block to output file" << endl;
+//                for (int record_i = 0; record_i <= block_size-1; record_i++) {
+//                    for (int col_i = 0; col_i <= stoi(num_columns)-1; col_i++) {
+//                        vector<string> block_list = split_string(decompressed_block[col_i], ',');
+//                        output_file << block_list[record_i] << ',';
+//                    }
+//                    output_file << endl;
+//                }
             }
         }
     }
