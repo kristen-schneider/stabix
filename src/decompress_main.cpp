@@ -95,6 +95,12 @@ int main(int argc, char* argv[]) {
             tuple<int, int> query_start_end_byte = all_query_block_indexes[q_idx];
             int start_block_idx = get<0>(query_start_end_byte);
             int end_block_idx = get<1>(query_start_end_byte);
+            // if start_block_idx == -1, or end_block_idx == -1 then query is not in index
+            if (start_block_idx == -1 || end_block_idx == -1){
+                cout << "Query not found in index" << endl;
+                output_file << " !! Query not found in index !! " << endl;
+                continue;
+            }
             int block_header_length;
             int block_length;
             for (int block_idx = start_block_idx; block_idx <= end_block_idx; block_idx++){

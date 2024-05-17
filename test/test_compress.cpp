@@ -117,19 +117,11 @@ TEST(fpfVB, smallArray) {
     size_t block_size = 10;
     size_t compressed_size = 0; // Define compressedSize
 
-    uint32_t *compressed_arr = fastpfor_vb_compress(col, compressed_size);
-    for (int i = 0; i < compressed_size; i++){
-        uint32_t num = compressed_arr[i];
-        // convert the number to string and back
-        string num_str = to_string(num);
-        uint32_t num_back = stoul(num_str);
-        // check if the number is the same
-        ASSERT_EQ(num, num_back);
-    }
-    vector<uint32_t> decompressed_col = fastpfor_vb_decompress(compressed_arr, compressed_size, block_size);
+    vector<uint32_t> compressed_arr = fastpfor_vb_compress(col, compressed_size);
+    vector<uint32_t> decompressed_arr = fastpfor_vb_decompress(compressed_arr, compressed_size, block_size);
 
     for (int i = 0; i < col.size(); i++){
-        ASSERT_EQ(col[i], decompressed_col[i]);
+        ASSERT_EQ(col[i], decompressed_arr[i]);
     }
 }
 
@@ -143,7 +135,7 @@ TEST(fpfVB, mediumArray){
     }
     size_t compressedSize = 0; // Define compressedSize
 
-    uint32_t * compressed_arr = fastpfor_vb_compress(col, compressedSize);
+    vector<uint32_t> compressed_arr = fastpfor_vb_compress(col, compressedSize);
     vector<uint32_t> decompressedVec = fastpfor_vb_decompress(compressed_arr, compressedSize, block_size);
 
     for (int i = 0; i < block_size; i++){
@@ -161,7 +153,7 @@ TEST(fpfVB, largeArray){
     }
     size_t compressedSize = 0; // Define compressedSize
 
-    uint32_t * compressed_arr = fastpfor_vb_compress(col, compressedSize);
+    vector<uint32_t> compressed_arr = fastpfor_vb_compress(col, compressedSize);
     vector<uint32_t> decompressedVec = fastpfor_vb_decompress(compressed_arr, compressedSize, block_size);
 
     for (int i = 0; i < block_size; i++){
@@ -169,22 +161,29 @@ TEST(fpfVB, largeArray){
     }
 }
 
-TEST(fpfVB, smallColumn){
-    // Test the fastpfor_vb compression and decompression of a small column of integers
+TEST(fpfVB, smallString){
+    // Test the fastpfor_vb compression and decompression including conversion to string (write out)
     vector<uint32_t> col = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     size_t block_size = 10;
     size_t compressedSize = 0; // Define compressedSize
 
-    uint32_t * compressed_arr = fastpfor_vb_compress(col, compressedSize);
-    vector<uint32_t> decompressedVec = fastpfor_vb_decompress(compressed_arr, compressedSize, block_size);
+    vector<uint32_t> compressed_arr = fastpfor_vb_compress(col, compressedSize);
+    // convert to string mimicking writing out to compressed file
+    string compressed_string = convert_vector_uint32_to_string(compressed_arr.data(), compressedSize);
+    string decompressed_string = decompress_column(compressed_string,
+                                                           "fpfVB",
+                                                           compressedSize,
+                                                           block_size);
+    // convert back to vector of uint32_t
+    vector<uint32_t> decompressed_arr = convert_string_to_vector_unsignedlong(decompressed_string);
 
     for (int i = 0; i < col.size(); i++){
-        ASSERT_EQ(col[i], decompressedVec[i]);
+        ASSERT_EQ(col[i], decompressed_arr[i]);
     }
 }
 
-TEST(fpfVB, mediumColumn){
-    // Test the fastpfor_vb compression and decompression of a medium sized column of integers
+TEST(fpfVB, mediumString){
+    // Test the fastpfor_vb compression and decompression including conversion to string (write out)
     vector<uint32_t> col;
     size_t block_size = 500;
     // Create a vector of random integers
@@ -193,16 +192,22 @@ TEST(fpfVB, mediumColumn){
     }
     size_t compressedSize = 0; // Define compressedSize
 
-    uint32_t * compressed_arr = fastpfor_vb_compress(col, compressedSize);
-    vector<uint32_t> decompressedVec = fastpfor_vb_decompress(compressed_arr, compressedSize, block_size);
+    vector<uint32_t> compressed_arr = fastpfor_vb_compress(col, compressedSize);
+    // convert to string mimicking writing out to compressed file
+    string compressed_string = convert_vector_uint32_to_string(compressed_arr.data(), compressedSize);
+    string decompressed_string = decompress_column(compressed_string,
+                                                    "fpfVB",
+                                                    compressedSize,
+                                                    block_size);
+    // convert back to vector of uint32_t
+    vector<uint32_t> decompressed_arr = convert_string_to_vector_unsignedlong(decompressed_string);
 
     for (int i = 0; i < block_size; i++){
-        ASSERT_EQ(col[i], decompressedVec[i]);
+        ASSERT_EQ(col[i], decompressed_arr[i]);
     }
-
 }
 
-TEST(fpfVB, largeColumn){
+TEST(fpfVB, largeString){
     // Test the fastpfor_vb compression and decompression of a large column of integers
     vector<uint32_t> col;
     size_t block_size = 1000;
@@ -212,10 +217,17 @@ TEST(fpfVB, largeColumn){
     }
     size_t compressedSize = 0; // Define compressedSize
 
-    uint32_t * compressed_arr = fastpfor_vb_compress(col, compressedSize);
-    vector<uint32_t> decompressedVec = fastpfor_vb_decompress(compressed_arr, compressedSize, block_size);
+    vector<uint32_t> compressed_arr = fastpfor_vb_compress(col, compressedSize);
+    // convert to string mimicking writing out to compressed file
+    string compressed_string = convert_vector_uint32_to_string(compressed_arr.data(), compressedSize);
+    string decompressed_string = decompress_column(compressed_string,
+                                                    "fpfVB",
+                                                    compressedSize,
+                                                    block_size);
+    // convert back to vector of uint32_t
+    vector<uint32_t> decompressed_arr = convert_string_to_vector_unsignedlong(decompressed_string);
 
     for (int i = 0; i < block_size; i++){
-        ASSERT_EQ(col[i], decompressedVec[i]);
+        ASSERT_EQ(col[i], decompressed_arr[i]);
     }
 }

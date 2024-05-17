@@ -58,14 +58,14 @@ string zlib_compress(string in_data){
     return outstring;
 }
 
-
 /*
  * Decompress a string using fastpfor variable byte decoding
  * @param in_data: uint32_t*, the compressed data
  * @param compressedSize: size_t, the size of the compressed data
  * @return: vector<uint32_t>, the decompressed data
  */
-uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data, size_t& compressedSize){
+vector <uint32_t> fastpfor_vb_compress(vector<uint32_t> in_data,
+                                       size_t& compressedSize){
     FastPForLib::VariableByte vb;
 
     // Compress the integer array
@@ -74,11 +74,7 @@ uint32_t* fastpfor_vb_compress(vector<uint32_t> in_data, size_t& compressedSize)
     // resize compressed data
     compressed.resize(compressedSize);
 
-    // return bitstring of compressed data
-    uint32_t* compressed_bitstring = new uint32_t[compressed.size()];
-    copy(compressed.begin(), compressed.end(), compressed_bitstring);
-
-    return compressed_bitstring;
+    return compressed;
 }
 
 ///*
