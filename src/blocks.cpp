@@ -141,9 +141,9 @@ vector<string> compress_block(vector<vector<string>> block,
             vector<uint32_t> column_ints = convert_vector_string_to_vector_int(block[col_i]);
             // compress vector of integers with fastpfor
             size_t compressedSize = 0;
-            uint32_t* compressed_arr = fastpfor_vb_compress(column_ints, compressedSize);
+            vector<uint32_t> compressed_arr = fastpfor_vb_compress(column_ints, compressedSize);
             // convert compressed array to string
-            string compressed_string = convert_vector_uint32_to_string(compressed_arr, compressedSize);
+            string compressed_string = convert_vector_uint32_to_string(compressed_arr.data(), compressedSize);
             compressed_block.push_back(compressed_string);
         }
         else {

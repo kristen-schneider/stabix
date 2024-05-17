@@ -13,9 +13,8 @@ using namespace std;
 using namespace FastPForLib;
 
 string zlib_decompress(string compressed_string);
-vector<uint32_t> fastpfor_vb_decompress_OLD(uint32_t* in_data, size_t uncompressedSize, size_t block_size);
-vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data, size_t uncompressedSize, size_t block_size);
-vector<uint32_t> fastpfor_vb_delta_decompress(const std::vector<uint32_t>& encoded_deltas);
+vector<uint32_t> fastpfor_vb_decompress(vector<uint32_t> in_data, size_t uncompressedSize, size_t block_size);
+//vector<uint32_t> fastpfor_vb_delta_decompress(const std::vector<uint32_t>& encoded_deltas);
 
 /*
  * Decompress a column using the specified codec
@@ -33,7 +32,7 @@ string decompress_column(string compressed_column,
         return decompressed_column_str;
     }
     else if (codec == "fpfVB"){
-        uint32_t * compressed_column_ints = convert_string_to_vector_uint32(compressed_column, ',');
+        vector<uint32_t> compressed_column_ints = convert_string_to_vector_unsignedlong(compressed_column);
         vector<uint32_t> decompressed_column = fastpfor_vb_decompress(compressed_column_ints,
                                                                       compressedSize,
                                                                       block_size);
@@ -94,7 +93,6 @@ string zlib_decompress(string in_data){
     return outstring;
 }
 
-
 /*
  * Decompress a block using FastPFor's variable byte decoding
  * @param in_data: uint32_t*, the compressed block
@@ -102,14 +100,14 @@ string zlib_decompress(string in_data){
  * @param block_size: size_t, the size of the block
  * @return: vector<uint32_t>, the decompressed block
  */
-vector<uint32_t> fastpfor_vb_decompress(uint32_t* in_data,
+vector<uint32_t> fastpfor_vb_decompress(vector<uint32_t> in_data,
                                         size_t compressedSize,
                                         size_t block_size) {
     FastPForLib::VariableByte vb;
     size_t decompressedSize = compressedSize * 2;
     vector<uint32_t> decompressed(block_size);
-    vb.decodeArray(in_data,
-                   compressedSize,
+    vb.decodeArray(in_data.data(),
+                   in_data.size(),
                    decompressed.data(),
                    decompressedSize);
 
