@@ -18,4 +18,8 @@ vector<string> parse_header_list(
         string header_query);
 
 string remove_zlib_header(
-        string compressed_string);
+        string compressed_string,
+        string zlib_header);
+
+string add_zlib_header(string compressed_string,
+                       string zlib_header);
