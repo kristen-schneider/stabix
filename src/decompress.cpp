@@ -8,13 +8,13 @@
 #include "FastPFor/headers/variablebyte.h"
 
 #include "utils.h"
+#include "header.h"
+#include "decompress.h"
 
 using namespace std;
 using namespace FastPForLib;
 
-string zlib_decompress(string compressed_string);
-vector<uint32_t> fastpfor_vb_decompress(vector<uint32_t> in_data, size_t uncompressedSize, size_t block_size);
-//vector<uint32_t> fastpfor_vb_delta_decompress(const std::vector<uint32_t>& encoded_deltas);
+string ZLIB_HEADER_D = "x\xda";
 
 /*
  * Decompress a column using the specified codec
@@ -52,6 +52,10 @@ string decompress_column(string compressed_column,
  * @return: string, the decompressed string
  */
 string zlib_decompress(string in_data){
+
+    // add back the zlib header
+    in_data = add_zlib_header(in_data, ZLIB_HEADER_D);
+
     // https://gist.github.com/gomons/9d446024fbb7ccb6536ab984e29e154a
 
     z_stream zs;                        // z_stream is zlib's control structure

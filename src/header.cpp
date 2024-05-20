@@ -66,8 +66,14 @@ vector<string> parse_header_list(
  * Function to remove the common header from
  * a string compressed with zlib
  */
-string remove_zlib_header(string compressed_string){
-    string zlib_header = "x\234";
+string remove_zlib_header(string compressed_string,
+                          string zlib_header){
     string zlib_header_removed = compressed_string.substr(zlib_header.length());
     return zlib_header_removed;
+}
+
+string add_zlib_header(string compressed_string,
+                       string zlib_header){
+    string zlib_header_added = zlib_header + compressed_string;
+    return zlib_header_added;
 }
