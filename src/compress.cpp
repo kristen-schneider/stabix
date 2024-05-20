@@ -8,11 +8,13 @@
 #include "FastPFor/headers/variablebyte.h"
 
 #include "utils.h"
+#include "header.h"
 #include "decompress.h"
 
 using namespace FastPForLib;
 using namespace std;
 
+string ZLIB_HEADER_C = "x\xda";
 /*
  * Function to compress a string
  * @param in_data: string - input data
@@ -55,7 +57,10 @@ string zlib_compress(string in_data){
         throw(std::runtime_error(oss.str()));
     }
 
-    return outstring;
+    // remove zlib header
+    string outstring_noheader = remove_zlib_header(outstring, ZLIB_HEADER_C);
+    return outstring_noheader;
+//    return outstring;
 }
 
 /*
