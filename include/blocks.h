@@ -17,6 +17,12 @@ vector<vector<vector<string>>> make_blocks(
         int block_size,
         char delim);
 
+vector<vector<vector<string>>> make_blocks_map(
+        string gwas_file,
+        int num_columns,
+        int block_size,
+        char delim);
+
 vector<string> get_block_header(
         vector<string> compressed_block);
 

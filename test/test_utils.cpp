@@ -234,3 +234,49 @@ TEST(GetColumnTypes, Comma) {
     ASSERT_EQ(column_types_int_strings, "int,string,int,string,int");
     ASSERT_EQ(column_types_float_strings, "float,string,float,string,float");
 }
+
+TEST(GetBlockBPbyMap, simmple){
+    string map_file = "/Users/krsc0813/CLionProjects/gwas_local/data/test.map";
+//    string map_file = "data/test.map";
+
+    map<int, vector<uint32_t>> chrm_block_bp_ends = get_chrm_block_bp_ends(map_file);
+    vector<uint32_t> chrm_vector = {5000, 9000, 13000};
+
+    ASSERT_EQ(chrm_block_bp_ends.size(), 3);
+    ASSERT_EQ(chrm_block_bp_ends[1], chrm_vector);
+    ASSERT_EQ(chrm_block_bp_ends[1].size(), 3);
+    ASSERT_EQ(chrm_block_bp_ends[2], chrm_vector);
+    ASSERT_EQ(chrm_block_bp_ends[2].size(), 3);
+    ASSERT_EQ(chrm_block_bp_ends[3], chrm_vector);
+    ASSERT_EQ(chrm_block_bp_ends[3].size(), 3);
+}
+
+//// Data too large to include in git repo
+//TEST(GetBlockBPbyMap, real){
+//    string map_file = "/Users/krsc0813/CLionProjects/gwas_local/data/chrm_1-22.map";
+//    map<int, vector<uint32_t>> chrm_block_bp_ends = get_chrm_block_bp_ends(map_file);
+//
+//    ASSERT_EQ(chrm_block_bp_ends.size(), 22);
+//    ASSERT_EQ(chrm_block_bp_ends[1].size(), 286);
+//    ASSERT_EQ(chrm_block_bp_ends[2].size(), 268);
+//    ASSERT_EQ(chrm_block_bp_ends[3].size(), 223);
+//    ASSERT_EQ(chrm_block_bp_ends[4].size(), 214);
+//    ASSERT_EQ(chrm_block_bp_ends[5].size(), 204);
+//    ASSERT_EQ(chrm_block_bp_ends[6].size(), 192);
+//    ASSERT_EQ(chrm_block_bp_ends[7].size(), 187);
+//    ASSERT_EQ(chrm_block_bp_ends[8].size(), 168);
+//    ASSERT_EQ(chrm_block_bp_ends[9].size(), 166);
+//    ASSERT_EQ(chrm_block_bp_ends[10].size(), 181);
+//    ASSERT_EQ(chrm_block_bp_ends[11].size(), 158);
+//    ASSERT_EQ(chrm_block_bp_ends[12].size(), 174);
+//    ASSERT_EQ(chrm_block_bp_ends[13].size(), 125);
+//    ASSERT_EQ(chrm_block_bp_ends[14].size(), 120);
+//    ASSERT_EQ(chrm_block_bp_ends[15].size(), 141);
+//    ASSERT_EQ(chrm_block_bp_ends[16].size(), 134);
+//    ASSERT_EQ(chrm_block_bp_ends[17].size(), 128);
+//    ASSERT_EQ(chrm_block_bp_ends[18].size(), 117);
+//    ASSERT_EQ(chrm_block_bp_ends[19].size(), 107);
+//    ASSERT_EQ(chrm_block_bp_ends[20].size(), 108);
+//    ASSERT_EQ(chrm_block_bp_ends[21].size(), 62);
+//    ASSERT_EQ(chrm_block_bp_ends[22].size(), 74);
+//}

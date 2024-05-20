@@ -87,6 +87,14 @@ vector<vector<vector<string>>> make_blocks(
     return all_blocks;
 }
 
+vector<vector<vector<string>>> make_blocks_map(
+        string gwas_file,
+        int num_columns,
+        int block_size,
+        char delim){
+    // read in gwas file and make a new block every block_size lines
+}
+
 /*
  * Function to compress a block
  * @param block: vector<vector<string>> of block

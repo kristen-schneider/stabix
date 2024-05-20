@@ -23,7 +23,16 @@ int main(int argc, char* argv[]) {
     add_default_config_options(config_options);
 
     string gwas_file = config_options["gwas_file"];
-    int block_size = stoi(config_options["block_size"]);
+    // if block_size == "map", get block sizes by map file
+    int block_size = -1;
+    if (config_options["block_size"] == "map") {
+        string map_file = config_options["map_file"];
+        cout << "Making blocks by cM distance in map file: " << map_file << endl;
+//        vector<int> chrm_block_bp_ends =
+        block_size = 5000;
+    }else{
+        block_size = stoi(config_options["block_size"]);
+    }
     string query_type = config_options["query_type"];
     string compressed_file = config_options["gwas_file"] + ".grlz";
     vector<string> codecs_list = split_string(config_options["codecs"], ',');

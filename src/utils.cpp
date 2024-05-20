@@ -286,3 +286,78 @@ vector<uint32_t> convert_vector_string_to_vector_int(
     }
     return vec_int;
 }
+
+/*
+ * Function to read a map file and find bp end of blocks
+ * @param map_file: string
+ * @return map of chrm: <bp, bp, bp...>
+ */
+map<int, vector<uint32_t>> get_chrm_block_bp_ends(
+        string map_file) {
+    map<int, vector<uint32_t>> chrm_block_bp_ends;
+    int BLOCK_CM_SIZE = 1;
+    // open map file, exit if file does not exist
+    ifstream map_stream(map_file);
+    if (!map_stream.good()) {
+        cout << "ERROR: Map file does not exist: " << map_file << endl;
+        exit(1);
+    }
+    // read map file
+    int block_count = 0;
+    int max_cm = block_count * BLOCK_CM_SIZE + 1;
+    float prev_bp = 0;
+    int prev_chrm = 0;
+    string line;
+    while (getline(map_stream, line)) {
+        // split line by white space
+        vector<string> vec = split_string(line, ' ');
+        int chrm = stoi(vec[0]);
+        // new chromosome, reset block count
+        if (chrm != prev_chrm) {
+            chrm_block_bp_ends[chrm] = {};
+            block_count = 0;
+            max_cm = block_count * BLOCK_CM_SIZE + 1;
+            prev_chrm = chrm;
+        }
+        float cm = stof(vec[2]);
+        uint32_t bp = stoul(vec[3]);
+        // if cm is greater than max_cm, add new block
+        if (cm >= max_cm) {
+            if (cm == max_cm){ prev_bp = bp; }
+            chrm_block_bp_ends[chrm].push_back(prev_bp);
+            block_count++;
+            max_cm = block_count * BLOCK_CM_SIZE + 1;
+        }
+        prev_bp = bp;
+    }
+    map_stream.close();
+    return chrm_block_bp_ends;
+}
+
+/*
+ * Function to read a map file and make blocks based on cm distance
+ * @param map_file: string
+ * @param cm_size: what size cm to make the blocks (e.g. 1, 2, 3...)
+ * @return vector of block sizes (int)
+ */
+vector<int> get_block_sizes(
+        map<int, vector<uint32_t>> chrm_block_bp_ends,
+        string gwas_file) {
+
+    vector<int> block_sizes;
+
+    int line_count = 0;
+    // open gwas file
+    ifstream gwas_stream(gwas_file);
+    if (!gwas_stream.good()) {
+        cout << "ERROR: GWAS file does not exist: " << gwas_file << endl;
+        exit(1);
+    }
+    // read gwas file
+    string line;
+    while (getline(gwas_stream, line)) {
+        line_count++;
+    }
+    gwas_stream.close();
+    return block_sizes;
+}
