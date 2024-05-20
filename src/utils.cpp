@@ -333,31 +333,3 @@ map<int, vector<uint32_t>> get_chrm_block_bp_ends(
     map_stream.close();
     return chrm_block_bp_ends;
 }
-
-/*
- * Function to read a map file and make blocks based on cm distance
- * @param map_file: string
- * @param cm_size: what size cm to make the blocks (e.g. 1, 2, 3...)
- * @return vector of block sizes (int)
- */
-vector<int> get_block_sizes(
-        map<int, vector<uint32_t>> chrm_block_bp_ends,
-        string gwas_file) {
-
-    vector<int> block_sizes;
-
-    int line_count = 0;
-    // open gwas file
-    ifstream gwas_stream(gwas_file);
-    if (!gwas_stream.good()) {
-        cout << "ERROR: GWAS file does not exist: " << gwas_file << endl;
-        exit(1);
-    }
-    // read gwas file
-    string line;
-    while (getline(gwas_stream, line)) {
-        line_count++;
-    }
-    gwas_stream.close();
-    return block_sizes;
-}

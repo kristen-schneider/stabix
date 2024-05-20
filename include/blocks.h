@@ -20,7 +20,7 @@ vector<vector<vector<string>>> make_blocks(
 vector<vector<vector<string>>> make_blocks_map(
         string gwas_file,
         int num_columns,
-        int block_size,
+        map<int, vector<uint32_t>> chrm_block_bp_ends,
         char delim);
 
 vector<string> get_block_header(

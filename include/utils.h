@@ -62,6 +62,3 @@ char * int_to_bytes(
 
 map<int, vector<uint32_t>> get_chrm_block_bp_ends(
         string map_file);
-
-vector<int> make_blocks_by_map_file(
-        string map_file);
