@@ -104,14 +104,19 @@ int main(int argc, char* argv[]) {
             int block_header_length;
             int block_length;
             for (int block_idx = start_block_idx; block_idx <= end_block_idx; block_idx++){
-                // block size is the same for all blocks except the last one
                 size_t block_size = -1;
-                if (block_idx < stoi(num_blocks)-1){
-                    block_size = stoi(block_sizes_list[0]);
-                }else if (block_idx == stoi(num_blocks)-1){
-                    block_size = stoi(block_sizes_list[1]);
+                // if there are only two block sizes, block size is fixed except for last block
+                if (block_sizes_list.size() == 2){
+                    if (block_idx < stoi(num_blocks)-1){
+                        block_size = stoi(block_sizes_list[0]);
+                    }
+                    else if (block_idx == stoi(num_blocks)-1){
+                        block_size = stoi(block_sizes_list[1]);
+                    }
+                }else {
+                    // if there are more than two block sizes, block size is variable
+                    block_size = stoi(block_sizes_list[block_idx]);
                 }
-
                 vector<string> decompressed_block;
                 if (block_idx == 0){
                     block_header_length = stoi(block_header_end_bytes_list[block_idx]);
@@ -160,15 +165,18 @@ int main(int argc, char* argv[]) {
                 }
 
 
-//                // write decompressed block to output file
-//                cout << "......writing decompressed block to output file" << endl;
-//                for (int record_i = 0; record_i <= block_size-1; record_i++) {
-//                    for (int col_i = 0; col_i <= stoi(num_columns)-1; col_i++) {
-//                        vector<string> block_list = split_string(decompressed_block[col_i], ',');
-//                        output_file << block_list[record_i] << ',';
-//                    }
-//                    output_file << endl;
-//                }
+                // write decompressed block to output file
+                cout << "......writing decompressed block to output file" << endl;
+                for (int record_i = 0; record_i <= block_size-1; record_i++) {
+                    for (int col_i = 0; col_i <= stoi(num_columns)-1; col_i++) {
+                        vector<string> block_list = split_string(decompressed_block[col_i], ',');
+//                        if (col_i == 0){
+//                            cout << record_i << " " <<  col_i << " " << block_list.size() << "\n";
+//                        }
+                        output_file << block_list[record_i] << ',';
+                    }
+                    output_file << endl;
+                }
             }
         }
     }

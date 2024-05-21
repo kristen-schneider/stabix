@@ -343,7 +343,7 @@ vector<int> get_block_sizes(
         vector<vector<vector<string>>> all_blocks){
     vector<int> block_sizes;
     for (int i = 0; i < all_blocks.size(); i++){
-        block_sizes.push_back(all_blocks[i].size());
+        block_sizes.push_back(all_blocks[i][0].size());
     }
     return block_sizes;
 }

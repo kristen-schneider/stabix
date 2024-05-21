@@ -126,10 +126,10 @@ vector<vector<vector<string>>> make_blocks_map(
         vector<string> line_vector = split_string(line, '\t');
         int curr_chrm = stoi(line_vector[1]);
         curr_bp = stoul(line_vector[2]);
-        // if new chromosome
+        // if new chromosome and not first chromosome
         if (curr_chrm != block_chrm){
             // add block to all_blocks
-            all_blocks.push_back(curr_block);
+            if (!curr_block[0].empty()){ all_blocks.push_back(curr_block);}
             curr_block.clear();
             // make curr_block a vector of empty strings
             for (int i = 0; i < num_columns; i++) {
@@ -149,8 +149,8 @@ vector<vector<vector<string>>> make_blocks_map(
                 curr_block[column_idx].push_back(column_value);
                 column_idx++;
             }
-        }else{
-            all_blocks.push_back(curr_block);
+        }else {
+            if (!curr_block[0].empty()){ all_blocks.push_back(curr_block);}
             curr_block.clear();
             // make curr_block a vector of empty strings
             for (int i = 0; i < num_columns; i++) {

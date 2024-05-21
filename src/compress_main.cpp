@@ -23,14 +23,11 @@ int main(int argc, char* argv[]) {
     add_default_config_options(config_options);
 
     string gwas_file = config_options["gwas_file"];
-    // if block_size == "map", get block sizes by map file
     int block_size = -1;
+    // if block_size == "map", get block sizes by map file
     if (config_options["block_size"] == "map") {
-        string map_file = config_options["map_file"];
-        cout << "Making blocks by cM distance in map file: " << map_file << endl;
-//        vector<int> chrm_block_bp_ends =
-        block_size = 5000;
-    }else{
+        cout << "Block sizes will be determined by map file." << endl;
+    }else{ // block_size is a fixed integer
         block_size = stoi(config_options["block_size"]);
     }
     string query_type = config_options["query_type"];
@@ -87,9 +84,21 @@ int main(int argc, char* argv[]) {
 
         // 3. get blocks
         cout << "Making blocks..." << endl;
-        all_blocks = make_blocks(gwas_file, num_columns, block_size, delimiter);
+        // if block_size == "map", make block sizes by chrm_block_bp_ends
+        if (config_options["block_size"] == "map") {
+            string map_file = config_options["map"];
+            map<int, vector<uint32_t>> chrm_block_bp_ends = get_chrm_block_bp_ends(map_file);
+            all_blocks = make_blocks_map(gwas_file, num_columns, chrm_block_bp_ends, delimiter);
+        }
+        else{
+            all_blocks = make_blocks(gwas_file, num_columns, block_size, delimiter);
+        }
         num_blocks = all_blocks.size();
-        cout << "\t...made " << num_blocks << " blocks of size " << block_size  << " or less." << endl;
+        if (config_options["block_size"] == "map") {
+            cout << "\t...made " << num_blocks << ", 1cM in length." << endl;
+        }else{
+            cout << "\t...made " << num_blocks << " blocks of size " << block_size  << " or less." << endl;
+        }
         cout << "Done." << endl << endl;
 
 
@@ -143,10 +152,19 @@ int main(int argc, char* argv[]) {
         block_end_bytes.push_back(to_string(curr_byte_idx));
     }
 
-    // get size of first and last block
-    int first_block_size = all_blocks[0][0].size();
-    int last_block_size = all_blocks[all_blocks.size() - 1][0].size();
-    string block_sizes = to_string(first_block_size) + "," + to_string(last_block_size);
+    string block_sizes = "";
+    // if block_size == "map", block sizes are variable
+    vector<int> block_sizes_list;
+    if (config_options["block_size"] == "map") {
+        block_sizes_list = get_block_sizes(all_blocks);
+        block_sizes = convert_vector_int_to_string(block_sizes_list);
+    }
+    // if block_size is fixed, block sizes are the same, except the last block may be
+    else{
+        int first_block_size = all_blocks[0][0].size();
+        int last_block_size = all_blocks[all_blocks.size() - 1][0].size();
+        block_sizes = to_string(first_block_size) + "," + to_string(last_block_size);
+    }
 
     vector<string> header = {
             to_string(num_columns),
