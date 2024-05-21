@@ -64,7 +64,7 @@ TEST(ConvertVectorStrToStringTest, SpaceDelimiter) {
 }
 
 TEST(ConvertVectorIntToStringTest, PositiveNumbers) {
-    vector<uint32_t> vec = {1, 2, 3, 4, 5};
+    vector<int> vec = {1, 2, 3, 4, 5};
     string str = convert_vector_int_to_string(vec);
     EXPECT_EQ("1,2,3,4,5", str);
 }

@@ -35,7 +35,7 @@ string convert_vector_str_to_string(
 
 
 string convert_vector_int_to_string(
-        vector<uint32_t> vec);
+        vector<int> vec);
 
 vector<string> convert_string_to_vector_string(
         string str);
@@ -62,3 +62,6 @@ char * int_to_bytes(
 
 map<int, vector<uint32_t>> get_chrm_block_bp_ends(
         string map_file);
+
+vector<int> get_block_sizes(
+        vector<vector<vector<string>>> all_blocks);

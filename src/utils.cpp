@@ -160,7 +160,7 @@ string convert_vector_str_to_string(vector<string> vec){
  * @return str: string of comma separated values
  */
 string convert_vector_int_to_string(
-        vector<uint32_t> vec){
+        vector<int> vec){
     string str;
     for (int i = 0; i < vec.size(); i++) {
         str += to_string(vec[i]) + ",";
@@ -332,4 +332,18 @@ map<int, vector<uint32_t>> get_chrm_block_bp_ends(
     }
     map_stream.close();
     return chrm_block_bp_ends;
+}
+
+/*
+ * Function to get the sizes of blocks when using a map file
+ * @param all_blocks: vector of blocks
+ * @return vector of block sizes
+ */
+vector<int> get_block_sizes(
+        vector<vector<vector<string>>> all_blocks){
+    vector<int> block_sizes;
+    for (int i = 0; i < all_blocks.size(); i++){
+        block_sizes.push_back(all_blocks[i].size());
+    }
+    return block_sizes;
 }
