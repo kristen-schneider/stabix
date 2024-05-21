@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
                     block_header_length = stoi(block_header_end_bytes_list[block_idx]) - stoi(block_end_bytes_list[block_idx-1]);
                     block_length = stoi(block_end_bytes_list[block_idx]) - stoi(block_end_bytes_list[block_idx-1]) - block_header_length;
                 }            int start_byte = get_start_byte(block_idx, index_block_map);
-                cout << "......decompressing block " << block_idx << endl;
+                cout << "......decompressing block " << block_idx << ", size: " << block_size << endl;
 
                 output_file << "Block: " << block_idx << endl;
 
@@ -165,18 +165,18 @@ int main(int argc, char* argv[]) {
                 }
 
 
-                // write decompressed block to output file
-                cout << "......writing decompressed block to output file" << endl;
-                for (int record_i = 0; record_i <= block_size-1; record_i++) {
-                    for (int col_i = 0; col_i <= stoi(num_columns)-1; col_i++) {
-                        vector<string> block_list = split_string(decompressed_block[col_i], ',');
-//                        if (col_i == 0){
-//                            cout << record_i << " " <<  col_i << " " << block_list.size() << "\n";
-//                        }
-                        output_file << block_list[record_i] << ',';
-                    }
-                    output_file << endl;
-                }
+//                // write decompressed block to output file
+//                cout << "......writing decompressed block to output file" << endl;
+//                for (int record_i = 0; record_i <= block_size-1; record_i++) {
+//                    for (int col_i = 0; col_i <= stoi(num_columns)-1; col_i++) {
+//                        vector<string> block_list = split_string(decompressed_block[col_i], ',');
+////                        if (col_i == 0){
+////                            cout << record_i << " " <<  col_i << " " << block_list.size() << "\n";
+////                        }
+//                        output_file << block_list[record_i] << ',';
+//                    }
+//                    output_file << endl;
+//                }
             }
         }
     }
