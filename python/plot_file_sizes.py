@@ -39,13 +39,14 @@ def plot_file_sizes(gwas_file_names, file_sizes, plot_dir):
         gzip_file = file + '.tsv.gz'
         gzip_size = file_sizes[gzip_file]
         # (1) uncompressed
-        bar_width = 0.5
+        bar_width = 0.35
         plt.bar(0, uncompresed_size, bar_width, label='Uncompressed', color='blue')
         # (2) gzip
         plt.bar(1, gzip_size, bar_width, label='Gzip Compressed', color='orange')
+        x_blocks = np.arange(2, 7, 1)
+        # x_blocks = [1.75, 2.25, 2.75, 3.25, 3.75, 4.25, 4.75, 5.25, 5.75, 6.25]
 
-        # (map, 2000, 5000, 10000, 20000)
-        x_blocks = [2, 3, 4, 5, 6]
+        # ZLIB: (map, 2000, 5000, 10000, 20000)
         map_zlib_file = file + '.tsv.grlz_zlib-map'
         map_zlib_index = file + '.tsv.grlz.idx_zlib-map'
         map_zlib_file_size = file_sizes[map_zlib_file]
@@ -66,15 +67,15 @@ def plot_file_sizes(gwas_file_names, file_sizes, plot_dir):
         zlib_20000_file_index = file + '.tsv.grlz.idx_zlib-20000'
         zlib_20000_file_size = file_sizes[zlib_20000_file]
         zlib_20000_file_index_size = file_sizes[zlib_20000_file_index]
+        # plot zlib
+        plt.bar(x_blocks - 0.2, [map_zlib_file_size,
+                           zlib_2000_file_size,
+                           zlib_5000_file_size,
+                           zlib_10000_file_size,
+                           zlib_20000_file_size], bar_width,
+                label='Zlib Block Compression', color='green')
 
-
-        plt.bar(x_blocks, [map_zlib_file_size,
-                             zlib_2000_file_size,
-                             zlib_5000_file_size,
-                             zlib_10000_file_size,
-                             zlib_20000_file_size], bar_width,
-                      label='Zlib Block Compression', color='green')
-        plt.bar(x_blocks, [map_zlib_index_size,
+        plt.bar(x_blocks - 0.2, [map_zlib_index_size,
                              zlib_2000_file_index_size,
                              zlib_5000_file_index_size,
                              zlib_10000_file_index_size,
@@ -83,8 +84,47 @@ def plot_file_sizes(gwas_file_names, file_sizes, plot_dir):
                           zlib_2000_file_size,
                           zlib_5000_file_size,
                           zlib_10000_file_size,
-                          zlib_20000_file_size], label='Index',
+                          zlib_20000_file_size],
                   color='red')
+
+        # FASTPFORVB: (2000, 5000, 10000, 20000)
+        fpfvb_2000_file = file + '.tsv.grlz_fpfvb-2000'
+        fpfvb_2000_file_index = file + '.tsv.grlz.idx_fpfvb-2000'
+        fpfvb_2000_file_size = file_sizes[fpfvb_2000_file]
+        fpfvb_2000_file_index_size = file_sizes[fpfvb_2000_file_index]
+        fpfvb_5000_file = file + '.tsv.grlz_fpfvb-5000'
+        fpfvb_5000_file_index = file + '.tsv.grlz.idx_fpfvb-5000'
+        fpfvb_5000_file_size = file_sizes[fpfvb_5000_file]
+        fpfvb_5000_file_index_size = file_sizes[fpfvb_5000_file_index]
+        fpfvb_10000_file = file + '.tsv.grlz_fpfvb-10000'
+        fpfvb_10000_file_index = file + '.tsv.grlz.idx_fpfvb-10000'
+        fpfvb_10000_file_size = file_sizes[fpfvb_10000_file]
+        fpfvb_10000_file_index_size = file_sizes[fpfvb_10000_file_index]
+        fpfvb_20000_file = file + '.tsv.grlz_fpfvb-20000'
+        fpfvb_20000_file_index = file + '.tsv.grlz.idx_fpfvb-20000'
+        fpfvb_20000_file_size = file_sizes[fpfvb_20000_file]
+        fpfvb_20000_file_index_size = file_sizes[fpfvb_20000_file_index]
+
+        # plot fastpforvb
+        plt.bar(x_blocks + .2, [0,
+                                fpfvb_2000_file_size,
+                                fpfvb_5000_file_size,
+                                fpfvb_10000_file_size,
+                                fpfvb_20000_file_size], bar_width,
+                label='FastPForVB Block Compression', color='purple')
+
+        plt.bar(x_blocks + .2, [0,
+                                fpfvb_2000_file_index_size,
+                                fpfvb_5000_file_index_size,
+                                fpfvb_10000_file_index_size,
+                                fpfvb_20000_file_index_size], bar_width,
+                    bottom=[0,
+                            fpfvb_2000_file_size,
+                            fpfvb_5000_file_size,
+                            fpfvb_10000_file_size,
+                            fpfvb_20000_file_size], label='Index', color='red')
+
+
 
         # FORMATTING
         plt.title('GWAS File Compression Sizes')
@@ -99,19 +139,13 @@ def plot_file_sizes(gwas_file_names, file_sizes, plot_dir):
         # no spines
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
-        # log scale
+        # # log scale
         plt.yscale('log')
 
 
 
     plt.tight_layout()
     plt.savefig(os.path.join(plot_dir, 'file_sizes.png'))
-
-
-
-
-
-
 
 
 def main():
