@@ -5,7 +5,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "FastPFor/headers/variablebyte.h"
+#include "variablebyte.h"
 
 #include "utils.h"
 #include "header.h"
