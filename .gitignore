@@ -3,5 +3,6 @@
 cmake-build-debug/
 lib/simde/
 build/
+config_files/
 gwas_files/
 map_files/
