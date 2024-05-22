@@ -62,7 +62,9 @@ add_executable(test_gwas
         test/test_header.cpp
         src/header.cpp
         test/test_compress.cpp
-        src/compress.cpp)
+        src/compress.cpp
+        src/blocks.cpp
+        test/test_blocks.cpp)
 
 # Additional configuration if needed, e.g., linking libraries, "adding -lz"
 target_link_libraries(gwas_compress libzippp FastPFOR z)
