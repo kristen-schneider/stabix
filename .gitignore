@@ -1,7 +1,6 @@
 *.DS_Store
 .idea/
 cmake-build-debug/
-simon-cmake
 lib/simde/
 build/
 gwas_files/
