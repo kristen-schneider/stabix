@@ -29,6 +29,15 @@ def get_sizes_of_files(data_dir):
         file_sizes[file] = file_size_bytes
     return file_sizes
 
+def write_file_sizes(gwas_file_names, file_sizes, output_file, ):
+    with open(output_file, 'w') as f:
+        f.write('File, Size (Bytes)\n')
+        for file, size in file_sizes.items():
+            for gwas_file in gwas_file_names:
+                if gwas_file in file:
+                    f.write(f'{file}, {size}\n')
+    f.close()
+
 def plot_file_sizes(gwas_file_names, file_sizes, plot_dir):
     # for each file tested, generate a subplot
     fig, ax = plt.subplots(1, 1, figsize=(10, 5))
@@ -156,6 +165,7 @@ def main():
 
     gwas_file_names = read_gwas_files_names(gwas_files)
     file_sizes = get_sizes_of_files(data_dir)
+    write_file_sizes(gwas_file_names, file_sizes, plot_dir + 'file_sizes.txt')
     plot_file_sizes(gwas_file_names, file_sizes, plot_dir)
 
 
