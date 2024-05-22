@@ -3,28 +3,18 @@ cmake_minimum_required(VERSION 3.27)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_INSTALL_PREFIX "./bin")
 
 project(gwas_run)
 
-## Enable bzip2 support in libzippp
-add_definitions(-DZIP_CM_BZIP2)
-
 ## Include directories
 include_directories(include)
-# include_directories(lib)
+include_directories(lib)
 include_directories(lib/googletest/googletest/include)
-include_directories(lib/FastPFor/headers)
-include_directories(lib/libzippp/bin/include)
+include_directories(lib/FastPFor/headers/)
 
 ## Link directories
-add_subdirectory(lib/libzippp)
-add_subdirectory(lib/FastPFor)
-if(NOT TARGET gmock)
-  # can't be doubly adding.
-  # Note, fastpfor depends on gtest
-  add_subdirectory(lib/googletest)
-endif()
+add_subdirectory(lib/googletest)
+#add_subdirectory(lib/FastPFor)
 
 ### Add the executables
 # COMPRESSION
@@ -67,7 +57,7 @@ add_executable(test_gwas
         test/test_blocks.cpp)
 
 # Additional configuration if needed, e.g., linking libraries, "adding -lz"
-target_link_libraries(gwas_compress libzippp FastPFOR z)
-target_link_libraries(gwas_index libzippp FastPFOR z)
-target_link_libraries(gwas_decompress libzippp FastPFOR z)
-target_link_libraries(test_gwas gtest gtest_main libzippp FastPFOR z)
+target_link_libraries(gwas_compress z)
+target_link_libraries(gwas_index z)
+target_link_libraries(gwas_decompress z)
+target_link_libraries(test_gwas gtest gtest_main z)
