@@ -7,7 +7,7 @@
 using namespace std;
 
 TEST(MakeBlocksMap, test) {
-    string gwas_file = "/Users/krsc0813/CLionProjects/gwas_local/data/test.tsv";
+    string gwas_file = "/Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.tsv";
     int num_columns = 10;
     map<int, vector<uint32_t>> chrm_block_bp_ends = {
             {1, {5000, 9000, 13000}},

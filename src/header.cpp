@@ -54,7 +54,9 @@ vector<string> parse_header_list(
         case 5:
 //            for (int i = stoi(header_list[0])+2+stoi(header_list[1])*2; i < stoi(header_list[0])+num_blocks+stoi(header_list[1])*2+num_blocks; i++){
             for (int i = stoi(header_list[0])+2+stoi(header_list[1])*2; i < stoi(header_list[0])+2+stoi(header_list[1])*2+num_blocks; i++){
-                header_query_list.push_back(header_list[i]);
+                if (header_list[i] != "") {
+                    header_query_list.push_back(header_list[i]);
+                }else{ break; }
             }
             break;
         default:

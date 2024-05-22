@@ -236,7 +236,7 @@ TEST(GetColumnTypes, Comma) {
 }
 
 TEST(GetBlockBPbyMap, simmple){
-    string map_file = "/Users/krsc0813/CLionProjects/gwas_local/data/test.map";
+    string map_file = "/Users/krsc0813/CLionProjects/gwas_local/map_files/test.map";
 //    string map_file = "data/test.map";
 
     map<int, vector<uint32_t>> chrm_block_bp_ends = get_chrm_block_bp_ends(map_file);
