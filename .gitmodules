@@ -4,3 +4,6 @@
 [submodule "lib/FastPFor"]
 	path = lib/FastPFor
 	url = https://github.com/lemire/FastPFor.git
+[submodule "lib/libzippp"]
+    path = lib/libzippp
+    url = https://github.com/nih-at/libzip
