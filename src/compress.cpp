@@ -4,8 +4,12 @@
 #include <zlib.h>
 #include <sstream>
 #include <stdexcept>
+#include <bzlib.h>
+#include <limits.h>
+#include <stdlib.h>
 
 #include "variablebyte.h"
+//#include "zipint.h"
 
 #include "utils.h"
 #include "header.h"
@@ -16,7 +20,7 @@ using namespace std;
 
 string ZLIB_HEADER_C = "x\xda";
 /*
- * Function to compress a string
+ * Function to compress a string using zlib
  * @param in_data: string - input data
  * @return outstring: string - compressed data using zlib
  */
@@ -81,6 +85,17 @@ vector <uint32_t> fastpfor_vb_compress(vector<uint32_t> in_data,
 
     return compressed;
 }
+
+/*
+ * Function to compress a string using bz2
+ *
+ */
+
+string bz2_compress(string in_data){
+
+}
+
+
 
 ///*
 // * use fastpfor variable byte delta to compress a vector of integers
