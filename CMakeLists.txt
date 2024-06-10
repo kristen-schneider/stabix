@@ -14,21 +14,16 @@ add_definitions(-DZIP_CM_BZIP2)
 include_directories(include)
 # include_directories(lib)
 include_directories(lib/googletest/googletest/include)
-<<<<<<< HEAD
 include_directories(lib/FastPFor/headers)
 include_directories(lib/libzippp/bin/include)
-=======
-include_directories(lib/FastPFor/headers/)
-include_directories(lib/libzippp/lib/)
->>>>>>> 6ca64b688022846b636392e5e24bcc4972017443
 
 ## Link directories
 add_subdirectory(lib/libzippp)
 add_subdirectory(lib/FastPFor)
 if(NOT TARGET gmock)
-    # can't be doubly adding.
-    # Note, fastpfor depends on gtest
-    add_subdirectory(lib/googletest)
+        # can't be doubly adding.
+        # Note, fastpfor depends on gtest
+        add_subdirectory(lib/googletest)
 endif()
 
 ### Add the executables
