@@ -30,6 +30,17 @@ codecs:
 - [cmake](https://cmake.org)
 - C++ Standard Library
 
+### Setup
+```
+git clone git@github.com:kristen-schneider/gwas-cpp.git
+cd gwas-cpp
+```
+_...TODO: determine if approrpriate..._
+```
+git submodule init
+git submodule update
+```
+
 ### Build
 ```angular2html
 mkdir build
@@ -43,25 +54,25 @@ make
 ### Compile and run TESTS
 ```angular2html
 cmake --build . --target test_gwas
-./build/bin/test_gwas
+./bin/test_gwas
 ```
 
 ### Compile and run COMPRESSION
 ```angular2html
 cmake --build . --target gwas_compress
-./build/bin/gwas_compress
+./bin/gwas_compress
 ```
 
 ### Compile and run INDEX
 ```angular2html
 cmake --build . --target gwas_index
-./build/bin/gwas_index
+./bin/gwas_index
 ```
 
 ### Compile and run DECOMPRESSION
 ```angular2html
 cmake --build . --target gwas_decompress
-./build/bin/gwas_decompress
+./bin/gwas_decompress
 ```
 
 
