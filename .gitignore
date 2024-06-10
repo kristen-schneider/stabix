@@ -1,7 +1,9 @@
 *.DS_Store
 .idea/
 cmake-build-debug/
-test/cmaketxt
 lib/simde/
 build/
-data/
+config_files/
+gwas_files/
+map_files/
+plots/*.txt

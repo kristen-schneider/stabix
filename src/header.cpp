@@ -26,6 +26,8 @@ vector<string> parse_header_list(
     switch_case["block end bytes"] = 4;
     switch_case["block sizes"] = 5;
 
+    int num_blocks = stoi(header_list[1]);
+
     // switch statement for query element
     switch (switch_case[header_query]) {
         case 0:
@@ -50,8 +52,11 @@ vector<string> parse_header_list(
             }
             break;
         case 5:
-            for (int i = stoi(header_list[0])+2+stoi(header_list[1])*2; i < stoi(header_list[0])+2+stoi(header_list[1])*2+2; i++){
-                header_query_list.push_back(header_list[i]);
+//            for (int i = stoi(header_list[0])+2+stoi(header_list[1])*2; i < stoi(header_list[0])+num_blocks+stoi(header_list[1])*2+num_blocks; i++){
+            for (int i = stoi(header_list[0])+2+stoi(header_list[1])*2; i < stoi(header_list[0])+2+stoi(header_list[1])*2+num_blocks; i++){
+                if (header_list[i] != "") {
+                    header_query_list.push_back(header_list[i]);
+                }else{ break; }
             }
             break;
         default:

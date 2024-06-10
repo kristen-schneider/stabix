@@ -160,7 +160,7 @@ string convert_vector_str_to_string(vector<string> vec){
  * @return str: string of comma separated values
  */
 string convert_vector_int_to_string(
-        vector<uint32_t> vec){
+        vector<int> vec){
     string str;
     for (int i = 0; i < vec.size(); i++) {
         str += to_string(vec[i]) + ",";
@@ -285,4 +285,65 @@ vector<uint32_t> convert_vector_string_to_vector_int(
         vec_int.push_back(stoi(vec[i]));
     }
     return vec_int;
+}
+
+/*
+ * Function to read a map file and find bp end of blocks
+ * @param map_file: string
+ * @return map of chrm: <bp, bp, bp...>
+ */
+map<int, vector<uint32_t>> get_chrm_block_bp_ends(
+        string map_file) {
+    map<int, vector<uint32_t>> chrm_block_bp_ends;
+    int BLOCK_CM_SIZE = 1;
+    // open map file, exit if file does not exist
+    ifstream map_stream(map_file);
+    if (!map_stream.good()) {
+        cout << "ERROR: Map file does not exist: " << map_file << endl;
+        exit(1);
+    }
+    // read map file
+    int block_count = 0;
+    int max_cm = block_count * BLOCK_CM_SIZE + 1;
+    float prev_bp = 0;
+    int prev_chrm = 0;
+    string line;
+    while (getline(map_stream, line)) {
+        // split line by white space
+        vector<string> vec = split_string(line, ' ');
+        int chrm = stoi(vec[0]);
+        // new chromosome, reset block count
+        if (chrm != prev_chrm) {
+            chrm_block_bp_ends[chrm] = {};
+            block_count = 0;
+            max_cm = block_count * BLOCK_CM_SIZE + 1;
+            prev_chrm = chrm;
+        }
+        float cm = stof(vec[2]);
+        uint32_t bp = stoul(vec[3]);
+        // if cm is greater than max_cm, add new block
+        if (cm >= max_cm) {
+            if (cm == max_cm){ prev_bp = bp; }
+            chrm_block_bp_ends[chrm].push_back(prev_bp);
+            block_count++;
+            max_cm = block_count * BLOCK_CM_SIZE + 1;
+        }
+        prev_bp = bp;
+    }
+    map_stream.close();
+    return chrm_block_bp_ends;
+}
+
+/*
+ * Function to get the sizes of blocks when using a map file
+ * @param all_blocks: vector of blocks
+ * @return vector of block sizes
+ */
+vector<int> get_block_sizes(
+        vector<vector<vector<string>>> all_blocks){
+    vector<int> block_sizes;
+    for (int i = 0; i < all_blocks.size(); i++){
+        block_sizes.push_back(all_blocks[i][0].size());
+    }
+    return block_sizes;
 }
