@@ -1,21 +1,23 @@
+#include <bzlib.h>
 #include <iostream>
+#include <limits.h>
+#include <sstream>
+#include <stdexcept>
+#include <stdlib.h>
 #include <string>
 #include <vector>
 #include <zlib.h>
-#include <sstream>
-#include <stdexcept>
-#include <bzlib.h>
-#include <limits.h>
-#include <stdlib.h>
 
+#include "libzippp.h"
 #include "variablebyte.h"
-//#include "zipint.h"
+// #include "zipint.h"
 
-#include "utils.h"
-#include "header.h"
 #include "decompress.h"
+#include "header.h"
+#include "utils.h"
 
 using namespace FastPForLib;
+using namespace libzippp;
 using namespace std;
 
 string ZLIB_HEADER_C = "x\xda";
@@ -24,16 +26,16 @@ string ZLIB_HEADER_C = "x\xda";
  * @param in_data: string - input data
  * @return outstring: string - compressed data using zlib
  */
-string zlib_compress(string in_data){
+string zlib_compress(string in_data) {
     // https://gist.github.com/gomons/9d446024fbb7ccb6536ab984e29e154a
-    z_stream zs;                        // z_stream is zlib's control structure
+    z_stream zs; // z_stream is zlib's control structure
     memset(&zs, 0, sizeof(zs));
 
     if (deflateInit(&zs, Z_BEST_COMPRESSION) != Z_OK)
         throw(std::runtime_error("deflateInit failed while compressing."));
 
-    zs.next_in = (Bytef*)in_data.data();
-    zs.avail_in = in_data.size();           // set the z_stream's input
+    zs.next_in = (Bytef *)in_data.data();
+    zs.avail_in = in_data.size(); // set the z_stream's input
 
     int ret;
     char outbuffer[32768];
@@ -41,21 +43,20 @@ string zlib_compress(string in_data){
 
     // retrieve the compressed bytes blockwise
     do {
-        zs.next_out = reinterpret_cast<Bytef*>(outbuffer);
+        zs.next_out = reinterpret_cast<Bytef *>(outbuffer);
         zs.avail_out = sizeof(outbuffer);
 
         ret = deflate(&zs, Z_FINISH);
 
         if (outstring.size() < zs.total_out) {
             // append the block to the output string
-            outstring.append(outbuffer,
-                             zs.total_out - outstring.size());
+            outstring.append(outbuffer, zs.total_out - outstring.size());
         }
     } while (ret == Z_OK);
 
     deflateEnd(&zs);
 
-    if (ret != Z_STREAM_END) {          // an error occurred that was not EOF
+    if (ret != Z_STREAM_END) { // an error occurred that was not EOF
         std::ostringstream oss;
         oss << "Exception during zlib compression: (" << ret << ") " << zs.msg;
         throw(std::runtime_error(oss.str()));
@@ -64,7 +65,7 @@ string zlib_compress(string in_data){
     // remove zlib header
     string outstring_noheader = remove_zlib_header(outstring, ZLIB_HEADER_C);
     return outstring_noheader;
-//    return outstring;
+    //    return outstring;
 }
 
 /*
@@ -73,29 +74,20 @@ string zlib_compress(string in_data){
  * @param compressedSize: size_t, the size of the compressed data
  * @return: vector<uint32_t>, the decompressed data
  */
-vector <uint32_t> fastpfor_vb_compress(vector<uint32_t> in_data,
-                                       size_t& compressedSize){
+vector<uint32_t> fastpfor_vb_compress(vector<uint32_t> in_data,
+                                      size_t &compressedSize) {
     FastPForLib::VariableByte vb;
 
     // Compress the integer array
-    vector<uint32_t> compressed(in_data.size() * 2); // Allocate space for compressed data
-    vb.encodeArray(in_data.data(), in_data.size(), compressed.data(), compressedSize);
+    vector<uint32_t> compressed(in_data.size() *
+                                2); // Allocate space for compressed data
+    vb.encodeArray(in_data.data(), in_data.size(), compressed.data(),
+                   compressedSize);
     // resize compressed data
     compressed.resize(compressedSize);
 
     return compressed;
 }
-
-/*
- * Function to compress a string using bz2
- *
- */
-
-string bz2_compress(string in_data){
-
-}
-
-
 
 ///*
 // * use fastpfor variable byte delta to compress a vector of integers
@@ -103,7 +95,8 @@ string bz2_compress(string in_data){
 // * @param compressedSize: size_t - size of compressed data
 // * @return encoded_deltas: vector<uint32_t> - compressed data
 // */
-//vector<uint32_t> fastpfor_vb_delta_compress(vector<uint32_t> in_data, size_t& compressedSize){
+// vector<uint32_t> fastpfor_vb_delta_compress(vector<uint32_t> in_data, size_t&
+// compressedSize){
 //    FastPForLib::VariableByte vb;
 //    vector<uint32_t> deltas;
 //    deltas.reserve(in_data.size());
@@ -116,10 +109,79 @@ string bz2_compress(string in_data){
 //    // Encode deltas using FastPFor's variable byte encoding
 //    vector<uint32_t> encoded_deltas(in_data.size() * 2);
 //    size_t encoded_size;
-//    vb.encodeArray(deltas.data(), deltas.size(), encoded_deltas.data(), encoded_size);
-//    encoded_deltas.resize(encoded_size);
+//    vb.encodeArray(deltas.data(), deltas.size(), encoded_deltas.data(),
+//    encoded_size); encoded_deltas.resize(encoded_size);
 //
 //    return encoded_deltas;
 //}
 
+/* void setCompressionMethod(CompressionMethod method) { */
+/*   currentCompressionMethod = method; */
+/*   libzippp::CompressionMethod lzMethod; */
+/**/
+/*   switch (method) { */
+/*     case CompressionMethod::UNCOMPRESSED: */
+/*       lzMethod = libzippp::CompressionMethod::UNCOMPRESSED; */
+/*         break; */
+/*     case CompressionMethod::BZIP2: */
+/*       lzMethod = libzippp::CompressionMethod::BZIP2; */
+/*         break; */
+/*     case CompressionMethod::XZ: */
+/*       lzMethod = libzippp::CompressionMethod::XZ; */
+/*         break; */
+/*     case CompressionMethod::ZSTD: */
+/*       lzMethod = libzippp::CompressionMethod::ZSTD; */
+/*         break; */
+/*     default: */
+/*       lzMethod = libzippp::CompressionMethod::DEFLATE; */
+/*         break; */
+/*   } */
+/**/
+/*   libzippp::setCompressionMethod(lzMethod); */
+/* } */
+/**/
+/* CompressionMethod getCompressionMethod() { */
+/*   return currentCompressionMethod; */
+/* } */
 
+string libzippp_compress(string inputData, CompressionMethod method) {
+    // important to use calloc/malloc for the fromWritableBuffer !
+    const int inputSize = inputData.length();
+    const int bufferSize = inputSize * 1.3;
+    void *buffer = calloc(bufferSize, sizeof(char));
+
+    ZipArchive *zf =
+        ZipArchive::fromWritableBuffer(&buffer, bufferSize, ZipArchive::New);
+    if (zf == nullptr) {
+        throw(std::runtime_error("libzippp failed while compressing."));
+    }
+
+    zf->setCompressionMethod(method);
+    zf->addData("entry", inputData.c_str(), inputSize);
+    zf->close();
+
+    const int writtenSize = zf->getBufferLength();
+
+    ZipArchive::free(zf);
+    return string(static_cast<char *>(buffer), writtenSize);
+}
+
+string deflate_compress(string inputData) {
+    return libzippp_compress(inputData, CompressionMethod::DEFLATE);
+}
+
+string bz2_compress(string inputData) {
+    return libzippp_compress(inputData, CompressionMethod::BZIP2);
+}
+
+string xz_compress(string inputData) {
+    return libzippp_compress(inputData, CompressionMethod::XZ);
+}
+
+string zstd_compress(string inputData) {
+    return libzippp_compress(inputData, CompressionMethod::ZSTD);
+}
+
+string raw_compress(string inputData) {
+    return libzippp_compress(inputData, CompressionMethod::STORE);
+}
