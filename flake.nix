@@ -13,12 +13,15 @@
       devShells.${system}.default = mkShell {
         buildInputs = [
           # Add your desired packages here
-          zlib
-          libzip
           gcc
           cmake
           simde
+
+          libzip
+          zlib
           bzip2
+          xz
+          zstd
         ];
       };
     };

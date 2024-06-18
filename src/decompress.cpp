@@ -1,17 +1,19 @@
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <zlib.h>
-#include <sstream>
-#include <stdexcept>
 
+#include "libzippp.h"
 #include "variablebyte.h"
 
-#include "utils.h"
-#include "header.h"
 #include "decompress.h"
+#include "header.h"
+#include "utils.h"
 
 using namespace std;
+using namespace libzippp;
 using namespace FastPForLib;
 
 string ZLIB_HEADER_D = "x\xda";
@@ -22,25 +24,22 @@ string ZLIB_HEADER_D = "x\xda";
  * @param codec: string, the codec used to compress the column
  * @return: string, the decompressed column
  */
-string decompress_column(string compressed_column,
-                         string codec,
-                         size_t compressedSize,
-                         size_t block_size){
+string decompress_column(string compressed_column, string codec,
+                         size_t compressedSize, size_t block_size) {
     string decompressed_column_str;
-    if (codec == "zlib"){
+    if (codec == "zlib") {
         decompressed_column_str = zlib_decompress(compressed_column);
         return decompressed_column_str;
-    }
-    else if (codec == "fpfVB"){
-        vector<uint32_t> compressed_column_ints = convert_string_to_vector_unsignedlong(compressed_column);
-        vector<uint32_t> decompressed_column = fastpfor_vb_decompress(compressed_column_ints,
-                                                                      compressedSize,
-                                                                      block_size);
-        decompressed_column_str = convert_vector_uint32_to_string(decompressed_column.data(), decompressed_column.size());
+    } else if (codec == "fpfVB") {
+        vector<uint32_t> compressed_column_ints =
+            convert_string_to_vector_unsignedlong(compressed_column);
+        vector<uint32_t> decompressed_column = fastpfor_vb_decompress(
+            compressed_column_ints, compressedSize, block_size);
+        decompressed_column_str = convert_vector_uint32_to_string(
+            decompressed_column.data(), decompressed_column.size());
 
         return decompressed_column_str;
-    }
-    else {
+    } else {
         cout << "ERROR: Codec not recognized: " << codec << endl;
         exit(1);
     }
@@ -51,21 +50,21 @@ string decompress_column(string compressed_column,
  * @param in_data: string, the zlib compressed string
  * @return: string, the decompressed string
  */
-string zlib_decompress(string in_data){
+string zlib_decompress(string in_data) {
 
     // add back the zlib header
     in_data = add_zlib_header(in_data, ZLIB_HEADER_D);
 
     // https://gist.github.com/gomons/9d446024fbb7ccb6536ab984e29e154a
 
-    z_stream zs;                        // z_stream is zlib's control structure
+    z_stream zs; // z_stream is zlib's control structure
     memset(&zs, 0, sizeof(zs));
 
     if (inflateInit(&zs) != Z_OK)
         throw(std::runtime_error("inflateInit failed while decompressing."));
 
-    zs.next_in = (Bytef*)in_data.data();
-    zs.avail_in = in_data.size();           // set the z_stream's input
+    zs.next_in = (Bytef *)in_data.data();
+    zs.avail_in = in_data.size(); // set the z_stream's input
 
     int ret;
     char outbuffer[32768];
@@ -73,24 +72,23 @@ string zlib_decompress(string in_data){
 
     // retrieve the compressed bytes blockwise
     do {
-        zs.next_out = reinterpret_cast<Bytef*>(outbuffer);
+        zs.next_out = reinterpret_cast<Bytef *>(outbuffer);
         zs.avail_out = sizeof(outbuffer);
 
         ret = inflate(&zs, 0);
 
         if (outstring.size() < zs.total_out) {
             // append the block to the output string
-            outstring.append(outbuffer,
-                             zs.total_out - outstring.size());
+            outstring.append(outbuffer, zs.total_out - outstring.size());
         }
     } while (ret == Z_OK);
 
     inflateEnd(&zs);
 
-    if (ret != Z_STREAM_END) {          // an error occurred that was not EOF
+    if (ret != Z_STREAM_END) { // an error occurred that was not EOF
         std::ostringstream oss;
         oss << "Exception during zlib decompression: (" << ret << ") "
-        << zs.msg;
+            << zs.msg;
         throw(std::runtime_error(oss.str()));
     }
 
@@ -110,9 +108,7 @@ vector<uint32_t> fastpfor_vb_decompress(vector<uint32_t> in_data,
     FastPForLib::VariableByte vb;
     size_t decompressedSize = compressedSize * 2;
     vector<uint32_t> decompressed(block_size);
-    vb.decodeArray(in_data.data(),
-                   in_data.size(),
-                   decompressed.data(),
+    vb.decodeArray(in_data.data(), in_data.size(), decompressed.data(),
                    decompressedSize);
 
     // Resize the decompressed vector to fit the actual decompressed data
@@ -121,23 +117,50 @@ vector<uint32_t> fastpfor_vb_decompress(vector<uint32_t> in_data,
     return decompressed;
 }
 
-//vector<uint32_t> fastpfor_vb_delta_decompress(const std::vector<uint32_t>& encoded_deltas) {
-//    FastPForLib::VariableByte vb;
+// vector<uint32_t> fastpfor_vb_delta_decompress(const std::vector<uint32_t>&
+// encoded_deltas) {
+//     FastPForLib::VariableByte vb;
 //
-//    // Decode deltas using FastPFor's variable byte decoding
-//    vector<uint32_t> decoded_deltas(encoded_deltas.size() * 2);
-//    size_t decoded_size;
-//    vb.decodeArray(encoded_deltas.data(), encoded_deltas.size(), decoded_deltas.data(), decoded_size);
-//    decoded_deltas.resize(decoded_size);
+//     // Decode deltas using FastPFor's variable byte decoding
+//     vector<uint32_t> decoded_deltas(encoded_deltas.size() * 2);
+//     size_t decoded_size;
+//     vb.decodeArray(encoded_deltas.data(), encoded_deltas.size(),
+//     decoded_deltas.data(), decoded_size);
+//     decoded_deltas.resize(decoded_size);
 //
-//    // Reconstruct original sequence by adding deltas to previous values
-//    vector<uint32_t> original_sequence;
-//    original_sequence.reserve(decoded_deltas.size() + 1);
-//    uint32_t prev_value = 0; // Assuming the first value is 0, adjust if needed
-//    for (const auto& delta : decoded_deltas) {
-//        prev_value += delta;
-//        original_sequence.push_back(prev_value);
-//    }
+//     // Reconstruct original sequence by adding deltas to previous values
+//     vector<uint32_t> original_sequence;
+//     original_sequence.reserve(decoded_deltas.size() + 1);
+//     uint32_t prev_value = 0; // Assuming the first value is 0, adjust if
+//     needed for (const auto& delta : decoded_deltas) {
+//         prev_value += delta;
+//         original_sequence.push_back(prev_value);
+//     }
 //
-//    return original_sequence;
-//}
+//     return original_sequence;
+// }
+
+string libzippp_decompress(string compressedData) {
+    const int bufferSize = compressedData.length();
+    const char *buffer = compressedData.c_str();
+
+    ZipArchive *zf = ZipArchive::fromBuffer(buffer, bufferSize);
+    if (zf == nullptr) {
+        throw(std::runtime_error("libzippp failed while decompressing."));
+    }
+
+    zf->open(ZipArchive::ReadOnly);
+
+    ZipEntry entry = zf->getEntry("entry");
+    string str = "";
+
+    // a null entry can correspond to compression of an empty string
+    if (!entry.isNull() && entry.getSize() != 0) {
+        str = entry.readAsText();
+    }
+
+    // free memory
+    zf->close();
+    delete zf;
+    return str;
+}
