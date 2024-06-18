@@ -7,8 +7,10 @@ set(CMAKE_INSTALL_PREFIX "./bin")
 
 project(gwas_run)
 
-## Enable bzip2 support in libzippp
+## Enable all external libraries in libzippp
 add_definitions(-DZIP_CM_BZIP2)
+add_definitions(-DZIP_CM_XZ)
+add_definitions(-DZIP_CM_ZSTD)
 
 ## Include directories
 include_directories(include)
