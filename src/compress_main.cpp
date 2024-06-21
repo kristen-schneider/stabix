@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
             all_blocks = make_blocks_map(gwas_file, num_columns, chrm_block_bp_ends, delimiter);
         }
         else{
-            all_blocks = make_blocks(gwas_file, num_columns, block_size, delimiter);
+            all_blocks = make_blocks(gwas_file, num_columns, block_size, delimiter, 9);
         }
         num_blocks = all_blocks.size();
         if (config_options["block_size"] == "map") {
