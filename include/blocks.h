@@ -15,7 +15,8 @@ vector<vector<vector<string>>> make_blocks(
         string gwas_file,
         int num_columns,
         int block_size,
-        char delim);
+        char delim,
+        int index_col);
 
 vector<vector<vector<string>>> make_blocks_map(
         string gwas_file,
