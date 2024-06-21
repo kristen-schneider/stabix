@@ -1,6 +1,5 @@
 #include <bzlib.h>
 #include <iostream>
-#include <limits.h>
 #include <sstream>
 #include <stdexcept>
 #include <stdlib.h>

@@ -1,9 +1,8 @@
+#include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
-#include <fstream>
-#include <algorithm>
-#include <map>
 
 #include "blocks.h"
 #include "compress.h"
@@ -12,10 +11,15 @@
 
 using namespace std;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // COMPRESSION STEPS
 
     // 0. read config options
+    if (argc != 2) {
+        cout << "1 argument required: config_path" << endl;
+        // prevents seg faults
+        return -1;
+    }
     string config_file = argv[1];
     cout << "Reading config options from: " << config_file << endl;
     map<string, string> config_options;
@@ -27,7 +31,7 @@ int main(int argc, char* argv[]) {
     // if block_size == "map", get block sizes by map file
     if (config_options["block_size"] == "map") {
         cout << "Block sizes will be determined by map file." << endl;
-    }else{ // block_size is a fixed integer
+    } else { // block_size is a fixed integer
         block_size = stoi(config_options["block_size"]);
     }
     string query_type = config_options["query_type"];
@@ -37,7 +41,8 @@ int main(int argc, char* argv[]) {
     cout << "\t...gwas_file: " << gwas_file << endl;
     cout << "\t...block_size: " << block_size << endl;
     cout << "\t...query_type: " << query_type << endl;
-    cout << "\t...codecs_list: " << convert_vector_str_to_string(codecs_list) << endl;
+    cout << "\t...codecs_list: " << convert_vector_str_to_string(codecs_list)
+         << endl;
     cout << "\t...compressed_file: " << compressed_file << endl;
 
     cout << "Done." << endl << endl;
@@ -54,6 +59,10 @@ int main(int argc, char* argv[]) {
     cout << "Reading file header..." << endl;
     // open gwas file and get first two lines
     ifstream file(gwas_file);
+    if (!file.is_open()) {
+        cout << "Unable to open gwas_file: " << gwas_file << endl;
+        return -1;
+    }
     string line_1;
     string line_2;
     getline(file, line_1);
@@ -80,53 +89,58 @@ int main(int argc, char* argv[]) {
     // 2. sort file as needed
     // if query type is coordinate, sort file by chromosome and genomic position
     if (query_type == "coordinate") {
-        cout << "File already sorted by chromosome and genomic position." << endl;
+        cout << "File already sorted by chromosome and genomic position."
+             << endl;
 
         // 3. get blocks
         cout << "Making blocks..." << endl;
         // if block_size == "map", make block sizes by chrm_block_bp_ends
         if (config_options["block_size"] == "map") {
             string map_file = config_options["map"];
-            map<int, vector<uint32_t>> chrm_block_bp_ends = get_chrm_block_bp_ends(map_file);
-            all_blocks = make_blocks_map(gwas_file, num_columns, chrm_block_bp_ends, delimiter);
-        }
-        else{
-            all_blocks = make_blocks(gwas_file, num_columns, block_size, delimiter);
+            map<int, vector<uint32_t>> chrm_block_bp_ends =
+                get_chrm_block_bp_ends(map_file);
+            all_blocks = make_blocks_map(gwas_file, num_columns,
+                                         chrm_block_bp_ends, delimiter);
+        } else {
+            all_blocks =
+                make_blocks(gwas_file, num_columns, block_size, delimiter);
         }
         num_blocks = all_blocks.size();
         if (config_options["block_size"] == "map") {
             cout << "\t...made " << num_blocks << ", 1cM in length." << endl;
-        }else{
-            cout << "\t...made " << num_blocks << " blocks of size " << block_size  << " or less." << endl;
+        } else {
+            cout << "\t...made " << num_blocks << " blocks of size "
+                 << block_size << " or less." << endl;
         }
         cout << "Done." << endl << endl;
 
-
-    }else if (query_type == "statistic") {
-        string statistic = split_string(config_options["query_statistic"], ':')[0];
+    } else if (query_type == "statistic") {
+        string statistic =
+            split_string(config_options["query_statistic"], ':')[0];
         int statistic_idx = get_index(column_names_list, statistic);
-        cout << "Sorting file by " << statistic << " (column index: " << statistic_idx << ")" << endl;
+        cout << "Sorting file by " << statistic
+             << " (column index: " << statistic_idx << ")" << endl;
         cout << "Done." << endl << endl;
     }
 
     // 4. compress blocks AND get second half of header
     cout << "Compressing blocks..." << endl;
     // compress each block and add to compressed_blocks
-    for (auto const& block : all_blocks) {
+    for (auto const &block : all_blocks) {
         vector<string> compressed_block = compress_block(block, codecs_list);
         compressed_blocks.push_back(compressed_block);
     }
 
     // get block headers
     vector<vector<string>> block_headers;
-    for (auto const& block : compressed_blocks) {
+    for (auto const &block : compressed_blocks) {
         vector<string> block_header = get_block_header(block);
         block_headers.push_back(block_header);
     }
 
     // compress block headers
     vector<string> compressed_block_headers;
-    for (auto const& block_header : block_headers) {
+    for (auto const &block_header : block_headers) {
         string string_block_header = convert_vector_str_to_string(block_header);
         string compressed_block_header = zlib_compress(string_block_header);
         compressed_block_headers.push_back(compressed_block_header);
@@ -143,11 +157,14 @@ int main(int argc, char* argv[]) {
     vector<string> block_header_end_bytes;
     vector<string> block_end_bytes;
     int curr_byte_idx = 0;
-    for (int curr_block_idx = 0; curr_block_idx < num_blocks; curr_block_idx++) {
-        int curr_block_header_length = compressed_block_headers[curr_block_idx].length();
+    for (int curr_block_idx = 0; curr_block_idx < num_blocks;
+         curr_block_idx++) {
+        int curr_block_header_length =
+            compressed_block_headers[curr_block_idx].length();
         curr_byte_idx += curr_block_header_length;
         block_header_end_bytes.push_back(to_string(curr_byte_idx));
-        int curr_block_length = get_block_length(compressed_blocks[curr_block_idx]);
+        int curr_block_length =
+            get_block_length(compressed_blocks[curr_block_idx]);
         curr_byte_idx += curr_block_length;
         block_end_bytes.push_back(to_string(curr_byte_idx));
     }
@@ -159,28 +176,28 @@ int main(int argc, char* argv[]) {
         block_sizes_list = get_block_sizes(all_blocks);
         block_sizes = convert_vector_int_to_string(block_sizes_list);
     }
-    // if block_size is fixed, block sizes are the same, except the last block may be
-    else{
+    // if block_size is fixed, block sizes are the same, except the last block
+    // may be
+    else {
         int first_block_size = all_blocks[0][0].size();
         int last_block_size = all_blocks[all_blocks.size() - 1][0].size();
-        block_sizes = to_string(first_block_size) + "," + to_string(last_block_size);
+        block_sizes =
+            to_string(first_block_size) + "," + to_string(last_block_size);
     }
 
     vector<string> header = {
-            to_string(num_columns),
-            to_string(num_blocks),
-            column_names_str,
-            convert_vector_str_to_string(block_header_end_bytes),
-            convert_vector_str_to_string(block_end_bytes),
-            block_sizes
-    };
+        to_string(num_columns),
+        to_string(num_blocks),
+        column_names_str,
+        convert_vector_str_to_string(block_header_end_bytes),
+        convert_vector_str_to_string(block_end_bytes),
+        block_sizes};
 
     // 6. compress header
     cout << "Compressing header..." << endl;
     string header_str = convert_vector_str_to_string(header);
     string compressed_header = zlib_compress(header_str);
     cout << "Done." << endl << endl;
-
 
     // 7. open file to write compressed header and compressed blocks
     cout << "Writing compressed file to: " << compressed_file << endl;
@@ -192,20 +209,20 @@ int main(int argc, char* argv[]) {
     // 8. write compressed header to file
     // reserve first 4 bytes for size of compressed header
     int compressed_header_size = compressed_header.length();
-    char * compressed_header_size_bytes = int_to_bytes(compressed_header_size);
+    char *compressed_header_size_bytes = int_to_bytes(compressed_header_size);
     compressed_gwas.write(compressed_header_size_bytes, 4);
     // write compressed header to file
     compressed_gwas << compressed_header;
 
     // 9. write compressed blocks to file
     int block_idx = 0;
-    for (auto const& block : compressed_blocks) {
+    for (auto const &block : compressed_blocks) {
         // write compressed block header
         string compressed_block_header = compressed_block_headers[block_idx];
         compressed_gwas << compressed_block_header;
 
         // write compressed block
-        for (auto const& column : block) {
+        for (auto const &column : block) {
             compressed_gwas << column;
         }
         block_idx++;
