@@ -76,7 +76,9 @@ cd ..
 
 ### Compile and run DECOMPRESSION
 ```angular2html
+cd build/
 cmake --build . --target gwas_decompress
+cd ..
 ./bin/gwas_decompress config_files/test_config.yml
 ```
 
