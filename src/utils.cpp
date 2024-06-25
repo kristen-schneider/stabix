@@ -13,17 +13,6 @@ char *int_to_bytes(int value);
 
 vector<string> split_string(string str, char delimiter);
 
-template <typename T>
-bool in_array(const T &value, const std::vector<T> &array) {
-    return std::find(array.begin(), array.end(), value) != array.end();
-}
-
-template <typename T, size_t N>
-bool in_array(const T &value, const T (&array)[N]) {
-    return std::find(std::begin(array), std::end(array), value) !=
-           std::end(array);
-}
-
 map<string, string> read_config_file(string config_file) {
     map<string, string> config_options;
 

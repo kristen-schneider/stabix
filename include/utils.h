@@ -25,18 +25,21 @@ map<string, string> read_config_file(string config_file);
  */
 void add_default_config_options(map<string, string> &config_options);
 
-template <typename T>
-bool in_array(const T &value, const std::vector<T> &array);
-
 // Python equivalent:  `return value in array`.
 // For std::vector
 template <typename T>
-bool in_array(const T &value, const std::vector<T> &array);
+bool in_array(const T &value, const std::vector<T> &array) {
+    return std::find(array.begin(), array.end(), value) != array.end();
+}
 
 // Python equivalent:  `return value in array`.
 // For C-style arrays
+// template <typename T, size_t N>
 template <typename T, size_t N>
-bool in_array(const T &value, const T (&array)[N]);
+bool in_array(const T &value, const T (&array)[N]) {
+    return std::find(std::begin(array), std::end(array), value) !=
+           std::end(array);
+}
 
 /*
  * Get index value of a string in a vector
