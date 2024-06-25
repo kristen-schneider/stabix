@@ -26,19 +26,18 @@ string ZLIB_HEADER_D = "x\xda";
  */
 string decompress_column(string compressed_column, string codec,
                          size_t compressedSize, size_t block_size) {
-    string decompressed_column_str;
     if (codec == "zlib") {
-        decompressed_column_str = zlib_decompress(compressed_column);
-        return decompressed_column_str;
+        return zlib_decompress(compressed_column);
     } else if (codec == "fpfVB") {
         vector<uint32_t> compressed_column_ints =
             convert_string_to_vector_unsignedlong(compressed_column);
         vector<uint32_t> decompressed_column = fastpfor_vb_decompress(
             compressed_column_ints, compressedSize, block_size);
-        decompressed_column_str = convert_vector_uint32_to_string(
+        string decompressed_column_str = convert_vector_uint32_to_string(
             decompressed_column.data(), decompressed_column.size());
-
         return decompressed_column_str;
+    } else if (in_array(codec, {"deflate", "bz2", "xz", "zstd"})) {
+        return libzippp_decompress(compressed_column);
     } else {
         cout << "ERROR: Codec not recognized: " << codec << endl;
         exit(1);
