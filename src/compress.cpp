@@ -26,6 +26,8 @@ string ZLIB_HEADER_C = "x\xda";
  * @return outstring: string - compressed data using zlib
  */
 string zlib_compress(string in_data) {
+    // TODO: replace with bxzstr
+
     // https://gist.github.com/gomons/9d446024fbb7ccb6536ab984e29e154a
     z_stream zs; // z_stream is zlib's control structure
     memset(&zs, 0, sizeof(zs));

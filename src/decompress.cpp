@@ -28,6 +28,14 @@ string decompress_column(string compressed_column, string codec,
                          size_t compressedSize, size_t block_size) {
     if (codec == "zlib") {
         return zlib_decompress(compressed_column);
+    } else if (codec == "deflate") {
+        return deflate_decompress(compressed_column);
+    } else if (codec == "bz2") {
+        return bz2_decompress(compressed_column);
+    } else if (codec == "xz") {
+        return xz_decompress(compressed_column);
+    } else if (codec == "zstd") {
+        return zstd_decompress(compressed_column);
     } else if (codec == "fpfVB") {
         vector<uint32_t> compressed_column_ints =
             convert_string_to_vector_unsignedlong(compressed_column);
@@ -36,9 +44,6 @@ string decompress_column(string compressed_column, string codec,
         string decompressed_column_str = convert_vector_uint32_to_string(
             decompressed_column.data(), decompressed_column.size());
         return decompressed_column_str;
-        // TODO:  fix
-        // } else if (in_array(codec, {"deflate", "bz2", "xz", "zstd"})) {
-        //     return libzippp_decompress(compressed_column);
     } else {
         throw invalid_argument("ERROR: Codec not recognized: " + codec);
     }
