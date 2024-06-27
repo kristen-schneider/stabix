@@ -14,7 +14,6 @@ add_definitions(-DZIP_CM_XZ)
 add_definitions(-DZIP_CM_ZSTD)
 
 ## Link directories
-add_subdirectory(lib/libzippp)
 add_subdirectory(lib/FastPFor)
 add_subdirectory(lib/bxzstr)
 if(NOT TARGET gmock)
@@ -26,7 +25,6 @@ endif()
 ## Include directories
 include_directories(include)
 # include_directories(lib)
-include_directories(lib/libzippp/bin/include)
 include_directories(lib/FastPFor/headers)
 include_directories(lib/bzxstr/include)
 include_directories(lib/googletest/googletest/include)
