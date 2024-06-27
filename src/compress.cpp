@@ -7,16 +7,16 @@
 #include <vector>
 #include <zlib.h>
 
-#include "libzippp.h"
 #include "variablebyte.h"
 // #include "zipint.h"
+#include "bxzstr.hpp"
+#include "compression_types.hpp"
 
 #include "decompress.h"
 #include "header.h"
 #include "utils.h"
 
 using namespace FastPForLib;
-using namespace libzippp;
 using namespace std;
 
 string ZLIB_HEADER_C = "x\xda";
@@ -114,73 +114,26 @@ vector<uint32_t> fastpfor_vb_compress(vector<uint32_t> in_data,
 //    return encoded_deltas;
 //}
 
-/* void setCompressionMethod(CompressionMethod method) { */
-/*   currentCompressionMethod = method; */
-/*   libzippp::CompressionMethod lzMethod; */
-/**/
-/*   switch (method) { */
-/*     case CompressionMethod::UNCOMPRESSED: */
-/*       lzMethod = libzippp::CompressionMethod::UNCOMPRESSED; */
-/*         break; */
-/*     case CompressionMethod::BZIP2: */
-/*       lzMethod = libzippp::CompressionMethod::BZIP2; */
-/*         break; */
-/*     case CompressionMethod::XZ: */
-/*       lzMethod = libzippp::CompressionMethod::XZ; */
-/*         break; */
-/*     case CompressionMethod::ZSTD: */
-/*       lzMethod = libzippp::CompressionMethod::ZSTD; */
-/*         break; */
-/*     default: */
-/*       lzMethod = libzippp::CompressionMethod::DEFLATE; */
-/*         break; */
-/*   } */
-/**/
-/*   libzippp::setCompressionMethod(lzMethod); */
-/* } */
-/**/
-/* CompressionMethod getCompressionMethod() { */
-/*   return currentCompressionMethod; */
-/* } */
-
-string libzippp_compress(string inputData, CompressionMethod method) {
-    // important to use calloc/malloc for the fromWritableBuffer !
-    const int inputSize = inputData.length();
-    const int bufferSize = inputSize * 1.3;
-    void *buffer = calloc(bufferSize, sizeof(char));
-
-    ZipArchive *zf =
-        ZipArchive::fromWritableBuffer(&buffer, bufferSize, ZipArchive::New);
-    if (zf == nullptr) {
-        throw(std::runtime_error("libzippp failed while compressing."));
-    }
-
-    zf->setCompressionMethod(method);
-    zf->addData("entry", inputData.c_str(), inputSize);
-    zf->close();
-
-    const int writtenSize = zf->getBufferLength();
-
-    ZipArchive::free(zf);
-    return string(static_cast<char *>(buffer), writtenSize);
+string bxzstr_compress(string input, bxz::Compression codec) {
+    std::stringstream out;
+    bxz::ostream to(out, codec, 9);
+    to << input;
+    to.flush();
+    return out.str().substr(magicNumberCullSize(codec));
 }
 
 string deflate_compress(string inputData) {
-    return libzippp_compress(inputData, CompressionMethod::DEFLATE);
+    return bxzstr_compress(inputData, bxz::z);
 }
 
 string bz2_compress(string inputData) {
-    return libzippp_compress(inputData, CompressionMethod::BZIP2);
+    return bxzstr_compress(inputData, bxz::bz2);
 }
 
 string xz_compress(string inputData) {
-    return libzippp_compress(inputData, CompressionMethod::XZ);
+    return bxzstr_compress(inputData, bxz::lzma);
 }
 
 string zstd_compress(string inputData) {
-    return libzippp_compress(inputData, CompressionMethod::ZSTD);
-}
-
-string raw_compress(string inputData) {
-    return libzippp_compress(inputData, CompressionMethod::STORE);
+    return bxzstr_compress(inputData, bxz::zstd);
 }

@@ -238,63 +238,46 @@ TEST(fpfVB, largeString) {
 // -------------------------
 // TESTING libzippp COMPRESSION
 // -------------------------
-TEST(libzippp, deflate_smallString) {
+
+TEST(bxzstr, deflate_smallString) {
     const string input =
         "The (very) quick brown fox JUMPED over the 745 lazy dogs.";
     const string comp = deflate_compress(input);
-    const string decomp = libzippp_decompress(comp);
+    const string decomp = deflate_decompress(comp);
     ASSERT_EQ(input, decomp);
 }
 
-TEST(libzippp, deflate_whitespace) {
+TEST(bxzstr, deflate_whitespace) {
     const string input = "   ";
     const string comp = deflate_compress(input);
-    const string decomp = libzippp_decompress(comp);
+    const string decomp = deflate_decompress(comp);
     ASSERT_EQ(input, decomp);
 }
 
-TEST(libzippp, deflate_blank) {
+TEST(bxzstr, deflate_blank) {
     const string input = "";
     const string comp = deflate_compress(input);
-    const string decomp = libzippp_decompress(comp);
+    const string decomp = deflate_decompress(comp);
     ASSERT_EQ(input, decomp);
 }
 
-TEST(libzippp, bz2) {
+TEST(bxzstr, bz2) {
     const string input = "Many CoMpReSsIoN algorithms in a *single* lib.";
     const string comp = bz2_compress(input);
-    // make sure the compression alg indeed changed
-    const string comp_baseline1 = deflate_compress(input);
-    const string comp_baseline2 = raw_compress(input);
-    ASSERT_NE(comp, comp_baseline1);
-    ASSERT_NE(comp, comp_baseline2);
-    // make sure decomp works
-    const string decomp = libzippp_decompress(comp);
+    const string decomp = bz2_decompress(comp);
     ASSERT_EQ(input, decomp);
 }
 
-TEST(libzippp, xz) {
+TEST(bxzstr, xz) {
     const string input = "Perhaps r_a_n_d_o_m data would be more proper ";
     const string comp = xz_compress(input);
-    // make sure the compression alg indeed changed
-    const string comp_baseline1 = deflate_compress(input);
-    const string comp_baseline2 = raw_compress(input);
-    ASSERT_NE(comp, comp_baseline1);
-    ASSERT_NE(comp, comp_baseline2);
-    // make sure decomp works
-    const string decomp = libzippp_decompress(comp);
+    const string decomp = xz_decompress(comp);
     ASSERT_EQ(input, decomp);
 }
 
-TEST(libzippp, zstd) {
+TEST(bxzstr, zstd) {
     const string input = "But, 1t may n0t m@k3 @ d1ff3r3nc3.";
     const string comp = zstd_compress(input);
-    // make sure the compression alg indeed changed
-    const string comp_baseline1 = deflate_compress(input);
-    const string comp_baseline2 = raw_compress(input);
-    ASSERT_NE(comp, comp_baseline1);
-    ASSERT_NE(comp, comp_baseline2);
-    // make sure decomp works
-    const string decomp = libzippp_decompress(comp);
+    const string decomp = zstd_decompress(comp);
     ASSERT_EQ(input, decomp);
 }

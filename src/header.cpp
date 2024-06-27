@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "compress.h"
+#include "compression_types.hpp"
 #include "header.h"
 
 using namespace std;
@@ -78,4 +79,23 @@ string remove_zlib_header(string compressed_string, string zlib_header) {
 string add_zlib_header(string compressed_string, string zlib_header) {
     string zlib_header_added = zlib_header + compressed_string;
     return zlib_header_added;
+}
+
+string magicNumberOf(bxz::Compression codec) {
+    switch (codec) {
+    case bxz::z:
+        // Header for gzip
+        return "\x1F\x8B";
+    case bxz::bz2:
+        return "\x42\x5a\x68";
+    case bxz::lzma:
+        return "\xFD\x37\x7A\x58\x5A\x00";
+    case bxz::zstd:
+        return "\x28\xB5\x2F\xFD";
+    }
+    throw std::runtime_error("Unknown compression codec.");
+}
+
+int magicNumberCullSize(bxz::Compression codec) {
+    return magicNumberOf(codec).size();
 }
