@@ -8,3 +8,4 @@ gwas_files/
 map_files/
 plots/*.txt
 .direnv
+.cache/

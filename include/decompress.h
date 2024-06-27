@@ -24,4 +24,10 @@ vector<uint32_t> fastpfor_vb_decompress(vector<uint32_t> in_data,
 vector<uint32_t>
 fastpfor_vb_delta_decompress(const std::vector<uint32_t> &encoded_deltas);
 
-string libzippp_decompress(string compressedData);
+string deflate_decompress(string inputData);
+
+string bz2_decompress(string inputData);
+
+string xz_decompress(string inputData);
+
+string zstd_decompress(string inputData);

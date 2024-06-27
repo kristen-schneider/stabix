@@ -16,8 +16,8 @@ int main(int argc, char *argv[]) {
 
     // 0. read config options
     if (argc != 2) {
+        // prevent seg faults
         cout << "1 argument required: config_path" << endl;
-        // prevents seg faults
         return -1;
     }
     string config_file = argv[1];
