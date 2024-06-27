@@ -11,4 +11,4 @@ query_coordinate:
 query_statistic:
   p_value:0.05
 codecs:
-  bz2,bz2,bz2,bz2,bz2,bz2,bz2,bz2,bz2,bz2
+  zstd,zstd,zstd,zstd,zstd,zstd,zstd,zstd,zstd,zstd
