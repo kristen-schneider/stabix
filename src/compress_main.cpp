@@ -131,6 +131,27 @@ int main(int argc, char *argv[]) {
         compressed_blocks.push_back(compressed_block);
     }
 
+    // write compressed block sizes to file (by column)
+    string block_sizes_file = compressed_file + "_" + to_string(block_size) + "_sizes.csv";
+    ofstream block_sizes_out;
+    block_sizes_out.open(block_sizes_file);
+    // write gwas file name
+    block_sizes_out << gwas_file << endl;
+    // write header
+    block_sizes_out << "block_idx,col_idx,column_size" << endl;
+    int block_i = 0;
+    for (auto const &block : compressed_blocks) {
+        int col_i = 0;
+        for (auto const &column : block) {
+            // write block_idx, col_idx, column size
+            block_sizes_out << block_i << "," << col_i << "," << column.size() << endl;
+            col_i++;
+        }
+        block_i++;
+    }
+    block_sizes_out.close();
+    cout << "Wrote compressed block sizes to: " << block_sizes_file << endl;
+
     // get block headers
     vector<vector<string>> block_headers;
     for (auto const &block : compressed_blocks) {
