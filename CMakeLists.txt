@@ -13,21 +13,21 @@ add_definitions(-DZIP_CM_BZIP2)
 add_definitions(-DZIP_CM_XZ)
 add_definitions(-DZIP_CM_ZSTD)
 
-## Include directories
-include_directories(include)
-# include_directories(lib)
-include_directories(lib/googletest/googletest/include)
-include_directories(lib/FastPFor/headers)
-include_directories(lib/libzippp/bin/include)
-
 ## Link directories
-add_subdirectory(lib/libzippp)
 add_subdirectory(lib/FastPFor)
+add_subdirectory(lib/bxzstr)
 if(NOT TARGET gmock)
         # can't be doubly adding.
         # Note, fastpfor depends on gtest
         add_subdirectory(lib/googletest)
 endif()
+
+## Include directories
+include_directories(include)
+# include_directories(lib)
+include_directories(lib/FastPFor/headers)
+include_directories(lib/bzxstr/include)
+include_directories(lib/googletest/googletest/include)
 
 ### Add the executables
 # COMPRESSION
@@ -70,7 +70,7 @@ add_executable(test_gwas
         test/test_blocks.cpp)
 
 # Additional configuration if needed, e.g., linking libraries, "adding -lz"
-target_link_libraries(gwas_compress libzippp FastPFOR z)
-target_link_libraries(gwas_index libzippp FastPFOR z)
-target_link_libraries(gwas_decompress libzippp FastPFOR z)
-target_link_libraries(test_gwas gtest gtest_main libzippp FastPFOR z)
+target_link_libraries(gwas_compress bxzstr FastPFOR z)
+target_link_libraries(gwas_index bxzstr FastPFOR z)
+target_link_libraries(gwas_decompress bxzstr FastPFOR z)
+target_link_libraries(test_gwas gtest gtest_main bxzstr FastPFOR z)

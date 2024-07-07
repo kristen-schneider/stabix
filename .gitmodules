@@ -7,3 +7,6 @@
 [submodule "lib/libzippp"]
     path = lib/libzippp
     url = https://github.com/nih-at/libzip
+[submodule "lib/bxzstr"]
+	path = lib/bxzstr
+	url = https://github.com/tmaklin/bxzstr.git

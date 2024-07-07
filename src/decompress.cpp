@@ -5,7 +5,8 @@
 #include <vector>
 #include <zlib.h>
 
-#include "libzippp.h"
+#include "bxzstr.hpp"
+#include "compression_types.hpp"
 #include "variablebyte.h"
 
 #include "decompress.h"
@@ -13,7 +14,6 @@
 #include "utils.h"
 
 using namespace std;
-using namespace libzippp;
 using namespace FastPForLib;
 
 string ZLIB_HEADER_D = "x\xda";
@@ -26,22 +26,26 @@ string ZLIB_HEADER_D = "x\xda";
  */
 string decompress_column(string compressed_column, string codec,
                          size_t compressedSize, size_t block_size) {
-    string decompressed_column_str;
     if (codec == "zlib") {
-        decompressed_column_str = zlib_decompress(compressed_column);
-        return decompressed_column_str;
+        return zlib_decompress(compressed_column);
+    } else if (codec == "deflate") {
+        return deflate_decompress(compressed_column);
+    } else if (codec == "bz2") {
+        return bz2_decompress(compressed_column);
+    } else if (codec == "xz") {
+        return xz_decompress(compressed_column);
+    } else if (codec == "zstd") {
+        return zstd_decompress(compressed_column);
     } else if (codec == "fpfVB") {
         vector<uint32_t> compressed_column_ints =
             convert_string_to_vector_unsignedlong(compressed_column);
         vector<uint32_t> decompressed_column = fastpfor_vb_decompress(
             compressed_column_ints, compressedSize, block_size);
-        decompressed_column_str = convert_vector_uint32_to_string(
+        string decompressed_column_str = convert_vector_uint32_to_string(
             decompressed_column.data(), decompressed_column.size());
-
         return decompressed_column_str;
     } else {
-        cout << "ERROR: Codec not recognized: " << codec << endl;
-        exit(1);
+        throw invalid_argument("ERROR: Codec not recognized: " + codec);
     }
 }
 
@@ -140,27 +144,28 @@ vector<uint32_t> fastpfor_vb_decompress(vector<uint32_t> in_data,
 //     return original_sequence;
 // }
 
-string libzippp_decompress(string compressedData) {
-    const int bufferSize = compressedData.length();
-    const char *buffer = compressedData.c_str();
+string bxzstr_decompress(string comp, bxz::Compression codec) {
+    std::stringstream in;
+    bxz::istream from(in);
+    in << magicNumberOf(codec);
+    in << comp;
+    std::stringstream out;
+    out << from.rdbuf();
+    return out.str();
+}
 
-    ZipArchive *zf = ZipArchive::fromBuffer(buffer, bufferSize);
-    if (zf == nullptr) {
-        throw(std::runtime_error("libzippp failed while decompressing."));
-    }
+string deflate_decompress(string inputData) {
+    return bxzstr_decompress(inputData, bxz::z);
+}
 
-    zf->open(ZipArchive::ReadOnly);
+string bz2_decompress(string inputData) {
+    return bxzstr_decompress(inputData, bxz::bz2);
+}
 
-    ZipEntry entry = zf->getEntry("entry");
-    string str = "";
+string xz_decompress(string inputData) {
+    return bxzstr_decompress(inputData, bxz::lzma);
+}
 
-    // a null entry can correspond to compression of an empty string
-    if (!entry.isNull() && entry.getSize() != 0) {
-        str = entry.readAsText();
-    }
-
-    // free memory
-    zf->close();
-    delete zf;
-    return str;
+string zstd_decompress(string inputData) {
+    return bxzstr_decompress(inputData, bxz::zstd);
 }
