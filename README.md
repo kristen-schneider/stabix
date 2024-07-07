@@ -41,38 +41,45 @@ git submodule init
 git submodule update
 ```
 
-### Build
+### Build all
 ```angular2html
+nix develop
 mkdir build
 cd build
-
 cmake ..
-
 make
 ```
 
 ### Compile and run TESTS
 ```angular2html
+cd build/
 cmake --build . --target test_gwas
-./bin/test_gwas
+cd ..
+./build/bin/test_gwas
 ```
 
 ### Compile and run COMPRESSION
 ```angular2html
+cd build/
 cmake --build . --target gwas_compress
-./bin/gwas_compress
+cd ..
+./build/bin/gwas_compress config_files/test_config.yml
 ```
 
 ### Compile and run INDEX
 ```angular2html
+cd build/
 cmake --build . --target gwas_index
-./bin/gwas_index
+cd ..
+./build/gwas_index config_files/test_config.yml
 ```
 
 ### Compile and run DECOMPRESSION
 ```angular2html
+cd build/
 cmake --build . --target gwas_decompress
-./bin/gwas_decompress
+cd ..
+./bin/gwas_decompress config_files/test_config.yml
 ```
 
 
