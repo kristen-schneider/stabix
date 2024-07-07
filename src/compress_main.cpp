@@ -97,13 +97,11 @@ int main(int argc, char *argv[]) {
         // if block_size == "map", make block sizes by chrm_block_bp_ends
         if (config_options["block_size"] == "map") {
             string map_file = config_options["map"];
-            map<int, vector<uint32_t>> chrm_block_bp_ends =
-                get_chrm_block_bp_ends(map_file);
-            all_blocks = make_blocks_map(gwas_file, num_columns,
-                                         chrm_block_bp_ends, delimiter);
-        } else {
-            all_blocks =
-                make_blocks(gwas_file, num_columns, block_size, delimiter);
+            map<int, vector<uint32_t>> chrm_block_bp_ends = get_chrm_block_bp_ends(map_file);
+            all_blocks = make_blocks_map(gwas_file, num_columns, chrm_block_bp_ends, delimiter);
+        }
+        else{
+            all_blocks = make_blocks(gwas_file, num_columns, block_size, delimiter, 9);
         }
         num_blocks = all_blocks.size();
         if (config_options["block_size"] == "map") {
