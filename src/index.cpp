@@ -132,7 +132,7 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
 
         // add chromosome and genomic coordinates to chrm_bp_byte
         chrm_bp_byte.push_back(make_tuple(block_chrm_start, block_bp_start, block_start_byte));
-        cout << " finished block: " << block_idx << endl;
+//        cout << " finished block: " << block_idx << endl;
 
     }
 
