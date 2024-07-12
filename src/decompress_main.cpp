@@ -192,23 +192,21 @@ int main(int argc, char *argv[]) {
                     decompressed_block.push_back(col_decompressed);
                 }
 
-                //                // write decompressed block to output file
-                //                cout << "......writing decompressed block to
-                //                output file" << endl; for (int record_i = 0;
-                //                record_i <= block_size-1; record_i++) {
-                //                    for (int col_i = 0; col_i <=
-                //                    stoi(num_columns)-1; col_i++) {
-                //                        vector<string> block_list =
-                //                        split_string(decompressed_block[col_i],
-                //                        ',');
-                ////                        if (col_i == 0){
-                ////                            cout << record_i << " " << col_i
-                ///<< " " << block_list.size() << "\n"; / }
-                //                        output_file << block_list[record_i] <<
-                //                        ',';
-                //                    }
-                //                    output_file << endl;
-                //                }
+                // write decompressed block to output file
+                cout << "......writing decompressed block to output file" << endl; for (int record_i = 0;
+                record_i <= block_size-1; record_i++) {
+                    for (int col_i = 0; col_i <=
+                    stoi(num_columns)-1; col_i++) {
+                        vector<string> block_list =
+                        split_string(decompressed_block[col_i], ',');
+                        // debug statemnt
+//                        if (col_i == 0){
+//                            cout << record_i << " " << col_i << " " << block_list.size() << "\n";
+//                        }
+                        output_file << block_list[record_i] << ',';
+                    }
+                    output_file << endl;
+                }
             }
         }
     } else if (query_type == "statistic") {

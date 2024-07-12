@@ -33,7 +33,7 @@ vector<vector<vector<string>>> make_blocks(
     // return a vector of blocks
     // creates an index for floating point values in the index column
     vector<vector<vector<string>>> all_blocks;
-    vector<IndexEntry> indexEntries;
+//    vector<IndexEntry> indexEntries;
 
     // open gwas file
     ifstream gwas(gwas_file);
@@ -65,14 +65,14 @@ vector<vector<vector<string>>> make_blocks(
             vector<string> line_vector = split_string(line, '\t');
             for (auto const &column_value : line_vector) {
                 curr_block[column_idx].push_back(column_value);
-                // if column is index column, store the value of the indexed column
-                if (column_idx == index_col){
-                    // index value is the value of the index column
-                    double index_value = stod(column_value);
-                    // store index value and block number in index entry
-                    IndexEntry index_entry = {index_value, block_count};
-                    indexEntries.push_back(index_entry);
-                }
+//                // if column is index column, store the value of the indexed column
+//                if (column_idx == index_col){
+//                    // index value is the value of the index column
+//                    double index_value = stod(column_value);
+//                    // store index value and block number in index entry
+//                    IndexEntry index_entry = {index_value, block_count};
+//                    indexEntries.push_back(index_entry);
+//                }
                 column_idx++;
             }
 
@@ -96,13 +96,13 @@ vector<vector<vector<string>>> make_blocks(
             int column_idx = 0;
             while (getline(line_stream, column_value, delim)) {
                 curr_block[column_idx].push_back(column_value);
-                if (column_idx == index_col){
-                    // index value is the value of the index column
-                    double index_value = stod(column_value);
-                    // store index value and block number in index entry
-                    IndexEntry index_entry = {index_value, block_count};
-                    indexEntries.push_back(index_entry);
-                }
+//                if (column_idx == index_col){
+//                    // index value is the value of the index column
+//                    double index_value = stod(column_value);
+//                    // store index value and block number in index entry
+//                    IndexEntry index_entry = {index_value, block_count};
+//                    indexEntries.push_back(index_entry);
+//                }
                 column_idx++;
             }
             line_count = 0;
@@ -116,19 +116,19 @@ vector<vector<vector<string>>> make_blocks(
     }
     gwas.close();
 
-    // sort index entries by value
-    sort(indexEntries.begin(), indexEntries.end(), [](const IndexEntry &a, const IndexEntry &b) {
-        return a.value < b.value;
-    });
+//    // sort index entries by value
+//    sort(indexEntries.begin(), indexEntries.end(), [](const IndexEntry &a, const IndexEntry &b) {
+//        return a.value < b.value;
+//    });
 
-    // write index entries to file
-    string index_file = gwas_file + ".float.idx";
-    cout << "Writing index file to: " << index_file << endl;
-    ofstream index;
-    index.open(index_file);
-    // write header
-    index << "value,block_number" << endl;
-    // write index entries
+//    // write index entries to file
+//    string index_file = gwas_file + ".float.idx";
+//    cout << "Writing index file to: " << index_file << endl;
+//    ofstream index;
+//    index.open(index_file);
+//    // write header
+//    index << "value,block_number" << endl;
+//    // write index entries
 
 
     return all_blocks;
