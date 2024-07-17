@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
 
     // 1. open compressed file and read header
     cout << "Opening compressed file and reading header..." << endl;
+    // TODO: There needs to be a system to vet quality inputs (such as config)
     string compressed_file = config_options["gwas_file"] + ".grlz";
     ifstream file(compressed_file);
     // start at beginning and read 4 bytes
@@ -93,6 +94,9 @@ int main(int argc, char *argv[]) {
         // each query
         vector<string> query_list =
             split_string(config_options["query_coordinate"], ',');
+        // TODO: inefficient to decomp blocks on a per query basis
+        // when dealing with multiple queries.
+        // ... batch queries? -> batch decompression.
         vector<tuple<int, int>> all_query_block_indexes =
             get_start_end_block_idx(query_list, index_file_map,
                                     index_block_map);
@@ -193,16 +197,22 @@ int main(int argc, char *argv[]) {
                 }
 
                 // write decompressed block to output file
-                cout << "......writing decompressed block to output file" << endl; for (int record_i = 0;
-                record_i <= block_size-1; record_i++) {
-                    for (int col_i = 0; col_i <=
-                    stoi(num_columns)-1; col_i++) {
-                        vector<string> block_list =
-                        split_string(decompressed_block[col_i], ',');
+                cout << "......writing decompressed block to output file"
+                     << endl;
+                int column_count = stoi(num_columns);
+                vector<string> split_columns[column_count];
+                for (int i = 0; i < column_count; i++) {
+                    split_columns[i] = split_string(decompressed_block[i], ',');
+                }
+                for (int record_i = 0; record_i <= block_size - 1; record_i++) {
+                    for (int col_i = 0; col_i <= column_count - 1; col_i++) {
+                        auto block_list = split_columns[col_i];
                         // debug statemnt
-//                        if (col_i == 0){
-//                            cout << record_i << " " << col_i << " " << block_list.size() << "\n";
-//                        }
+                        //                        if (col_i == 0){
+                        //                            cout << record_i << " " <<
+                        //                            col_i << " " <<
+                        //                            block_list.size() << "\n";
+                        //                        }
                         output_file << block_list[record_i] << ',';
                     }
                     output_file << endl;
