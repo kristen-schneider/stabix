@@ -82,7 +82,8 @@ int main(int argc, char *argv[]) {
         string index_file = compressed_file + ".idx";
         cout << "Opening index file..." << endl;
         cout << "\t..." << index_file << endl;
-        ifstream index(index_file);
+        ifstream index(index_file); // TODO: remove: these next fns take in
+                                    // path, not a stream
         // make map of index file
         map<int, map<int, tuple<int, int>>> index_file_map =
             read_index_file(index_file);
