@@ -41,6 +41,7 @@ add_executable(gwas_compress
 # INDEXING
 add_executable(gwas_index
         src/index_main.cpp
+        src/indexers.cpp
         src/decompress.cpp
         src/header.cpp
         src/index.cpp
