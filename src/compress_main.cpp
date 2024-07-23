@@ -22,8 +22,7 @@ int main(int argc, char *argv[]) {
     }
     string config_file = argv[1];
     cout << "Reading config options from: " << config_file << endl;
-    map<string, string> config_options;
-    config_options = read_config_file(config_file);
+    map<string, string> config_options = read_config_file(config_file);
     add_default_config_options(config_options);
 
     string gwas_file = config_options["gwas_file"];
@@ -97,11 +96,13 @@ int main(int argc, char *argv[]) {
         // if block_size == "map", make block sizes by chrm_block_bp_ends
         if (config_options["block_size"] == "map") {
             string map_file = config_options["map"];
-            map<int, vector<uint32_t>> chrm_block_bp_ends = get_chrm_block_bp_ends(map_file);
-            all_blocks = make_blocks_map(gwas_file, num_columns, chrm_block_bp_ends, delimiter);
-        }
-        else{
-            all_blocks = make_blocks(gwas_file, num_columns, block_size, delimiter, 9);
+            map<int, vector<uint32_t>> chrm_block_bp_ends =
+                get_chrm_block_bp_ends(map_file);
+            all_blocks = make_blocks_map(gwas_file, num_columns,
+                                         chrm_block_bp_ends, delimiter);
+        } else {
+            all_blocks =
+                make_blocks(gwas_file, num_columns, block_size, delimiter, 9);
         }
         num_blocks = all_blocks.size();
         if (config_options["block_size"] == "map") {
@@ -130,7 +131,8 @@ int main(int argc, char *argv[]) {
     }
 
     // write compressed block sizes to file (by column)
-    string block_sizes_file = compressed_file + "_" + to_string(block_size) + "_sizes.csv";
+    string block_sizes_file =
+        compressed_file + "_" + to_string(block_size) + "_sizes.csv";
     ofstream block_sizes_out;
     block_sizes_out.open(block_sizes_file);
     // write gwas file name
@@ -142,7 +144,8 @@ int main(int argc, char *argv[]) {
         int col_i = 0;
         for (auto const &column : block) {
             // write block_idx, col_idx, column size
-            block_sizes_out << block_i << "," << col_i << "," << column.size() << endl;
+            block_sizes_out << block_i << "," << col_i << "," << column.size()
+                            << endl;
             col_i++;
         }
         block_i++;

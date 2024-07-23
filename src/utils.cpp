@@ -13,6 +13,8 @@ char *int_to_bytes(int value);
 
 vector<string> split_string(string str, char delimiter);
 
+// TODO: impl assumes values on new lines which isn't the guaranteed format for
+// yml files.
 map<string, string> read_config_file(string config_file) {
     map<string, string> config_options;
 
