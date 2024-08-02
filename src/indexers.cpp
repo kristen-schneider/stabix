@@ -24,6 +24,8 @@ void Indexer::build_index(std::string inPath, std::string outPath) {
 
     std::unordered_map<int, std::vector<int>> index;
 
+    // 1. Bin the distribution of data
+
     int lineId = 0;
     bool moreBlocks = true;
     while (moreBlocks) {
@@ -48,6 +50,8 @@ void Indexer::build_index(std::string inPath, std::string outPath) {
         }
     }
 
+    // 2. Serialize the index map
+
     std::ofstream indexFile(outPath);
     std::unordered_map<int, int> binPositions;
 
@@ -60,6 +64,8 @@ void Indexer::build_index(std::string inPath, std::string outPath) {
 
         indexFile << entry.second[entry.second.size() - 1] << std::endl;
     }
+
+    // 3. Write the footer (map keys)
 
     indexFile << std::endl;
 
@@ -79,20 +85,35 @@ void Indexer::build_index(std::string inPath, std::string outPath) {
 int PValIndexer::value_to_bin(std::string line) {
     std::string digits;
 
-    size_t dot_pos = line.find('.');
-    if (dot_pos != std::string::npos) {
-        digits = line.substr(0, dot_pos);
+    auto dotPos = line.find('.');
+    if (dotPos != std::string::npos) {
+        digits = line.substr(0, dotPos);
+        digits += line.substr(dotPos + 1);
+    } else {
+        digits = line;
     }
 
-    if (dot_pos + 1 < line.size()) {
-        digits += line.substr(dot_pos + 1, 1);
+    int expo = 0;
+    auto expPos = digits.find('e');
+    if (expPos != std::string::npos) {
+        std::string newDigits = digits.substr(0, expPos);
+        expo = std::stof(digits.substr(expPos + 1));
+        digits = newDigits;
+
+        if (expo <= -2) {
+            return 0;
+        } else if (expo >= 2) {
+            throw std::runtime_error("P-value out of range. Magnitude > 10^2");
+        }
     }
 
-    return std::stoi(digits);
+    expo += 1; // .7 -> 7
+    std::string finalRepresentation = digits.substr(0, dotPos + expo);
+    return std::stoi(finalRepresentation);
 }
 
 std::string PValIndexer::bin_to_value(int bin) {
-    std::string out = std::to_string((bin / 10) % 1);
+    std::string out = std::to_string((int)(bin / 10));
     out += "." + std::to_string(bin % 10);
     return out;
 }
