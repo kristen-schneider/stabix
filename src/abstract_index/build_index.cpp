@@ -4,7 +4,8 @@
 #include <unordered_map>
 #include <vector>
 
-void Indexer::build_index(std::string inPath, std::string outPath) {
+void Indexer::build_index(std::string inPath) {
+    auto outPath = this->indexPath;
     std::ifstream file(inPath);
 
     if (!file.is_open()) {
@@ -19,7 +20,7 @@ void Indexer::build_index(std::string inPath, std::string outPath) {
     int blockSize = 3;
     int queryCol = 9;
 
-    std::unordered_map<int, std::vector<int>> index;
+    std::unordered_map<float, std::vector<int>> index;
 
     // 1. Bin the distribution of data
 
@@ -38,7 +39,7 @@ void Indexer::build_index(std::string inPath, std::string outPath) {
             lineId++;
             auto rowVals = split_string(lineStr, '\t');
             std::string queryVal = rowVals[queryCol];
-            int bin = value_to_bin(queryVal);
+            float bin = value_to_bin(queryVal);
             bins.insert(bin);
         }
 
@@ -50,7 +51,7 @@ void Indexer::build_index(std::string inPath, std::string outPath) {
     // 2. Serialize the index map
 
     std::ofstream indexFile(outPath);
-    std::unordered_map<int, int> binPositions;
+    std::unordered_map<float, int> binPositions;
 
     for (auto &entry : index) {
         binPositions[entry.first] = indexFile.tellp();

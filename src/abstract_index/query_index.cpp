@@ -1,3 +1,4 @@
+#include "indexers.h"
 #include "utils.h"
 #include <algorithm>
 #include <fstream>
@@ -6,17 +7,12 @@
 #include <strings.h>
 #include <vector>
 
-// TODO: need a way to parse these values in an accessible way other than
-// passing raw strings
-bool block_predicate(float blockVal) { return blockVal < .3; }
-
-bool row_predicate(float rowVal) { return true; }
-
 /*
  * Find block IDs to decompress, relevant for query based
  * on the block predicate function.
  */
-std::vector<int> query_blocks(std::string indexPath) {
+std::vector<int> Indexer::query_index(std::function<bool(float)> predicate) {
+    auto indexPath = this->indexPath;
     std::ifstream indexFile(indexPath, std::ios::ate);
 
     if (!indexFile.is_open()) {
@@ -58,7 +54,7 @@ std::vector<int> query_blocks(std::string indexPath) {
         auto delimPos = line.find(' ');
         float binValue = std::stof(line.substr(0, delimPos));
 
-        if (block_predicate(binValue)) {
+        if (predicate(binValue)) {
             int entryLine = std::stoi(line.substr(delimPos + 1));
             searchBins.push_back(entryLine);
         }
@@ -89,16 +85,18 @@ std::vector<int> query_blocks(std::string indexPath) {
  * and determine if it should be contained in a query
  * based on the row predicate function.
  */
-bool take_row(std::string row, int colId) {
+bool take_row(std::string row, int colId, std::function<bool(int)> predicate) {
     auto split = split_string(row, '\t');
     auto relevant = split[colId];
     float value = std::stof(relevant);
-    return row_predicate(value);
+    return predicate(value);
 }
 
 int main() {
-    query_blocks("../gwas_files/test_idx/p_value.idx");
-    // query_blocks("/Users/simon/jiba");
-
+    auto bins = std::vector<float>{0.5, 0.1, 1e-8};
+    auto index = new PValIndexer(bins);
+    // std::string path = "../gwas_files/test";
+    std::string path = "../gwas_files/GCST90179150_build_GRCh37";
+    index->build_index(path + ".tsv", path + ".xidx");
     return 0;
 }
