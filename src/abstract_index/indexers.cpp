@@ -1,41 +1,96 @@
 #include "indexers.h"
 #include "utils.h"
+#include <algorithm>
 
-int PValIndexer::value_to_bin(std::string line) {
-    std::string digits;
-
-    auto dotPos = line.find('.');
-    if (dotPos != std::string::npos) {
-        digits = line.substr(0, dotPos);
-        digits += line.substr(dotPos + 1);
-    } else {
-        digits = line;
-    }
-
-    int expo = 0;
-    auto expPos = digits.find('e');
-    if (expPos != std::string::npos) {
-        std::string newDigits = digits.substr(0, expPos);
-        expo = std::stof(digits.substr(expPos + 1));
-        digits = newDigits;
-
-        if (expo <= -2) {
-            return 0;
-        } else if (expo >= 2) {
-            throw std::runtime_error("P-value out of range. Magnitude > 10^2");
+float PValIndexer::nearest_bin(float value) {
+    for (float bin : this->bins) {
+        if (value >= bin) {
+            return bin;
         }
     }
 
-    expo += 1; // .7 -> 7
-    std::string finalRepresentation = digits.substr(0, dotPos + expo);
-    return std::stoi(finalRepresentation);
+    return -HUGE_VALF;
 }
 
-std::string PValIndexer::bin_to_value(int bin) {
-    std::string out = std::to_string((int)(bin / 10));
-    out += "." + std::to_string(bin % 10);
-    return out;
+PValIndexer::PValIndexer(vector<float> bins) {
+    // sort bins in descending order
+    std::sort(bins.begin(), bins.end(), std::greater<float>());
+    this->bins = bins;
 }
+
+bool badFloatSemaphore = false;
+float PValIndexer::value_to_bin(std::string line) {
+    char *end;
+    errno = 0;
+    float value = std::strtof(line.c_str(), &end);
+
+    if (end == line.c_str()) {
+        throw std::runtime_error("Invalid float format.");
+    }
+
+    if (errno == ERANGE && !badFloatSemaphore) {
+        std::cerr << "Warning: rounding some values because they cannot fit in "
+                     "float, such as: "
+                  << line << std::endl;
+        badFloatSemaphore = true;
+    }
+
+    return this->nearest_bin(value);
+}
+
+// TODO: put op -> predicate function in utils
+vector<int> PValIndexer::compare_query(float threshold,
+                                       ComparisonType compType) {
+
+    float pivotBin = this->nearest_bin(threshold);
+
+    switch (compType) {
+    case ComparisonType::LessThan:
+    case ComparisonType::LessThanOrEqual:
+        return query_index([pivotBin](float val) { return val <= pivotBin; });
+    case ComparisonType::Equal:
+        return query_index([pivotBin](float val) { return val == pivotBin; });
+    case ComparisonType::GreaterThan:
+    case ComparisonType::GreaterThanOrEqual:
+        return query_index([pivotBin](float val) { return val >= pivotBin; });
+    }
+
+    // unreachable
+    throw std::runtime_error("Invalid comparison type.");
+}
+
+// int PValIndexer::value_to_bin(std::string line) {
+//     std::string digits;
+//
+//     auto dotPos = line.find('.');
+//     if (dotPos != std::string::npos) {
+//         digits = line.substr(0, dotPos);
+//         digits += line.substr(dotPos + 1);
+//     } else {
+//         digits = line;
+//     }
+//
+//     int expo = 0;
+//     auto expPos = digits.find('e');
+//     if (expPos != std::string::npos) {
+//         std::string newDigits = digits.substr(0, expPos);
+//         expo = std::stof(digits.substr(expPos + 1));
+//         digits = newDigits;
+//
+//         if (expo <= -2) {
+//             return 0;
+//         } else if (expo >= 2) {
+//             throw std::runtime_error("P-value out of range. Magnitude >
+//             10^2");
+//         }
+//     }
+//
+//     expo += 1; // .7 -> 7
+//     std::string finalRepresentation = digits.substr(0, dotPos + expo);
+//     return std::stoi(finalRepresentation);
+// }
+
+std::string PValIndexer::bin_to_value(float bin) { return std::to_string(bin); }
 
 // TODO: extract genomic indexer from previous index_main
 /*
