@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -8,6 +9,7 @@
 #include "utils.h"
 
 using namespace std;
+namespace fs = std::filesystem;
 
 char *int_to_bytes(int value);
 
@@ -267,4 +269,37 @@ vector<int> get_block_sizes(vector<vector<vector<string>>> all_blocks) {
         block_sizes.push_back(all_blocks[i][0].size());
     }
     return block_sizes;
+}
+
+vector<string> gwas_column_names(string gwasPathString) {
+    auto gwasPath = fs::path(gwasPathString);
+    // TODO: block_size via map file not implemented
+    cout << "...Success" << endl;
+
+    cout << "Preparring indices..." << endl;
+
+    string gwasColumnLine;
+    ifstream gwasFile(gwasPath);
+    if (!gwasFile.is_open() || !getline(gwasFile, gwasColumnLine)) {
+        throw runtime_error("Error opening GWAS file");
+    }
+
+    auto gwasColumns = split_string(gwasColumnLine, '\t');
+    gwasFile.close();
+    return gwasColumns;
+}
+
+vector<string> index_paths_of(string gwasPathStr, vector<string> gwasColumns) {
+    auto gwasPath = fs::path(gwasPathStr);
+    auto outDir = gwasPath.parent_path() / (gwasPath.stem().string() + "_idx");
+    fs::create_directories(outDir);
+    auto outPaths = vector<string>();
+
+    for (int i = 0; i < gwasColumns.size(); i++) {
+        string columnName = gwasColumns[i];
+        auto outPath = outDir / (columnName + ".idx");
+        outPaths.push_back(outPath.string());
+    }
+
+    return outPaths;
 }
