@@ -1,10 +1,14 @@
 #include "indexers.h"
 #include "utils.h"
+#include <fstream>
+#include <iostream>
 #include <set>
+#include <string>
+#include <strings.h>
 #include <unordered_map>
 #include <vector>
 
-void Indexer::build_index(std::string inPath) {
+void Indexer::build_index(std::string inPath, int blockSize, int queryColumn) {
     auto outPath = this->indexPath;
     std::ifstream file(inPath);
 
@@ -16,9 +20,6 @@ void Indexer::build_index(std::string inPath) {
     if (!std::getline(file, lineStr)) {
         throw std::runtime_error("Missing header line");
     }
-
-    int blockSize = 3;
-    int queryCol = 9;
 
     std::unordered_map<float, std::vector<int>> index;
 
@@ -38,7 +39,7 @@ void Indexer::build_index(std::string inPath) {
 
             lineId++;
             auto rowVals = split_string(lineStr, '\t');
-            std::string queryVal = rowVals[queryCol];
+            std::string queryVal = rowVals[queryColumn];
             float bin = value_to_bin(queryVal);
             bins.insert(bin);
         }
