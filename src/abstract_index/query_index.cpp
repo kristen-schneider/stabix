@@ -80,23 +80,16 @@ std::vector<int> Indexer::query_index(std::function<bool(float)> predicate) {
     return blockIDs;
 }
 
+// TODO: impl row filtering
 /*
  * Helper function to parse a row in raw (string) form
  * and determine if it should be contained in a query
  * based on the row predicate function.
  */
-bool take_row(std::string row, int colId, std::function<bool(int)> predicate) {
-    auto split = split_string(row, '\t');
-    auto relevant = split[colId];
-    float value = std::stof(relevant);
-    return predicate(value);
-}
-
-int main() {
-    auto bins = std::vector<float>{0.5, 0.1, 1e-8};
-    auto index = new PValIndexer(bins);
-    // std::string path = "../gwas_files/test";
-    std::string path = "../gwas_files/GCST90179150_build_GRCh37";
-    index->build_index(path + ".tsv", path + ".xidx");
-    return 0;
-}
+// bool take_row(std::string row, int colId, std::function<bool(int)> predicate)
+// {
+//     auto split = split_string(row, '\t');
+//     auto relevant = split[colId];
+//     float value = std::stof(relevant);
+//     return predicate(value);
+// }

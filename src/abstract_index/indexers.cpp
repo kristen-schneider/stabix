@@ -3,6 +3,7 @@
 #include <algorithm>
 
 float PValIndexer::nearest_bin(float value) {
+    // TODO: at query time, these bins should be provided from the index file
     for (float bin : this->bins) {
         if (value >= bin) {
             return bin;
@@ -12,7 +13,10 @@ float PValIndexer::nearest_bin(float value) {
     return -HUGE_VALF;
 }
 
-PValIndexer::PValIndexer(vector<float> bins) {
+Indexer::Indexer(std::string indexPath) { this->indexPath = indexPath; }
+
+PValIndexer::PValIndexer(std::string indexPath, vector<float> bins)
+    : Indexer(indexPath) {
     // sort bins in descending order
     std::sort(bins.begin(), bins.end(), std::greater<float>());
     this->bins = bins;
@@ -38,7 +42,6 @@ float PValIndexer::value_to_bin(std::string line) {
     return this->nearest_bin(value);
 }
 
-// TODO: put op -> predicate function in utils
 vector<int> PValIndexer::compare_query(float threshold,
                                        ComparisonType compType) {
 

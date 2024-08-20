@@ -140,9 +140,11 @@ int main(int argc, char *argv[]) {
     auto bins = std::vector<float>{0.5, 0.1, 1e-8};
     auto index = PValIndexer(indexPaths[1], bins);
     vector<int> blocks_to_decompress =
-        index.compare_query(0.5, ComparisonType::GreaterThanOrEqual);
+        index.compare_query(0, ComparisonType::LessThanOrEqual);
     // ----------------------------------------------------------------------
 
+    std::cout << "Decompressing " << blocks_to_decompress.size() << " blocks"
+              << std::endl;
     for (int block_idx : blocks_to_decompress) {
         size_t block_size = -1;
         // if there are only two block sizes, block size is fixed except
