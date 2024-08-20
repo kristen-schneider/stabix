@@ -92,14 +92,18 @@ int main(int argc, char *argv[]) {
 
     // write p value index file
 
+    // INFO:
+    // ----------------------------------------------------------------------
+    //      Hardcoded query parameters
+    // ----------------------------------------------------------------------
     string pValIndexPath = indexPaths[1];
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
-    vector<float> bins = {0.0, 0.5, 1.0};
+    auto bins = std::vector<float>{0.5, 0.1, 1e-8};
     auto pValIndexer = PValIndexer(pValIndexPath, bins);
-    int blockSize =
-        2000; // TODO: blockSize needs to be block_sizes, from config
+    int blockSize = 2000; // TODO: blockSize needs to be controlled by config
     pValIndexer.build_index(gwas_file, blockSize, 9);
     cout << "Done." << endl;
+    // ----------------------------------------------------------------------
 
     return 0;
 }

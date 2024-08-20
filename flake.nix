@@ -17,7 +17,7 @@
           cmake
           simde
 
-          libzip
+          libzip # TODO: necessary?
           zlib
           bzip2
           xz
