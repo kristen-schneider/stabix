@@ -29,7 +29,7 @@ void Indexer::build_index(std::string inPath, int blockSize, int queryColumn) {
     bool moreBlocks = true;
     while (moreBlocks) {
         int blockId = lineId / blockSize;
-        std::set<int> bins;
+        std::set<float> bins;
 
         for (int i = 0; i < blockSize; i++) {
             if (!std::getline(file, lineStr)) {
@@ -44,7 +44,7 @@ void Indexer::build_index(std::string inPath, int blockSize, int queryColumn) {
             bins.insert(bin);
         }
 
-        for (int bin : bins) {
+        for (auto bin : bins) {
             index[bin].push_back(blockId);
         }
     }
