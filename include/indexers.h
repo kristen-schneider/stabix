@@ -12,7 +12,7 @@ class Indexer {
     virtual ~Indexer() = default;
 
     Indexer(std::string indexPath);
-    void build_index(std::string inPath);
+    void build_index(std::string inPath, int blockSize, int queryColumn);
     std::vector<int> query_index(std::function<bool(float)> predicate);
 };
 
@@ -20,8 +20,8 @@ enum class ComparisonType {
     LessThan,
     LessThanOrEqual,
     Equal,
-    GreaterThanOrEqual,
-    GreaterThan
+    GreaterThan,
+    GreaterThanOrEqual
 };
 
 class PValIndexer : public Indexer {
@@ -30,7 +30,7 @@ class PValIndexer : public Indexer {
     float nearest_bin(float value);
 
   public:
-    PValIndexer(std::vector<float> bins);
+    PValIndexer(std::string indexPath, std::vector<float> bins);
     float value_to_bin(std::string line) override;
     std::string bin_to_value(float bin) override;
     std::vector<int> compare_query(float threshold, ComparisonType compType);

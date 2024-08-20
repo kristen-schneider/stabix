@@ -149,3 +149,14 @@ vector<int> get_block_sizes(vector<vector<vector<string>>> all_blocks);
  * @return vector of strings
  */
 vector<string> split_string(string str, char delimiter);
+
+/*
+ * Extract column names from a gwas file.
+ */
+vector<string> column_names(string gwasPathString);
+
+/*
+ * Get the paths for each index corresponding
+ * to a column in a GWAS file.
+ * */
+vector<string> index_paths_of(string gwasPathStr, vector<string> gwasColumns);
