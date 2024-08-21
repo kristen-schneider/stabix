@@ -90,6 +90,11 @@ int main(int argc, char *argv[]) {
         index.close();
         cout << "Done." << endl << endl;
 
+        // get blocks from second index
+
+        // cross check both
+
+
         // 4. get start byte, end byte, start block idx, and end block idx for
         // each query
         vector<string> query_list =
@@ -197,7 +202,7 @@ int main(int argc, char *argv[]) {
                 }
 
                 // write decompressed block to output file
-                cout << "......writing decompressed block to output file"
+                cout << "......writing decompressed block to output file NEW "
                      << endl;
                 int column_count = stoi(num_columns);
                 vector<string> split_columns[column_count];
