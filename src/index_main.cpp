@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto bins = std::vector<float>{0.5, 0.1, 1e-8};
     auto pValIndexer = PValIndexer(pValIndexPath, bins);
-    int blockSize = 2000; // TODO: blockSize needs to be controlled by config
+    int blockSize = 10; // TODO: blockSize needs to be controlled by config
     pValIndexer.build_index(gwas_file, blockSize, 9);
     cout << "Done." << endl;
     // ----------------------------------------------------------------------

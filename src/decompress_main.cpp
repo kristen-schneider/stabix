@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
     auto bins = std::vector<float>{0.5, 0.1, 1e-8};
     auto index = PValIndexer(indexPaths[1], bins);
     vector<int> blocks_to_decompress =
-        index.compare_query(0, ComparisonType::LessThanOrEqual);
+        index.compare_query(0.3, ComparisonType::LessThanOrEqual);
     // ----------------------------------------------------------------------
 
     std::cout << "Decompressing " << blocks_to_decompress.size() << " blocks"
