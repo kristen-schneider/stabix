@@ -250,6 +250,8 @@ int main(int argc, char *argv[]) {
         block_idx++;
     }
     compressed_gwas.close();
+
+    // 10. write genomic_index file
     cout << "Done." << endl;
 
     return 0;

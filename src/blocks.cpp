@@ -105,7 +105,7 @@ vector<vector<vector<string>>> make_blocks(
 //                }
                 column_idx++;
             }
-            line_count = 0;
+            line_count = 1;
             block_count++;
         }
     }
