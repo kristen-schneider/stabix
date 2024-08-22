@@ -9,3 +9,5 @@ map_files/
 plots/*.txt
 .direnv
 .cache/
+CMakeFiles/
+_deps/

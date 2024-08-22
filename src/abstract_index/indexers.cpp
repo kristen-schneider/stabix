@@ -1,101 +1,99 @@
 #include "indexers.h"
 #include "utils.h"
-#include <set>
-#include <unordered_map>
-#include <vector>
+#include <algorithm>
 
-// TODO: !!! possible bug creating multiple bins; seen on
-// GCSD90179150_GRCH37.tsv
-
-void Indexer::build_index(std::string inPath, std::string outPath) {
-    std::ifstream file(inPath);
-
-    if (!file.is_open()) {
-        throw std::runtime_error("Error opening file");
-    }
-
-    std::string lineStr;
-    if (!std::getline(file, lineStr)) {
-        throw std::runtime_error("Missing header line");
-    }
-
-    int blockSize = 3;
-    int queryCol = 9;
-
-    std::unordered_map<int, std::vector<int>> index;
-
-    int lineId = 0;
-    bool moreBlocks = true;
-    while (moreBlocks) {
-        int blockId = lineId / blockSize;
-        std::set<int> bins;
-
-        for (int i = 0; i < blockSize; i++) {
-            if (!std::getline(file, lineStr)) {
-                moreBlocks = false;
-                break;
-            }
-
-            lineId++;
-            auto rowVals = split_string(lineStr, '\t');
-            std::string queryVal = rowVals[queryCol];
-            int bin = value_to_bin(queryVal);
-            bins.insert(bin);
-        }
-
-        for (int bin : bins) {
-            index[bin].push_back(blockId);
+float PValIndexer::nearest_bin(float value) {
+    // TODO: at query time, these bins should be provided from the index file
+    for (float bin : this->bins) {
+        if (value >= bin) {
+            return bin;
         }
     }
 
-    std::ofstream indexFile(outPath);
-    std::unordered_map<int, int> binPositions;
-
-    for (auto &entry : index) {
-        binPositions[entry.first] = indexFile.tellp();
-
-        for (int i = 0; i < entry.second.size() - 1; i++) {
-            indexFile << entry.second[i] << " ";
-        }
-
-        indexFile << entry.second[entry.second.size() - 1] << std::endl;
-    }
-
-    indexFile << std::endl;
-
-    int pos0 = indexFile.tellp();
-
-    for (auto &entry : binPositions) {
-        std::string key = bin_to_value(entry.first);
-        indexFile << key << " " << entry.second << std::endl;
-    }
-
-    int footerSize = (int)(indexFile.tellp()) - pos0;
-    indexFile << footerSize << std::endl;
-
-    indexFile.close();
+    return -HUGE_VALF;
 }
 
-int PValIndexer::value_to_bin(std::string line) {
-    std::string digits;
+Indexer::Indexer(std::string indexPath) { this->indexPath = indexPath; }
 
-    size_t dot_pos = line.find('.');
-    if (dot_pos != std::string::npos) {
-        digits = line.substr(0, dot_pos);
-    }
-
-    if (dot_pos + 1 < line.size()) {
-        digits += line.substr(dot_pos + 1, 1);
-    }
-
-    return std::stoi(digits);
+PValIndexer::PValIndexer(std::string indexPath, vector<float> bins)
+    : Indexer(indexPath) {
+    // sort bins in descending order
+    std::sort(bins.begin(), bins.end(), std::greater<float>());
+    this->bins = bins;
 }
 
-std::string PValIndexer::bin_to_value(int bin) {
-    std::string out = std::to_string((bin / 10) % 1);
-    out += "." + std::to_string(bin % 10);
-    return out;
+bool badFloatSemaphore = false;
+float PValIndexer::value_to_bin(std::string line) {
+    char *end;
+    errno = 0;
+    float value = std::strtof(line.c_str(), &end);
+
+    if (end == line.c_str()) {
+        throw std::runtime_error("Invalid float format.");
+    }
+
+    if (errno == ERANGE && !badFloatSemaphore) {
+        std::cerr << "Warning: rounding some values because they cannot fit in "
+                     "float, such as: "
+                  << line << std::endl;
+        badFloatSemaphore = true;
+    }
+
+    return this->nearest_bin(value);
 }
+
+vector<int> PValIndexer::compare_query(float threshold,
+                                       ComparisonType compType) {
+
+    float pivotBin = this->nearest_bin(threshold);
+
+    switch (compType) {
+    case ComparisonType::LessThan:
+    case ComparisonType::LessThanOrEqual:
+        return query_index([pivotBin](float val) { return val <= pivotBin; });
+    case ComparisonType::Equal:
+        return query_index([pivotBin](float val) { return val == pivotBin; });
+    case ComparisonType::GreaterThan:
+    case ComparisonType::GreaterThanOrEqual:
+        return query_index([pivotBin](float val) { return val >= pivotBin; });
+    }
+
+    // unreachable
+    throw std::runtime_error("Invalid comparison type.");
+}
+
+// int PValIndexer::value_to_bin(std::string line) {
+//     std::string digits;
+//
+//     auto dotPos = line.find('.');
+//     if (dotPos != std::string::npos) {
+//         digits = line.substr(0, dotPos);
+//         digits += line.substr(dotPos + 1);
+//     } else {
+//         digits = line;
+//     }
+//
+//     int expo = 0;
+//     auto expPos = digits.find('e');
+//     if (expPos != std::string::npos) {
+//         std::string newDigits = digits.substr(0, expPos);
+//         expo = std::stof(digits.substr(expPos + 1));
+//         digits = newDigits;
+//
+//         if (expo <= -2) {
+//             return 0;
+//         } else if (expo >= 2) {
+//             throw std::runtime_error("P-value out of range. Magnitude >
+//             10^2");
+//         }
+//     }
+//
+//     expo += 1; // .7 -> 7
+//     std::string finalRepresentation = digits.substr(0, dotPos + expo);
+//     return std::stoi(finalRepresentation);
+// }
+
+std::string PValIndexer::bin_to_value(float bin) { return std::to_string(bin); }
 
 // TODO: extract genomic indexer from previous index_main
 /*
