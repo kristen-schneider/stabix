@@ -160,3 +160,18 @@ vector<string> column_names(string gwasPathString);
  * to a column in a GWAS file.
  * */
 vector<string> index_paths_of(string gwasPathStr, vector<string> gwasColumns);
+
+/*
+ * read genomic index into a data structure
+ * key: block_idx
+ *  key: chrm_start
+ *      value: tuple(bp_start, line_number, byte_start)
+ */
+map<int, map<int, tuple<int, int, int>>> read_genomic_index_file(
+        string index_file);
+
+/*
+ * return the line number given the block ID
+ */
+int get_line_number_from_block_idx(map<int, map<int, tuple<int, int, int>>> genomic_index_file_map,
+                                   int block_idx);

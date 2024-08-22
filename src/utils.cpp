@@ -303,3 +303,57 @@ vector<string> index_paths_of(string gwasPathStr, vector<string> gwasColumns) {
 
     return outPaths;
 }
+
+map<int, map<int, tuple<int, int, int>>> read_genomic_index_file(
+        string index_file) {
+
+    map<int, map<int, tuple<int, int, int>>> genomic_index_file_map;
+
+    // check if file exists
+    ifstream index_stream(index_file);
+    if (!index_stream.good()) {
+        cout << "ERROR: Index file does not exist: " << index_file << endl;
+        exit(1);
+    }
+
+    // read index file
+    // format of index file
+    // header
+    // block_idx,chrm_start,bp_start,line_number,byte_start
+
+    string line;
+    while (getline(index_stream, line)) {
+        // skip header
+        if (line.find("block_idx") != string::npos) {
+            continue;
+        }
+        // split line by comma
+        vector<string> vec = split_string(line, ',');
+        int block_idx = stoi(vec[0]);
+        int chrm_start = stoi(vec[1]);
+        int bp_start = stoi(vec[2]);
+        int line_number = stoi(vec[3]);
+        int byte_start = stoi(vec[4]);
+        genomic_index_file_map[block_idx][chrm_start] = make_tuple(bp_start, line_number, byte_start);
+    }
+    index_stream.close();
+    return genomic_index_file_map;
+}
+
+int get_line_number_from_block_idx(map<int, map<int, tuple<int, int, int>>> genomic_index_file_map,
+                                   int block_idx) {
+    // get a list of all the chromosomes in this block
+    vector<int> block_chromosomes;
+    for (auto const& [chrm, bp_line_byte] : genomic_index_file_map[block_idx]) {
+        block_chromosomes.push_back(chrm);
+    }
+    // get the first chromosome in the block (lowest chrm_start)
+    int first_chrm = *min_element(block_chromosomes.begin(), block_chromosomes.end());
+
+    // get the line number of the first chromosome in the block
+    int line_number = get<1>(genomic_index_file_map[block_idx][first_chrm]);
+
+    return line_number;
+}
+
+
