@@ -23,7 +23,8 @@ int main(int argc, char *argv[]) {
     vector<string> codecs_list = split_string(config_options["codecs"], ',');
     cout << "Done." << endl << endl;
 
-    // 1. open compressed file
+    // 1. READ COMPRESSED FILE
+    // open compressed file and reading header
     cout << "Opening compressed file and reading header..." << endl;
     ifstream file(compressed_file);
     // start at beginning and read 4 bytes
@@ -59,9 +60,16 @@ int main(int argc, char *argv[]) {
 
     cout << "Done." << endl << endl;
 
-    // for each block, determine the start chromosome and genomic position
+    // 2. GENOMIC INDEX
+    // for each block, determine:
+    //      start chromosome
+    //      start base pair
+    //      start byte
+    //      start line number
+
     int chrm_idx = get_index(column_names_list, "chromosome");
     int bp_idx = get_index(column_names_list, "base_pair_location");
+//    vector<int> block_sizes = get_index(column_names_list, "block_sizes");
 
     vector<tuple<int, int, int>> chrm_bp_byte =
         get_chrm_bp_byte(compressed_file, ',', header_length, chrm_idx, bp_idx,

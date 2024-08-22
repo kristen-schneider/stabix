@@ -12,6 +12,15 @@
 
 using namespace std;
 
+///*
+// * Get the chromosome, genomic coordinates, byte offset, and line number for each block
+// *
+// */
+//vector<tuple<int, int, int, int>> make_genomic_index(
+//
+//)
+
+
 /*
  * Get chromosome and genomic coordinates from compressed file
  * @param compressed_file: string path to compressed file
