@@ -251,6 +251,36 @@ TEST(GetBlockBPbyMap, simmple){
     ASSERT_EQ(chrm_block_bp_ends[3].size(), 3);
 }
 
+TEST(GetBlockIDbyLineID, simple){
+    // make a map of lineID to blockID
+    map<int, int> lineID_blockID_map;
+    lineID_blockID_map[0] = 0;
+    lineID_blockID_map[1] = 0;
+    lineID_blockID_map[2] = 0;
+    lineID_blockID_map[3] = 0;
+    lineID_blockID_map[4] = 0;
+    lineID_blockID_map[5] = 1;
+    lineID_blockID_map[6] = 1;
+    lineID_blockID_map[7] = 1;
+    lineID_blockID_map[8] = 1;
+    lineID_blockID_map[9] = 1;
+    lineID_blockID_map[10] = 2;
+    lineID_blockID_map[11] = 2;
+    lineID_blockID_map[12] = 2;
+    lineID_blockID_map[13] = 2;
+    lineID_blockID_map[14] = 2;
+
+    // for 0-14, the blockID should be 0, 1, 2
+    for (int i = 0; i < 15; i++){
+        ASSERT_EQ(get_block_from_line(lineID_blockID_map, i), lineID_blockID_map[i]);
+    }
+}
+
+
+TEST(GetBlockIDbyLineID, toy_data){
+    map<int, int> lineID_blockID_map;
+}
+
 //// Data too large to include in git repo
 //TEST(GetBlockBPbyMap, real){
 //    string map_file = "/Users/krsc0813/CLionProjects/gwas_local/data/chrm_1-22.map";

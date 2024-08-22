@@ -374,5 +374,6 @@ map<int, int> make_lineID_blockID_map(string index_file) {
 
 int get_block_from_line(map<int, int> lineID_blockID_map,
                         int line_number) {
+    // TODO: if line number is not in block, search between blocks
     return lineID_blockID_map[line_number];
 }
