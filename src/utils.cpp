@@ -340,20 +340,39 @@ map<int, map<int, tuple<int, int, int>>> read_genomic_index_file(
     return genomic_index_file_map;
 }
 
-int get_line_number_from_block_idx(map<int, map<int, tuple<int, int, int>>> genomic_index_file_map,
-                                   int block_idx) {
-    // get a list of all the chromosomes in this block
-    vector<int> block_chromosomes;
-    for (auto const& [chrm, bp_line_byte] : genomic_index_file_map[block_idx]) {
-        block_chromosomes.push_back(chrm);
+
+map<int, int> make_lineID_blockID_map(string index_file) {
+    map<int, int> lineID_blockID_map;
+
+    // check if file exists
+    ifstream index_stream(index_file);
+    if (!index_stream.good()) {
+        cout << "ERROR: Index file does not exist: " << index_file << endl;
+        exit(1);
     }
-    // get the first chromosome in the block (lowest chrm_start)
-    int first_chrm = *min_element(block_chromosomes.begin(), block_chromosomes.end());
 
-    // get the line number of the first chromosome in the block
-    int line_number = get<1>(genomic_index_file_map[block_idx][first_chrm]);
+    // read index file
+    // format of index file
+    // header
+    // block_idx,chrm_start,bp_start,line_number,byte_start
 
-    return line_number;
+    string line;
+    while (getline(index_stream, line)) {
+        // skip header
+        if (line.find("block_idx") != string::npos) {
+            continue;
+        }
+        // split line by comma
+        vector<string> vec = split_string(line, ',');
+        int block_idx = stoi(vec[0]);
+        int line_number = stoi(vec[3]);
+        lineID_blockID_map[line_number] = block_idx;
+    }
+    index_stream.close();
+    return lineID_blockID_map;
 }
 
-
+int get_block_from_line(map<int, int> lineID_blockID_map,
+                        int line_number) {
+    return lineID_blockID_map[line_number];
+}
