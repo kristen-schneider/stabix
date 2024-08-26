@@ -239,7 +239,7 @@ TEST(GetBlockBPbyMap, simmple){
     string map_file = "/Users/krsc0813/CLionProjects/gwas_local/map_files/test.map";
 //    string map_file = "data/test.map";
 
-    map<int, vector<uint32_t>> chrm_block_bp_ends = get_chrm_block_bp_ends(map_file);
+    map<int, vector<uint32_t>> chrm_block_bp_ends = read_cm_map_file(map_file);
     vector<uint32_t> chrm_vector = {5000, 9000, 13000};
 
     ASSERT_EQ(chrm_block_bp_ends.size(), 3);
@@ -299,7 +299,7 @@ TEST(GetBlockIDbyLineID, line_between_blocks){
 //// Data too large to include in git repo
 //TEST(GetBlockBPbyMap, real){
 //    string map_file = "/Users/krsc0813/CLionProjects/gwas_local/data/chrm_1-22.map";
-//    map<int, vector<uint32_t>> chrm_block_bp_ends = get_chrm_block_bp_ends(map_file);
+//    map<int, vector<uint32_t>> chrm_block_bp_ends = read_cm_map_file(map_file);
 //
 //    ASSERT_EQ(chrm_block_bp_ends.size(), 22);
 //    ASSERT_EQ(chrm_block_bp_ends[1].size(), 286);
