@@ -28,7 +28,8 @@ vector<vector<vector<string>>> make_blocks_map(
         string gwas_file,
         int num_columns,
         map<int, vector<uint32_t>> chrm_block_bp_ends,
-        char delim);
+        char delim,
+        vector<vector<int>> &genomic_index);
 
 vector<string> get_block_header(
         vector<string> compressed_block);

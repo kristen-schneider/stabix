@@ -220,7 +220,7 @@ vector<uint32_t> convert_vector_string_to_vector_int(vector<string> vec) {
     return vec_int;
 }
 
-map<int, vector<uint32_t>> get_chrm_block_bp_ends(string map_file) {
+map<int, vector<uint32_t>> read_cm_map_file(string map_file) {
     map<int, vector<uint32_t>> chrm_block_bp_ends;
     int BLOCK_CM_SIZE = 1;
     // open map file, exit if file does not exist

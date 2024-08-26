@@ -149,7 +149,7 @@ char *int_to_bytes(
  * @param map_file: string
  * @return map of chrm: <bp, bp, bp...>
  */
-map<int, vector<uint32_t>> get_chrm_block_bp_ends(
+map<int, vector<uint32_t>> read_cm_map_file(
         string map_file);
 
 /*

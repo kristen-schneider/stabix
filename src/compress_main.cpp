@@ -37,15 +37,11 @@ int main(int argc, char *argv[]) {
         block_size = -1;
     }
     string query_type = config_options["query_type"];
-
     // creating output directory for generated files
     auto gwas_path = fs::path(config_options["gwas_file"]);
     auto out_dir = gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
     fs::create_directories(out_dir);
     string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
-
-    //    string compressed_file = fs::config_options["gwas_file"] + ".grlz";
-
     vector<string> codecs_list = split_string(config_options["codecs"], ',');
 
     cout << "\t...gwas_file: " << gwas_file << endl;
@@ -104,9 +100,12 @@ int main(int argc, char *argv[]) {
     if (block_size == -1) {
         string map_file = config_options["block_size"];
         map<int, vector<uint32_t>> chrm_block_bp_ends =
-            get_chrm_block_bp_ends(map_file);
-        all_blocks = make_blocks_map(gwas_file, num_columns,
-                                     chrm_block_bp_ends, delimiter);
+                read_cm_map_file(map_file);
+        all_blocks = make_blocks_map(gwas_file,
+                                     num_columns,
+                                     chrm_block_bp_ends,
+                                     delimiter,
+                                     genomic_index);
     } else {
         all_blocks =
             make_blocks(gwas_file,
