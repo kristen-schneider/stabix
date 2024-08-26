@@ -374,6 +374,17 @@ map<int, int> make_lineID_blockID_map(string index_file) {
 
 int get_block_from_line(map<int, int> lineID_blockID_map,
                         int line_number) {
-    // TODO: if line number is not in block, search between blocks
-    return lineID_blockID_map[line_number];
+    // try and return block ID
+    try {
+        return lineID_blockID_map.at(line_number);
+    } catch (const out_of_range &e) {
+        // if line number is not a key; find where the line number would fall between the ordered keys
+        auto it = lineID_blockID_map.upper_bound(line_number);
+        if (it == lineID_blockID_map.begin()) {
+            cout << "ERROR: Line number not found in index file." << endl;
+            exit(1);
+        }
+        it--;
+        return it->second;
+    }
 }

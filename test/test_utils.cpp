@@ -277,8 +277,23 @@ TEST(GetBlockIDbyLineID, simple){
 }
 
 
-TEST(GetBlockIDbyLineID, toy_data){
+TEST(GetBlockIDbyLineID, line_between_blocks){
     map<int, int> lineID_blockID_map;
+    lineID_blockID_map[0] = 0;
+    lineID_blockID_map[5] = 1;
+    lineID_blockID_map[10] = 2;
+    // for 0-4, the blockID should be 0
+    for (int i = 0; i < 5; i++){
+        ASSERT_EQ(get_block_from_line(lineID_blockID_map, i), 0);
+    }
+    // for 5-9, the blockID should be 1
+    for (int i = 5; i < 10; i++){
+        ASSERT_EQ(get_block_from_line(lineID_blockID_map, i), 1);
+    }
+    // for 10-14, the blockID should be 2
+    for (int i = 10; i < 15; i++){
+        ASSERT_EQ(get_block_from_line(lineID_blockID_map, i), 2);
+    }
 }
 
 //// Data too large to include in git repo
