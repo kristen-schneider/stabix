@@ -52,8 +52,6 @@ int main(int argc, char *argv[]) {
     // 1. open compressed file and read header
     cout << "Opening compressed file and reading header..." << endl;
     // TODO: There needs to be a system to vet quality inputs (such as config)
-//    string gwas_path = config_options["gwas_file"];
-//    string compressed_file = gwas_path + ".grlz";
     string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
     ifstream file(compressed_file);
 
