@@ -3,6 +3,7 @@
 #include "index.h"
 #include "indexers.h"
 #include "utils.h"
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -10,6 +11,7 @@
 #include <vector>
 
 using namespace std;
+namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) {
 
@@ -19,7 +21,11 @@ int main(int argc, char *argv[]) {
     map<string, string> config_options;
     config_options = read_config_file(config_file);
     string gwas_file = config_options["gwas_file"];
-    string compressed_file = gwas_file + ".grlz";
+
+    auto gwas_path = fs::path(config_options["gwas_file"]);
+    auto out_dir = gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
+    string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
+
     vector<string> codecs_list = split_string(config_options["codecs"], ',');
     cout << "Done." << endl << endl;
 

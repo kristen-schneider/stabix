@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -11,6 +12,7 @@
 #include "utils.h"
 
 using namespace std;
+namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) {
     // DECOMPRESSION STEPS
@@ -29,26 +31,32 @@ int main(int argc, char *argv[]) {
     string query_type = config_options["query_type"];
     vector<string> col_codecs = split_string(config_options["codecs"], ',');
 
-    // open output file in truncate mode
-    ofstream output_file;
-    string output_file_name = config_options["gwas_file"] + ".query";
-    cout << "Opening output file: " << output_file_name << endl;
-    output_file.open(output_file_name, ios::trunc);
-    if (!output_file.is_open()) {
+    // open output file
+    string gwas_file = config_options["gwas_file"];
+    auto gwas_path = fs::path(config_options["gwas_file"]);
+    auto out_dir = gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
+    ofstream query_output_stream;
+    string query_output_file_name = out_dir / (gwas_path.stem().string() + ".query");
+    cout << "Opening output file: " << query_output_file_name << endl;
+    query_output_stream.open(query_output_file_name, ios::trunc);
+    if (!query_output_stream.is_open()) {
         cout << "Error: could not open output file" << endl;
         return 1;
     }
+
     // clear contents of output file and close
-    output_file.close();
-    output_file.open(output_file_name, ios::app);
+    query_output_stream.close();
+    query_output_stream.open(query_output_file_name, ios::app);
     cout << "Done." << endl << endl;
 
     // 1. open compressed file and read header
     cout << "Opening compressed file and reading header..." << endl;
     // TODO: There needs to be a system to vet quality inputs (such as config)
-    string gwas_path = config_options["gwas_file"];
-    string compressed_file = gwas_path + ".grlz";
+//    string gwas_path = config_options["gwas_file"];
+//    string compressed_file = gwas_path + ".grlz";
+    string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
     ifstream file(compressed_file);
+
     // start at beginning and read 4 bytes
     file.seekg(0, ios::beg);
     char header_length_bytes[4];
@@ -178,7 +186,7 @@ int main(int argc, char *argv[]) {
         cout << "......decompressing block " << block_idx
              << ", size: " << block_size << endl;
 
-        output_file << "Block: " << block_idx << endl;
+        query_output_stream << "Block: " << block_idx << endl;
 
         file.seekg(start_byte, ios::beg);
         char block_header_bytes[block_header_length];
@@ -226,13 +234,12 @@ int main(int argc, char *argv[]) {
             for (int col_i = 0; col_i <= column_count - 1; col_i++) {
                 auto block_list = split_columns[col_i];
                 string record = block_list[record_i];
-                output_file << record << ',';
+                query_output_stream << record << ',';
             }
-            output_file << endl;
+            query_output_stream << endl;
         }
-        // }
     }
 
-    output_file.close();
+    query_output_stream.close();
     return 0;
 }

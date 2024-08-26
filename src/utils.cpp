@@ -291,8 +291,8 @@ vector<string> gwas_column_names(string gwasPathString) {
 
 vector<string> index_paths_of(string gwasPathStr, vector<string> gwasColumns) {
     auto gwasPath = fs::path(gwasPathStr);
-    auto outDir = gwasPath.parent_path() / (gwasPath.stem().string() + "_idx");
-    fs::create_directories(outDir);
+    auto outDir = gwasPath.parent_path() / (gwasPath.stem().string() + "_output");
+//    fs::create_directories(outDir);
     auto outPaths = vector<string>();
 
     for (int i = 0; i < gwasColumns.size(); i++) {
