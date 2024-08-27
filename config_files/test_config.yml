@@ -2,13 +2,11 @@ gwas_file:
   gwas_files/test.tsv
 block_size:
   10
-map:
-
 query_type:
   coordinate
 query_coordinate:
-  1:100-220
+  2:100-150000
 query_statistic:
-  p_value:0.05, beta:0.1,
+  p_value:0.3
 codecs:
   zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib

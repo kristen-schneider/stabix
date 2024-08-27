@@ -27,7 +27,8 @@ vector<vector<vector<string>>> make_blocks(
         int num_columns,
         int block_size,
         char delim,
-        int index_col){
+        int index_col,
+        vector<vector<int>> &genomic_index){
 
     // read in gwas file and make a new block every block_size lines
     // return a vector of blocks
@@ -52,6 +53,10 @@ vector<vector<vector<string>>> make_blocks(
     // ignore header
     getline(gwas, line);
 
+    // create an empty block index
+    // chrm, bp, byte_offset,
+    vector<int> block_genomic_index = {-1, -1, -1, -1};
+
     // read in lines
     while (getline(gwas, line)) {
         // if line_count is less than block_size, split line by column and add
@@ -63,20 +68,19 @@ vector<vector<vector<string>>> make_blocks(
             int column_idx = 0;
             // split line by delimiter and add to curr_block
             vector<string> line_vector = split_string(line, '\t');
+            // if this is the first line in the block, store the genomic index
+            // starting chrm, starting bp, and line number
+            if (line_count == 0){
+                // TODO: make this autodetect the chrm and bp columns in case not 1 and 2
+                block_genomic_index[0] = stoi(line_vector[1]);
+                block_genomic_index[1] = stoi(line_vector[2]);
+                block_genomic_index[2] = 1 + block_count * block_size;
+                genomic_index.push_back(block_genomic_index);
+            }
             for (auto const &column_value : line_vector) {
                 curr_block[column_idx].push_back(column_value);
-//                // if column is index column, store the value of the indexed column
-//                if (column_idx == index_col){
-//                    // index value is the value of the index column
-//                    double index_value = stod(column_value);
-//                    // store index value and block number in index entry
-//                    IndexEntry index_entry = {index_value, block_count};
-//                    indexEntries.push_back(index_entry);
-//                }
                 column_idx++;
             }
-
-
 
             line_count++;
         }
@@ -90,23 +94,27 @@ vector<vector<vector<string>>> make_blocks(
                 vector<string> column;
                 curr_block.push_back(column);
             }
-            // add line to curr_block
+            // add line to curr_block as first line
             istringstream line_stream(line);
             string column_value;
             int column_idx = 0;
+            vector<string> line_vector = split_string(line, '\t');
+
             while (getline(line_stream, column_value, delim)) {
                 curr_block[column_idx].push_back(column_value);
-//                if (column_idx == index_col){
-//                    // index value is the value of the index column
-//                    double index_value = stod(column_value);
-//                    // store index value and block number in index entry
-//                    IndexEntry index_entry = {index_value, block_count};
-//                    indexEntries.push_back(index_entry);
-//                }
                 column_idx++;
             }
-            line_count = 0;
+
+            line_count = 1;
             block_count++;
+
+            // store the genomic index
+            // starting chrm, starting bp, and line number
+            // TODO: make this autodetect the chrm and bp columns in case not 1 and 2
+            block_genomic_index[0] = stoi(line_vector[1]);
+            block_genomic_index[1] = stoi(line_vector[2]);
+            block_genomic_index[2] = 1 + block_count * block_size;
+            genomic_index.push_back(block_genomic_index);
         }
     }
     // add last block to all_blocks if it is not empty
@@ -116,27 +124,33 @@ vector<vector<vector<string>>> make_blocks(
     }
     gwas.close();
 
-//    // sort index entries by value
-//    sort(indexEntries.begin(), indexEntries.end(), [](const IndexEntry &a, const IndexEntry &b) {
-//        return a.value < b.value;
-//    });
-
-//    // write index entries to file
-//    string index_file = gwas_file + ".float.idx";
-//    cout << "Writing index file to: " << index_file << endl;
-//    ofstream index;
-//    index.open(index_file);
-//    // write header
-//    index << "value,block_number" << endl;
-//    // write index entries
-
-
     return all_blocks;
 }
 
+void get_byte_start_of_blocks(int compressed_header_size,
+                              vector<string> block_header_end_bytes,
+                              vector<string> block_end_bytes,
+                              vector<vector<int>> &genomic_index){
+
+    // get the byte start of each block
+    // for each block, start byte = 4 + compressed_header_size + block_end_bytes[block_idx - 1]
+
+    for (int block_idx = 0; block_idx < block_end_bytes.size(); block_idx++){
+        if (block_idx == 0){
+            genomic_index[block_idx][3] = 4 + compressed_header_size;
+        }
+        else{
+            genomic_index[block_idx][3] = 4 + compressed_header_size + stoi(block_end_bytes[block_idx - 1]);
+        }
+    }
+}
+
 vector<vector<vector<string>>>
-make_blocks_map(string gwas_file, int num_columns,
-                map<int, vector<uint32_t>> chrm_block_bp_ends, char delim) {
+make_blocks_map(string gwas_file,
+                int num_columns,
+                map<int, vector<uint32_t>> chrm_block_bp_ends,
+                char delim,
+                vector<vector<int>> &genomic_index) {
 
     // read in gwas file and make a new block every block_size lines
     // return a vector of blocks
@@ -144,6 +158,7 @@ make_blocks_map(string gwas_file, int num_columns,
     ifstream gwas(gwas_file);
     string line;
     int line_count = 0;
+    int total_line_count = 0;
     int block_count = 0;
     vector<vector<string>> curr_block;
     // make curr_block a vector of empty strings
@@ -156,13 +171,18 @@ make_blocks_map(string gwas_file, int num_columns,
     getline(gwas, line);
 
     int block_chrm = 1;
-    uint32_t curr_bp = 0;
+    uint32_t curr_bp;
     int curr_block_idx = 0;
     int curr_bp_end = chrm_block_bp_ends[block_chrm][curr_block_idx];
 
+    // create an empty block index
+    // chrm, bp, byte_offset,
+    vector<int> block_genomic_index = {-1, -1, -1, -1};
+
     // read in lines
     while (getline(gwas, line)) {
-        // if line_count is less than block_size, split line by column and add
+        line_count++;
+        total_line_count++;
         // to block remove newline character from line
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
         // read line and get chrm and bp
@@ -171,11 +191,13 @@ make_blocks_map(string gwas_file, int num_columns,
         vector<string> line_vector = split_string(line, '\t');
         int curr_chrm = stoi(line_vector[1]);
         curr_bp = stoul(line_vector[2]);
+
         // if new chromosome and not first chromosome
         if (curr_chrm != block_chrm) {
             // add block to all_blocks
             if (!curr_block[0].empty()) {
                 all_blocks.push_back(curr_block);
+                block_count++;
             }
             curr_block.clear();
             // make curr_block a vector of empty strings
@@ -183,13 +205,34 @@ make_blocks_map(string gwas_file, int num_columns,
                 vector<string> column;
                 curr_block.push_back(column);
             }
+
             block_chrm = curr_chrm;
             curr_block_idx = 0;
             curr_bp_end = chrm_block_bp_ends[curr_chrm][curr_block_idx];
+            line_count = 1;
+
+//            // store the genomic index
+//            if (line_count == 1) {
+//                // store the genomic index
+//                // starting chrm, starting bp, and line number
+//                block_genomic_index[0] = curr_chrm;
+//                block_genomic_index[1] = curr_bp;
+//                block_genomic_index[2] = 1 + total_line_count;
+//                genomic_index.push_back(block_genomic_index);
+//            }
         }
         // keep adding to current block until bp is greater than bp_end
         if (curr_bp <= curr_bp_end) {
             int column_idx = 0;
+            if (line_count == 1) {
+                // store the genomic index
+                // starting chrm, starting bp, and line number
+                block_genomic_index[0] = curr_chrm;
+                block_genomic_index[1] = curr_bp;
+                block_genomic_index[2] = 1 + total_line_count;
+                genomic_index.push_back(block_genomic_index);
+            }
+
             // split line by delimiter and add to curr_block
             vector<string> line_vector = split_string(line, '\t');
             for (auto const &column_value : line_vector) {
@@ -214,8 +257,18 @@ make_blocks_map(string gwas_file, int num_columns,
                 curr_block[column_idx].push_back(column_value);
                 column_idx++;
             }
+
+            line_count = 1;
+            // store the genomic index
+            // starting chrm, starting bp, and line number
+            block_genomic_index[0] = curr_chrm;
+            block_genomic_index[1] = curr_bp;
+            block_genomic_index[2] = 1 + total_line_count;
+            genomic_index.push_back(block_genomic_index);
+
             block_count++;
             curr_block_idx++;
+
             curr_bp_end = chrm_block_bp_ends[curr_chrm][curr_block_idx];
         }
     }

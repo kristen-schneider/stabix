@@ -220,7 +220,7 @@ vector<uint32_t> convert_vector_string_to_vector_int(vector<string> vec) {
     return vec_int;
 }
 
-map<int, vector<uint32_t>> get_chrm_block_bp_ends(string map_file) {
+map<int, vector<uint32_t>> read_cm_map_file(string map_file) {
     map<int, vector<uint32_t>> chrm_block_bp_ends;
     int BLOCK_CM_SIZE = 1;
     // open map file, exit if file does not exist
@@ -291,8 +291,8 @@ vector<string> gwas_column_names(string gwasPathString) {
 
 vector<string> index_paths_of(string gwasPathStr, vector<string> gwasColumns) {
     auto gwasPath = fs::path(gwasPathStr);
-    auto outDir = gwasPath.parent_path() / (gwasPath.stem().string() + "_idx");
-    fs::create_directories(outDir);
+    auto outDir = gwasPath.parent_path() / (gwasPath.stem().string() + "_output");
+//    fs::create_directories(outDir);
     auto outPaths = vector<string>();
 
     for (int i = 0; i < gwasColumns.size(); i++) {
@@ -302,4 +302,89 @@ vector<string> index_paths_of(string gwasPathStr, vector<string> gwasColumns) {
     }
 
     return outPaths;
+}
+
+map<int, map<int, tuple<int, int, int>>> read_genomic_index_file(
+        string index_file) {
+
+    map<int, map<int, tuple<int, int, int>>> genomic_index_file_map;
+
+    // check if file exists
+    ifstream index_stream(index_file);
+    if (!index_stream.good()) {
+        cout << "ERROR: Index file does not exist: " << index_file << endl;
+        exit(1);
+    }
+
+    // read index file
+    // format of index file
+    // header
+    // block_idx,chrm_start,bp_start,line_number,byte_start
+
+    string line;
+    while (getline(index_stream, line)) {
+        // skip header
+        if (line.find("block_idx") != string::npos) {
+            continue;
+        }
+        // split line by comma
+        vector<string> vec = split_string(line, ',');
+        int block_idx = stoi(vec[0]);
+        int chrm_start = stoi(vec[1]);
+        int bp_start = stoi(vec[2]);
+        int line_number = stoi(vec[3]);
+        int byte_start = stoi(vec[4]);
+        genomic_index_file_map[block_idx][chrm_start] = make_tuple(bp_start, line_number, byte_start);
+    }
+    index_stream.close();
+    return genomic_index_file_map;
+}
+
+
+map<int, int> make_lineID_blockID_map(string index_file) {
+    map<int, int> lineID_blockID_map;
+
+    // check if file exists
+    ifstream index_stream(index_file);
+    if (!index_stream.good()) {
+        cout << "ERROR: Index file does not exist: " << index_file << endl;
+        exit(1);
+    }
+
+    // read index file
+    // format of index file
+    // header
+    // block_idx,chrm_start,bp_start,line_number,byte_start
+
+    string line;
+    while (getline(index_stream, line)) {
+        // skip header
+        if (line.find("block_idx") != string::npos) {
+            continue;
+        }
+        // split line by comma
+        vector<string> vec = split_string(line, ',');
+        int block_idx = stoi(vec[0]);
+        int line_number = stoi(vec[3]);
+        lineID_blockID_map[line_number] = block_idx;
+    }
+    index_stream.close();
+    return lineID_blockID_map;
+}
+
+int get_block_from_line(map<int, int> lineID_blockID_map,
+                        int line_number) {
+    // try and return block ID
+    try {
+        return lineID_blockID_map.at(line_number);
+    } catch (const out_of_range &e) {
+        // if line number is not a key; find where the line number would fall between the ordered keys
+        auto it = lineID_blockID_map.upper_bound(line_number);
+        if (it == lineID_blockID_map.begin()) {
+            cout << "ERROR: Line number not found in index file." << endl;
+            exit(1);
+        }
+        it--;
+        return it->second;
+    }
 }

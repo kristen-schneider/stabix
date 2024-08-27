@@ -2,8 +2,6 @@ gwas_file:
   /Users/krsc0813/CLionProjects/gwas_local/gwas_files/GCST90179150_buildGRCh37.tsv
 block_size:
   20000
-map:
-  /Users/krsc0813/CLionProjects/gwas_local/map_files/chrm_1-22.map
 query_type:
   coordinate
 query_coordinate:

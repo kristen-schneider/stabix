@@ -12,6 +12,8 @@
 
 using namespace std;
 
+///*
+
 /*
  * Get chromosome and genomic coordinates from compressed file
  * @param compressed_file: string path to compressed file

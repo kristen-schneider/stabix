@@ -3,6 +3,7 @@
 #include "index.h"
 #include "indexers.h"
 #include "utils.h"
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -10,6 +11,7 @@
 #include <vector>
 
 using namespace std;
+namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) {
 
@@ -19,11 +21,16 @@ int main(int argc, char *argv[]) {
     map<string, string> config_options;
     config_options = read_config_file(config_file);
     string gwas_file = config_options["gwas_file"];
-    string compressed_file = gwas_file + ".grlz";
+
+    auto gwas_path = fs::path(config_options["gwas_file"]);
+    auto out_dir = gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
+    string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
+
     vector<string> codecs_list = split_string(config_options["codecs"], ',');
     cout << "Done." << endl << endl;
 
-    // 1. open compressed file
+    // 1. READ COMPRESSED FILE
+    // open compressed file and reading header
     cout << "Opening compressed file and reading header..." << endl;
     ifstream file(compressed_file);
     // start at beginning and read 4 bytes
@@ -59,9 +66,16 @@ int main(int argc, char *argv[]) {
 
     cout << "Done." << endl << endl;
 
-    // for each block, determine the start chromosome and genomic position
+    // 2. GENOMIC INDEX
+    // for each block, determine:
+    //      start chromosome
+    //      start base pair
+    //      start byte
+    //      start line number
+
     int chrm_idx = get_index(column_names_list, "chromosome");
     int bp_idx = get_index(column_names_list, "base_pair_location");
+//    vector<int> block_sizes = get_index(column_names_list, "block_sizes");
 
     vector<tuple<int, int, int>> chrm_bp_byte =
         get_chrm_bp_byte(compressed_file, ',', header_length, chrm_idx, bp_idx,
@@ -100,7 +114,7 @@ int main(int argc, char *argv[]) {
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto bins = std::vector<float>{0.5, 0.1, 1e-8};
     auto pValIndexer = PValIndexer(pValIndexPath, bins);
-    int blockSize = 2000; // TODO: blockSize needs to be controlled by config
+    int blockSize = 10; // TODO: blockSize needs to be controlled by config
     pValIndexer.build_index(gwas_file, blockSize, 9);
     cout << "Done." << endl;
     // ----------------------------------------------------------------------
