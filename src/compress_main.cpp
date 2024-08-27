@@ -259,7 +259,6 @@ int main(int argc, char *argv[]) {
     compressed_gwas.close();
 
     // 10. write genomic index to file
-
     // get the byte start of each block and add to genomic index
     cout << "Getting genomic index information..." << endl;
     get_byte_start_of_blocks(compressed_header_size,
