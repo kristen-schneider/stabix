@@ -116,14 +116,13 @@ int main(int argc, char *argv[]) {
                         genomic_index);
     }
     num_blocks = all_blocks.size();
-    if (config_options["block_size"] == "map") {
+    if (block_size == -1) {
         cout << "\t...made " << num_blocks << ", 1cM in length." << endl;
     } else {
         cout << "\t...made " << num_blocks << " blocks of size "
              << block_size << " or less." << endl;
     }
     cout << "Done." << endl << endl;
-
 
 
     // 4. compress blocks AND get second half of header
@@ -135,8 +134,14 @@ int main(int argc, char *argv[]) {
     }
 
     // write compressed block sizes to file (by column)
-    string block_sizes_file = out_dir / (gwas_path.stem().string() +
-            "_" + to_string(block_size) + "_sizes.csv");
+    fs::path block_sizes_file;
+    if (block_size == -1) {
+        block_sizes_file = out_dir / (gwas_path.stem().string() + "_cm_col-sizes.csv");
+    }else{
+        block_sizes_file = out_dir / (gwas_path.stem().string() +
+                                             "_" + to_string(block_size) + "_col-sizes.csv");
+    }
+
 
 //    string block_sizes_file =
 //        compressed_file + "_" + to_string(block_size) + "_sizes.csv";
@@ -201,7 +206,7 @@ int main(int argc, char *argv[]) {
     string block_sizes = "";
     // if block_size == "map", block sizes are variable
     vector<int> block_sizes_list;
-    if (config_options["block_size"] == "map") {
+    if (block_size == -1) {
         block_sizes_list = get_block_sizes(all_blocks);
         block_sizes = convert_vector_int_to_string(block_sizes_list);
     }
