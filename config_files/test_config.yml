@@ -9,4 +9,4 @@ query_coordinate:
 query_statistic:
   p_value:0.3
 codecs:
-  zstd,zstd,zstd,zstd,zstd,zstd,zstd,zstd,zstd,zstd
+  zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib,zlib
