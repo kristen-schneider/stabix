@@ -3,7 +3,7 @@
 cmake-build-debug/
 lib/simde/
 build/
-config_files/
+config_files/*.yml
 gwas_files/
 map_files/
 plots/*.txt

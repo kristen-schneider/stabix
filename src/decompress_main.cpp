@@ -86,20 +86,24 @@ int main(int argc, char *argv[]) {
     cout << "Done." << endl << endl;
 
     // 3. opening index file
-    vector<string> indexNames = {"master", "pval"};
+    vector<string> indexNames = {"genomic", "pval"};
     auto indexPaths = index_paths_of(gwas_path, indexNames);
-    auto masterIndexPath = indexPaths[0];
+    auto genomicIndexPath = indexPaths[0];
 
     // TODO: impl support for block map
     cout << "Opening master index file..." << endl;
-    cout << "\t..." << masterIndexPath << endl;
+    cout << "\t..." << genomicIndexPath << endl;
     ifstream index_file(
-        masterIndexPath); // TODO: remove: these next fns take in
+            genomicIndexPath); // TODO: remove: these next fns take in
     // path, not a stream
     // make map of index file
-    map<int, map<int, tuple<int, int>>> index_file_map =
-        read_index_file(masterIndexPath);
-    map<int, int> index_block_map = make_index_block_map(masterIndexPath);
+//    map<int, map<int, tuple<int, int>>> index_file_map =
+//        read_index_file(genomicIndexPath);
+    // read genomic index
+    map<int, map<int, vector<int>>> genomic_index_info =
+        read_genomic_index(genomicIndexPath);
+
+    map<int, int> index_block_map = make_index_block_map(genomicIndexPath);
     index_file.close();
     cout << "Done." << endl << endl;
 

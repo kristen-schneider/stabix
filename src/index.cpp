@@ -162,7 +162,8 @@ map<int, int> make_index_block_map(
             int block_idx = stoi(line_list[0]);
             string chrm = line_list[1];
             string bp = line_list[2];
-            int byte_offset = stoi(line_list[3]);
+            int line_start = stoi(line_list[3]);
+            int byte_offset = stoi(line_list[4]);
             index_map[block_idx] = byte_offset;
         }
         line_count++;
@@ -207,6 +208,46 @@ map<int, map<int, tuple<int, int>>> read_index_file(
         line_count++;
     }
     return index_map;
+}
+
+map<int, map<int, vector<int>>> read_genomic_index(
+        string genomic_index_file){
+
+    map<int, map<int, vector<int>>> genomic_index_info;
+
+    ifstream file(genomic_index_file);
+    string line;
+
+    vector<string> header;
+
+    int line_count = 0;
+
+    while (getline(file, line)) {
+        if (line_count == 0) {
+            header = split_string(line, ',');
+        } else {
+            vector<string> line_list = split_string(line, ',');
+
+            map<int, vector<int>> bp_line_byte;
+            int block_idx = stoi(line_list[0]);
+            int chrm = stoi(line_list[1]);
+            int bp_start = stoi(line_list[2]);
+            int line_start = stoi(line_list[3]);
+            int byte_offset = stoi(line_list[4]);
+
+            bp_line_byte[bp_start] = {line_start, byte_offset};
+            // if chromosome not in index_map, add it
+            if (genomic_index_info.find(chrm) == genomic_index_info.end()) {
+                genomic_index_info[chrm] = bp_line_byte;
+            }
+            // else add to existing chromosome
+            else {
+                genomic_index_info[chrm][bp_start] = {line_start, byte_offset};
+            }
+        }
+        line_count++;
+    }
+    return genomic_index_info;
 }
 
 /*

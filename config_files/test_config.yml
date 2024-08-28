@@ -1,7 +1,7 @@
 gwas_file:
   gwas_files/test.tsv
 block_size:
-  10
+  map_files/test.map
 query_type:
   coordinate
 query_coordinate:
