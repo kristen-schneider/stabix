@@ -8,11 +8,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(gwas_run)
 
-## Enable all external libraries in libzippp
-add_definitions(-DZIP_CM_BZIP2)
-add_definitions(-DZIP_CM_XZ)
-add_definitions(-DZIP_CM_ZSTD)
-
 ## Link directories
 add_subdirectory(lib/FastPFor)
 add_subdirectory(lib/bxzstr)
