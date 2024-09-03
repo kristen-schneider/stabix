@@ -291,8 +291,9 @@ vector<string> gwas_column_names(string gwasPathString) {
 
 vector<string> index_paths_of(string gwasPathStr, vector<string> gwasColumns) {
     auto gwasPath = fs::path(gwasPathStr);
-    auto outDir = gwasPath.parent_path() / (gwasPath.stem().string() + "_output");
-//    fs::create_directories(outDir);
+    auto outDir =
+        gwasPath.parent_path() / (gwasPath.stem().string() + "_output");
+    //    fs::create_directories(outDir);
     auto outPaths = vector<string>();
 
     for (int i = 0; i < gwasColumns.size(); i++) {
@@ -304,8 +305,8 @@ vector<string> index_paths_of(string gwasPathStr, vector<string> gwasColumns) {
     return outPaths;
 }
 
-map<int, map<int, tuple<int, int, int>>> read_genomic_index_file(
-        string index_file) {
+map<int, map<int, tuple<int, int, int>>>
+read_genomic_index_file(string index_file) {
 
     map<int, map<int, tuple<int, int, int>>> genomic_index_file_map;
 
@@ -334,12 +335,12 @@ map<int, map<int, tuple<int, int, int>>> read_genomic_index_file(
         int bp_start = stoi(vec[2]);
         int line_number = stoi(vec[3]);
         int byte_start = stoi(vec[4]);
-        genomic_index_file_map[block_idx][chrm_start] = make_tuple(bp_start, line_number, byte_start);
+        genomic_index_file_map[block_idx][chrm_start] =
+            make_tuple(bp_start, line_number, byte_start);
     }
     index_stream.close();
     return genomic_index_file_map;
 }
-
 
 map<int, int> make_lineID_blockID_map(string index_file) {
     map<int, int> lineID_blockID_map;
@@ -372,13 +373,22 @@ map<int, int> make_lineID_blockID_map(string index_file) {
     return lineID_blockID_map;
 }
 
-int get_block_from_line(map<int, int> lineID_blockID_map,
-                        int line_number) {
+BlockLineMap::BlockLineMap(map<int, int> map) {
+    this->lineID_blockID_map = map;
+}
+
+BlockLineMap::BlockLineMap(string index_file)
+    : BlockLineMap(make_lineID_blockID_map(index_file)) {}
+
+int BlockLineMap::line_to_block(int line_number) {
+    map<int, int> lineID_blockID_map = this->lineID_blockID_map;
+
     // try and return block ID
     try {
         return lineID_blockID_map.at(line_number);
     } catch (const out_of_range &e) {
-        // if line number is not a key; find where the line number would fall between the ordered keys
+        // if line number is not a key; find where the line number would fall
+        // between the ordered keys
         auto it = lineID_blockID_map.upper_bound(line_number);
         if (it == lineID_blockID_map.begin()) {
             cout << "ERROR: Line number not found in index file." << endl;

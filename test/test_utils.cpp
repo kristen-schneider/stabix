@@ -270,9 +270,11 @@ TEST(GetBlockIDbyLineID, simple){
     lineID_blockID_map[13] = 2;
     lineID_blockID_map[14] = 2;
 
+    auto mapper = BlockLineMap(lineID_blockID_map);
+
     // for 0-14, the blockID should be 0, 1, 2
     for (int i = 0; i < 15; i++){
-        ASSERT_EQ(get_block_from_line(lineID_blockID_map, i), lineID_blockID_map[i]);
+        ASSERT_EQ(mapper.line_to_block(i), lineID_blockID_map[i]);
     }
 }
 
@@ -282,17 +284,19 @@ TEST(GetBlockIDbyLineID, line_between_blocks){
     lineID_blockID_map[0] = 0;
     lineID_blockID_map[5] = 1;
     lineID_blockID_map[10] = 2;
+    auto mapper = BlockLineMap(lineID_blockID_map);
+
     // for 0-4, the blockID should be 0
     for (int i = 0; i < 5; i++){
-        ASSERT_EQ(get_block_from_line(lineID_blockID_map, i), 0);
+        ASSERT_EQ(mapper.line_to_block(i), 0);
     }
     // for 5-9, the blockID should be 1
     for (int i = 5; i < 10; i++){
-        ASSERT_EQ(get_block_from_line(lineID_blockID_map, i), 1);
+        ASSERT_EQ(mapper.line_to_block(i), 1);
     }
     // for 10-14, the blockID should be 2
     for (int i = 10; i < 15; i++){
-        ASSERT_EQ(get_block_from_line(lineID_blockID_map, i), 2);
+        ASSERT_EQ(mapper.line_to_block(i), 2);
     }
 }
 
