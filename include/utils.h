@@ -192,6 +192,8 @@ vector<string> index_paths_of(
 map<int, map<int, tuple<int, int, int>>> read_genomic_index_file(
         string index_file);
 
+map<int, int> make_lineID_blockID_map(string index_file) {
+
 /*
  * get block ID from a line number
  */
