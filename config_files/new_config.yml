@@ -1,0 +1,27 @@
+gwas_file:
+  /Users/krsc0813/CLionProjects/gwas_local/gwas_files/GCST90179150_buildGRCh37.tsv
+
+block_size:
+  # coolboundaries.map
+  # OR,
+  # 20000
+  # OR, optional!
+
+query_out_file:
+  place.out
+
+query:
+    genomic:
+      1:693731-758144, 1:798900-845000, 18:65659994-67800000
+    pval:
+      0.5, 0.2, 0.3
+    other:
+      0.2
+    uncertainty:
+      1-e8
+
+extra_indicies:
+    pval, other, uncertainty
+
+codecs:
+  bz2,bz2,bz2,bz2,bz2,bz2,bz2,bz2,bz2,bz2
