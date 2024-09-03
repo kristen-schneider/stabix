@@ -1,17 +1,18 @@
 #include "indexers.h"
-#include "utils.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <strings.h>
+#include <unordered_set>
 #include <vector>
 
 /*
  * Find block IDs to decompress, relevant for query based
  * on the block predicate function.
  */
-std::vector<int> Indexer::query_index(std::function<bool(float)> predicate) {
+std::unordered_set<int>
+Indexer::query_index(std::function<bool(float)> predicate) {
     auto indexPath = this->indexPath;
     std::ifstream indexFile(indexPath, std::ios::ate);
 
@@ -63,7 +64,7 @@ std::vector<int> Indexer::query_index(std::function<bool(float)> predicate) {
     // 3. Aggregate block IDs from blocks in the file
 
     std::sort(searchBins.begin(), searchBins.end());
-    auto blockIDs = std::vector<int>(); // output
+    auto blockIDs = std::unordered_set<int>(); // output
 
     for (int i = 0; i < searchBins.size(); i++) {
         indexFile.seekg(searchBins[i]);
@@ -73,7 +74,7 @@ std::vector<int> Indexer::query_index(std::function<bool(float)> predicate) {
 
         for (auto idExpression : idExpressions) {
             int idParsed = std::stoi(idExpression);
-            blockIDs.push_back(idParsed);
+            blockIDs.insert(idParsed);
         }
     }
 

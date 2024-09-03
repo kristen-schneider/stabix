@@ -3,13 +3,13 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "decompress.h"
 #include "header.h"
 #include "index.h"
 #include "indexers.h"
-#include "utils.h"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -34,9 +34,11 @@ int main(int argc, char *argv[]) {
     // open output file
     string gwas_file = config_options["gwas_file"];
     auto gwas_path = fs::path(config_options["gwas_file"]);
-    auto out_dir = gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
+    auto out_dir =
+        gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
     ofstream query_output_stream;
-    string query_output_file_name = out_dir / (gwas_path.stem().string() + ".query");
+    string query_output_file_name =
+        out_dir / (gwas_path.stem().string() + ".query");
     cout << "Opening output file: " << query_output_file_name << endl;
     query_output_stream.open(query_output_file_name, ios::trunc);
     if (!query_output_stream.is_open()) {
@@ -94,15 +96,16 @@ int main(int argc, char *argv[]) {
     cout << "Opening master index file..." << endl;
     cout << "\t..." << genomicIndexPath << endl;
     ifstream index_file(
-            genomicIndexPath); // TODO: remove: these next fns take in
+        genomicIndexPath); // TODO: remove: these next fns take in
     // path, not a stream
     // make map of index file
-//    map<int, map<int, tuple<int, int>>> index_file_map =
-//        read_index_file(genomicIndexPath);
+    //    map<int, map<int, tuple<int, int>>> index_file_map =
+    //        read_index_file(genomicIndexPath);
     // read genomic index
     map<int, map<int, vector<int>>> genomic_index_info =
         read_genomic_index(genomicIndexPath);
 
+    auto blockLineMap = BlockLineMap(genomicIndexPath);
     map<int, int> index_block_map = make_index_block_map(genomicIndexPath);
     index_file.close();
     cout << "Done." << endl << endl;
@@ -148,8 +151,8 @@ int main(int argc, char *argv[]) {
     //      Hardcoded query parameters
     // ----------------------------------------------------------------------
     auto bins = std::vector<float>{0.5, 0.1, 1e-8};
-    auto index = PValIndexer(indexPaths[1], bins);
-    vector<int> blocks_to_decompress =
+    auto index = PValIndexer(indexPaths[1], blockLineMap, bins);
+    unordered_set<int> blocks_to_decompress =
         index.compare_query(0.3, ComparisonType::LessThanOrEqual);
     // ----------------------------------------------------------------------
 

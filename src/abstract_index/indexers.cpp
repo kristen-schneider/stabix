@@ -1,5 +1,4 @@
 #include "indexers.h"
-#include "utils.h"
 #include <algorithm>
 
 float PValIndexer::nearest_bin(float value) {
@@ -13,10 +12,14 @@ float PValIndexer::nearest_bin(float value) {
     return -HUGE_VALF;
 }
 
-Indexer::Indexer(std::string indexPath) { this->indexPath = indexPath; }
+Indexer::Indexer(std::string indexPath, BlockLineMap map) {
+    this->indexPath = indexPath;
+    this->blockLineMap = &map;
+}
 
-PValIndexer::PValIndexer(std::string indexPath, vector<float> bins)
-    : Indexer(indexPath) {
+PValIndexer::PValIndexer(std::string indexPath, BlockLineMap map,
+                         vector<float> bins)
+    : Indexer(indexPath, map) {
     // sort bins in descending order
     std::sort(bins.begin(), bins.end(), std::greater<float>());
     this->bins = bins;
@@ -42,8 +45,8 @@ float PValIndexer::value_to_bin(std::string line) {
     return this->nearest_bin(value);
 }
 
-vector<int> PValIndexer::compare_query(float threshold,
-                                       ComparisonType compType) {
+unordered_set<int> PValIndexer::compare_query(float threshold,
+                                              ComparisonType compType) {
 
     float pivotBin = this->nearest_bin(threshold);
 

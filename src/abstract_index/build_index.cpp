@@ -1,5 +1,4 @@
 #include "indexers.h"
-#include "utils.h"
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -28,7 +27,7 @@ void Indexer::build_index(std::string inPath, int blockSize, int queryColumn) {
     int lineId = 0;
     bool moreBlocks = true;
     while (moreBlocks) {
-        int blockId = lineId / blockSize;
+        int blockId = this->blockLineMap->line_to_block(lineId);
         std::set<float> bins;
 
         for (int i = 0; i < blockSize; i++) {

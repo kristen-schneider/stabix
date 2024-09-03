@@ -2,7 +2,6 @@
 #include "header.h"
 #include "index.h"
 #include "indexers.h"
-#include "utils.h"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -23,7 +22,8 @@ int main(int argc, char *argv[]) {
     string gwas_file = config_options["gwas_file"];
 
     auto gwas_path = fs::path(config_options["gwas_file"]);
-    auto out_dir = gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
+    auto out_dir =
+        gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
     string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
 
     vector<string> codecs_list = split_string(config_options["codecs"], ',');
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
     int chrm_idx = get_index(column_names_list, "chromosome");
     int bp_idx = get_index(column_names_list, "base_pair_location");
-//    vector<int> block_sizes = get_index(column_names_list, "block_sizes");
+    //    vector<int> block_sizes = get_index(column_names_list, "block_sizes");
 
     vector<tuple<int, int, int>> chrm_bp_byte =
         get_chrm_bp_byte(compressed_file, ',', header_length, chrm_idx, bp_idx,
@@ -104,6 +104,9 @@ int main(int argc, char *argv[]) {
     file.close();
     cout << "Done." << endl << endl;
 
+    // initialize line -> blockID map for specialized indexes
+    auto blockLineMap = BlockLineMap(masterIndexPath);
+
     // write p value index file
 
     // INFO:
@@ -113,7 +116,7 @@ int main(int argc, char *argv[]) {
     string pValIndexPath = indexPaths[1];
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto bins = std::vector<float>{0.5, 0.1, 1e-8};
-    auto pValIndexer = PValIndexer(pValIndexPath, bins);
+    auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, bins);
     int blockSize = 10; // TODO: blockSize needs to be controlled by config
     pValIndexer.build_index(gwas_file, blockSize, 9);
     cout << "Done." << endl;
