@@ -12,9 +12,9 @@ query_out_file:
 
 query:
     genomic:
-      1:693731-758144, 1:798900-845000, 18:65659994-67800000
+      genes.bed
     pval:
-      0.5, 0.2, 0.3
+      0.5
     other:
       0.2
     uncertainty:
@@ -24,4 +24,9 @@ extra_indicies:
     pval, other, uncertainty
 
 codecs:
-  bz2,bz2,bz2,bz2,bz2,bz2,bz2,bz2,bz2,bz2
+  int:
+    bz2
+  float:
+    zlib
+  string:
+    fpzip
