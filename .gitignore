@@ -3,7 +3,6 @@
 cmake-build-debug/
 lib/simde/
 build/
-config_files/*.yml
 gwas_files/
 map_files/
 plots/*.txt
@@ -11,3 +10,4 @@ plots/*.txt
 .cache/
 CMakeFiles/
 _deps/
+lib/

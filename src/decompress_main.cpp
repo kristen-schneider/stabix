@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -13,6 +14,54 @@
 
 using namespace std;
 namespace fs = std::filesystem;
+
+unordered_set<int> query_genomic_idx(string genomic_index_path,
+                                     map<int, int> index_block_map) {
+    // And:  query parameters need to be externally provided to this module
+    // INFO:
+    // ----------------------------------------------------------------------
+    //      Hardcoded query parameters
+    // ----------------------------------------------------------------------
+
+    // read genomic index
+    map<int, map<int, vector<int>>> genomic_index_info =
+        read_genomic_index(genomic_index_path);
+
+    vector<string> query_list = {"1:693731-758144", "1:798900-845000",
+                                 "18:65659994-67800000"};
+
+    vector<tuple<int, int>> all_query_block_indexes = get_start_end_block_idx(
+        query_list, genomic_index_info, index_block_map);
+
+    for (int q_idx = 0; q_idx < all_query_block_indexes.size(); q_idx++) {
+        // cout << "...decompressing query " << q_idx + 1 << ": "
+        //      << query_list[q_idx] << endl;
+        //
+        // output_file << "Query: " << query_list[q_idx] << endl;
+
+        tuple<int, int> query_start_end_byte = all_query_block_indexes[q_idx];
+        int start_block_idx = get<0>(query_start_end_byte);
+        int end_block_idx = get<1>(query_start_end_byte);
+
+        if (start_block_idx == -1 || end_block_idx == -1) {
+            cout << "Query not found in index" << endl;
+            continue;
+        }
+    }
+    // ----------------------------------------------------------------------
+}
+
+unordered_set<int> query_abs_idx(string path, BlockLineMap block_line_map) {
+    // And:  query parameters need to be externally provided to this module
+    // INFO:
+    // ----------------------------------------------------------------------
+    //      Hardcoded query parameters
+    // ----------------------------------------------------------------------
+    auto bins = std::vector<float>{0.5, 0.1, 1e-8};
+    auto index = PValIndexer(path, block_line_map, bins);
+    return index.compare_query(0.3, ComparisonType::LessThanOrEqual);
+    // ----------------------------------------------------------------------
+}
 
 int main(int argc, char *argv[]) {
     // DECOMPRESSION STEPS
@@ -88,77 +137,39 @@ int main(int argc, char *argv[]) {
     cout << "Done." << endl << endl;
 
     // 3. opening index file
-    vector<string> indexNames = {"genomic", "pval"};
-    auto indexPaths = index_paths_of(gwas_path, indexNames);
-    auto genomicIndexPath = indexPaths[0];
+    vector<string> index_names = {"genomic", "pval"};
+    auto index_paths = index_paths_of(gwas_path, index_names);
+    auto genomic_index_path = index_paths[0];
+    auto pval_index_path = index_paths[1];
 
     // TODO: impl support for block map
     cout << "Opening master index file..." << endl;
-    cout << "\t..." << genomicIndexPath << endl;
-    ifstream index_file(
-        genomicIndexPath); // TODO: remove: these next fns take in
-    // path, not a stream
-    // make map of index file
-    //    map<int, map<int, tuple<int, int>>> index_file_map =
-    //        read_index_file(genomicIndexPath);
-    // read genomic index
-    map<int, map<int, vector<int>>> genomic_index_info =
-        read_genomic_index(genomicIndexPath);
+    cout << "\t..." << genomic_index_path << endl;
+    ifstream genomic_index_file(
+        genomic_index_path); // TODO: remove: these next fns
+                             // should take path, not stream
 
-    auto blockLineMap = BlockLineMap(genomicIndexPath);
-    map<int, int> index_block_map = make_index_block_map(genomicIndexPath);
-    index_file.close();
+    auto block_line_map = BlockLineMap(genomic_index_path);
+    map<int, int> index_block_map = make_index_block_map(genomic_index_path);
+    genomic_index_file.close();
     cout << "Done." << endl << endl;
 
-    // TODO: system to perpare query calls from config
-    /*
-    // get start byte, end byte, start block idx, and end block idx for
-    // each query
-    vector<string> query_list =
-        split_string(config_options["query_coordinate"], ',');
-    // TODO: inefficient to decomp blocks on a per query basis
-    // when dealing with multiple queries.
-    // ... batch queries? -> batch decompression.
-    vector<tuple<int, int>> all_query_block_indexes =
-        get_start_end_block_idx(query_list, index_file_map, index_block_map);
-    */
+    // 4. get and aggregate blocks associated with each query
+
+    auto genom_blocks = query_genomic_idx(genomic_index_path, index_block_map);
+    auto pval_blocks = query_abs_idx(genomic_index_path, block_line_map);
+    auto total_blocks_to_decompress = vector<int>();
+
+    for (int block : genom_blocks) {
+        if (pval_blocks.contains(block)) {
+            total_blocks_to_decompress.push_back(block);
+        }
+    }
 
     // 5. decompress all blocks for each query
-    size_t compressedSize = 0; // Define compressedSize
-    cout << "Decompressing all blocks for each query..." << endl;
-    // for (int q_idx = 0; q_idx < all_query_block_indexes.size(); q_idx++) {
-    //     cout << "...decompressing query " << q_idx + 1 << ": "
-    // << query_list[q_idx] << endl;
-
-    // output_file << "Query: " << query_list[q_idx] << endl;
-
-    // TODO: fix coordinate based
-    /*
-    tuple<int, int> query_start_end_byte = all_query_block_indexes[q_idx];
-    int start_block_idx = get<0>(query_start_end_byte);
-    int end_block_idx = get<1>(query_start_end_byte);
-    // if start_block_idx == -1, or end_block_idx == -1 then query is
-    // not in index
-    if (start_block_idx == -1 || end_block_idx == -1) {
-        cout << "Query not found in index" << endl;
-        output_file << " !! Query not found in index !! " << endl;
-        continue;
-    }*/
-
-    // And:  query parameters need to be externally provided to this module
-    // INFO:
-    // ----------------------------------------------------------------------
-    //      Hardcoded query parameters
-    // ----------------------------------------------------------------------
-    auto bins = std::vector<float>{0.5, 0.1, 1e-8};
-    auto index = PValIndexer(indexPaths[1], blockLineMap, bins);
-    unordered_set<int> blocks_to_decompress =
-        index.compare_query(0.3, ComparisonType::LessThanOrEqual);
-    // ----------------------------------------------------------------------
-
-    std::cout << "Decompressing " << blocks_to_decompress.size() << " blocks"
-              << std::endl;
-    for (int block_idx : blocks_to_decompress) {
+    std::cout << "Decompressing " << total_blocks_to_decompress.size()
+              << " blocks" << std::endl;
+    for (int block_idx : total_blocks_to_decompress) {
         size_t block_size = -1;
         // if there are only two block sizes, block size is fixed except
         // for last block
@@ -222,9 +233,9 @@ int main(int argc, char *argv[]) {
             string col_bitstring =
                 block_bitstring.substr(curr_block_byte, col_bytes);
             curr_block_byte += col_bytes;
-            compressedSize = col_bitstring.size();
+            size_t compressed_size = col_bitstring.size();
             string col_decompressed = decompress_column(
-                col_bitstring, col_codec, compressedSize, block_size);
+                col_bitstring, col_codec, compressed_size, block_size);
             decompressed_block.push_back(col_decompressed);
         }
 

@@ -296,6 +296,7 @@ int get_start_byte(
  */
 vector<tuple<int, int>> get_start_end_block_idx(
         vector<string>query_list,
+        // TODO: this parameter is not updated to match read_genomic_index
         map<int, map<int, tuple<int, int>>> index_file_map,
         map<int, int> index_block_map) {
     vector<tuple<int, int>> all_query_info;
