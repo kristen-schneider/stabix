@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <regex>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -17,18 +18,16 @@ namespace fs = std::filesystem;
 
 unordered_set<int> query_genomic_idx(string genomic_index_path,
                                      map<int, int> index_block_map) {
-    // And:  query parameters need to be externally provided to this module
     // INFO:
     // ----------------------------------------------------------------------
     //      Hardcoded query parameters
     // ----------------------------------------------------------------------
+    vector<string> query_list = {"1:693731-758144", "1:798900-845000",
+                                 "18:65659994-67800000"};
 
     // read genomic index
     map<int, map<int, vector<int>>> genomic_index_info =
         read_genomic_index(genomic_index_path);
-
-    vector<string> query_list = {"1:693731-758144", "1:798900-845000",
-                                 "18:65659994-67800000"};
 
     vector<tuple<int, int>> all_query_block_indexes = get_start_end_block_idx(
         query_list, genomic_index_info, index_block_map);
@@ -48,7 +47,6 @@ unordered_set<int> query_genomic_idx(string genomic_index_path,
             continue;
         }
     }
-    // ----------------------------------------------------------------------
 }
 
 unordered_set<int> query_abs_idx(string path, BlockLineMap block_line_map) {
@@ -57,10 +55,47 @@ unordered_set<int> query_abs_idx(string path, BlockLineMap block_line_map) {
     // ----------------------------------------------------------------------
     //      Hardcoded query parameters
     // ----------------------------------------------------------------------
-    auto bins = std::vector<float>{0.5, 0.1, 1e-8};
+    auto config_bins = vector<string>{"0.5", "0.1", "1e-8"};
+    string config_query = "<= 0.3";
+
+    // parse config_bins
+    vector<float> bins;
+
+    for (string bin : config_bins) {
+        try {
+            bins.push_back(stof(bin));
+        } catch (const invalid_argument &e) {
+            throw invalid_argument("Bin must be a float: " + bin);
+        }
+    }
+
+    // parse config_query
+    int val;
+    ComparisonType op;
+
+    regex re("/(>|<)(=?)\\s*(\\d*\\.?.*)/");
+    smatch matches;
+
+    if (regex_search(config_query, matches, re)) {
+        if (matches[1].str() == "<") {
+            op = matches[2].str() == "=" ? ComparisonType::LessThanOrEqual
+                                         : ComparisonType::LessThan;
+        } else {
+            op = matches[2].str() == "=" ? ComparisonType::GreaterThanOrEqual
+                                         : ComparisonType::GreaterThan;
+        }
+
+        string val_exp = matches[3].str();
+
+        try {
+            val = stof(val_exp);
+        } catch (const invalid_argument &e) {
+            throw invalid_argument("Value must be a float: " + val_exp);
+        }
+    }
+
     auto index = PValIndexer(path, block_line_map, bins);
-    return index.compare_query(0.3, ComparisonType::LessThanOrEqual);
-    // ----------------------------------------------------------------------
+    return index.compare_query(val, op);
 }
 
 int main(int argc, char *argv[]) {
