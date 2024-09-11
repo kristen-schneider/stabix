@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -8,11 +9,14 @@
 #include "utils.h"
 
 using namespace std;
+namespace fs = std::filesystem;
 
 char *int_to_bytes(int value);
 
 vector<string> split_string(string str, char delimiter);
 
+// TODO: impl assumes values on new lines which isn't the guaranteed format for
+// yml files.
 map<string, string> read_config_file(string config_file) {
     map<string, string> config_options;
 
@@ -216,7 +220,7 @@ vector<uint32_t> convert_vector_string_to_vector_int(vector<string> vec) {
     return vec_int;
 }
 
-map<int, vector<uint32_t>> get_chrm_block_bp_ends(string map_file) {
+map<int, vector<uint32_t>> read_cm_map_file(string map_file) {
     map<int, vector<uint32_t>> chrm_block_bp_ends;
     int BLOCK_CM_SIZE = 1;
     // open map file, exit if file does not exist
@@ -265,4 +269,132 @@ vector<int> get_block_sizes(vector<vector<vector<string>>> all_blocks) {
         block_sizes.push_back(all_blocks[i][0].size());
     }
     return block_sizes;
+}
+
+vector<string> gwas_column_names(string gwasPathString) {
+    auto gwasPath = fs::path(gwasPathString);
+    // TODO: block_size via map file not implemented
+    cout << "...Success" << endl;
+
+    cout << "Preparring indices..." << endl;
+
+    string gwasColumnLine;
+    ifstream gwasFile(gwasPath);
+    if (!gwasFile.is_open() || !getline(gwasFile, gwasColumnLine)) {
+        throw runtime_error("Error opening GWAS file");
+    }
+
+    auto gwasColumns = split_string(gwasColumnLine, '\t');
+    gwasFile.close();
+    return gwasColumns;
+}
+
+vector<string> index_paths_of(string gwasPathStr, vector<string> gwasColumns) {
+    auto gwasPath = fs::path(gwasPathStr);
+    auto outDir =
+        gwasPath.parent_path() / (gwasPath.stem().string() + "_output");
+    //    fs::create_directories(outDir);
+    auto outPaths = vector<string>();
+
+    for (int i = 0; i < gwasColumns.size(); i++) {
+        string columnName = gwasColumns[i];
+        auto outPath = outDir / (columnName + ".idx");
+        outPaths.push_back(outPath.string());
+    }
+
+    return outPaths;
+}
+
+map<int, map<int, tuple<int, int, int>>>
+read_genomic_index_file(string index_file) {
+
+    map<int, map<int, tuple<int, int, int>>> genomic_index_file_map;
+
+    // check if file exists
+    ifstream index_stream(index_file);
+    if (!index_stream.good()) {
+        cout << "ERROR: Index file does not exist: " << index_file << endl;
+        exit(1);
+    }
+
+    // read index file
+    // format of index file
+    // header
+    // block_idx,chrm_start,bp_start,line_number,byte_start
+
+    string line;
+    while (getline(index_stream, line)) {
+        // skip header
+        if (line.find("block_idx") != string::npos) {
+            continue;
+        }
+        // split line by comma
+        vector<string> vec = split_string(line, ',');
+        int block_idx = stoi(vec[0]);
+        int chrm_start = stoi(vec[1]);
+        int bp_start = stoi(vec[2]);
+        int line_number = stoi(vec[3]);
+        int byte_start = stoi(vec[4]);
+        genomic_index_file_map[block_idx][chrm_start] =
+            make_tuple(bp_start, line_number, byte_start);
+    }
+    index_stream.close();
+    return genomic_index_file_map;
+}
+
+map<int, int> make_lineID_blockID_map(string index_file) {
+    map<int, int> lineID_blockID_map;
+
+    // check if file exists
+    ifstream index_stream(index_file);
+    if (!index_stream.good()) {
+        cout << "ERROR: Index file does not exist: " << index_file << endl;
+        exit(1);
+    }
+
+    // read index file
+    // format of index file
+    // header
+    // block_idx,chrm_start,bp_start,line_number,byte_start
+
+    string line;
+    while (getline(index_stream, line)) {
+        // skip header
+        if (line.find("block_idx") != string::npos) {
+            continue;
+        }
+        // split line by comma
+        vector<string> vec = split_string(line, ',');
+        int block_idx = stoi(vec[0]);
+        int line_number = stoi(vec[3]);
+        lineID_blockID_map[line_number] = block_idx;
+    }
+    index_stream.close();
+    return lineID_blockID_map;
+}
+
+BlockLineMap::BlockLineMap(map<int, int> map) {
+    this->lineID_blockID_map = map;
+}
+
+BlockLineMap::BlockLineMap(string index_file)
+    : BlockLineMap(make_lineID_blockID_map(index_file)) {}
+
+int BlockLineMap::line_to_block(int line_number) {
+    map<int, int> lineID_blockID_map = this->lineID_blockID_map;
+
+    // try and return block ID
+    try {
+        return lineID_blockID_map.at(line_number);
+    } catch (const out_of_range &e) {
+        // if line number is not a key; find where the line number would fall
+        // between the ordered keys
+        auto it = lineID_blockID_map.upper_bound(line_number);
+        if (it == lineID_blockID_map.begin()) {
+            cout << "ERROR: Line number not found in index file." << endl;
+            exit(1);
+        }
+        it--;
+        return it->second;
+    }
 }

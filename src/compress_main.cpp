@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -7,9 +8,11 @@
 #include "blocks.h"
 #include "compress.h"
 #include "header.h"
+#include "index.h"
 #include "utils.h"
 
 using namespace std;
+namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) {
     // COMPRESSION STEPS
@@ -22,20 +25,23 @@ int main(int argc, char *argv[]) {
     }
     string config_file = argv[1];
     cout << "Reading config options from: " << config_file << endl;
-    map<string, string> config_options;
-    config_options = read_config_file(config_file);
+    map<string, string> config_options = read_config_file(config_file);
     add_default_config_options(config_options);
 
     string gwas_file = config_options["gwas_file"];
     int block_size = -1;
-    // if block_size == "map", get block sizes by map file
-    if (config_options["block_size"] == "map") {
-        cout << "Block sizes will be determined by map file." << endl;
-    } else { // block_size is a fixed integer
+    // if block_size cannot be converted to an int, it is a map file
+    try {
         block_size = stoi(config_options["block_size"]);
+    } catch (invalid_argument &e) {
+        block_size = -1;
     }
     string query_type = config_options["query_type"];
-    string compressed_file = config_options["gwas_file"] + ".grlz";
+    // creating output directory for generated files
+    auto gwas_path = fs::path(config_options["gwas_file"]);
+    auto out_dir = gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
+    fs::create_directories(out_dir);
+    string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
     vector<string> codecs_list = split_string(config_options["codecs"], ',');
 
     cout << "\t...gwas_file: " << gwas_file << endl;
@@ -46,6 +52,7 @@ int main(int argc, char *argv[]) {
     cout << "\t...compressed_file: " << compressed_file << endl;
 
     cout << "Done." << endl << endl;
+
 
     // 1. get file information to store in first half of compressed file header
     /* HEADER FIRST HALF
@@ -81,45 +88,42 @@ int main(int argc, char *argv[]) {
     cout << "\t...num columns: " << num_columns << endl;
     cout << "Done." << endl << endl;
 
-    // setting up variables for block compression
+    // setting up variables for blocks
     vector<vector<vector<string>>> all_blocks;
     vector<vector<string>> compressed_blocks;
+    vector<vector<int>> genomic_index;
     int num_blocks;
 
-    // 2. sort file as needed
-    // if query type is coordinate, sort file by chromosome and genomic position
-    if (query_type == "coordinate") {
-        cout << "File already sorted by chromosome and genomic position."
-             << endl;
-
-        // 3. get blocks
-        cout << "Making blocks..." << endl;
-        // if block_size == "map", make block sizes by chrm_block_bp_ends
-        if (config_options["block_size"] == "map") {
-            string map_file = config_options["map"];
-            map<int, vector<uint32_t>> chrm_block_bp_ends = get_chrm_block_bp_ends(map_file);
-            all_blocks = make_blocks_map(gwas_file, num_columns, chrm_block_bp_ends, delimiter);
-        }
-        else{
-            all_blocks = make_blocks(gwas_file, num_columns, block_size, delimiter, 9);
-        }
-        num_blocks = all_blocks.size();
-        if (config_options["block_size"] == "map") {
-            cout << "\t...made " << num_blocks << ", 1cM in length." << endl;
-        } else {
-            cout << "\t...made " << num_blocks << " blocks of size "
-                 << block_size << " or less." << endl;
-        }
-        cout << "Done." << endl << endl;
-
-    } else if (query_type == "statistic") {
-        string statistic =
-            split_string(config_options["query_statistic"], ':')[0];
-        int statistic_idx = get_index(column_names_list, statistic);
-        cout << "Sorting file by " << statistic
-             << " (column index: " << statistic_idx << ")" << endl;
-        cout << "Done." << endl << endl;
+    // 2. create blocks
+    cout << "Making blocks..." << endl;
+    // if block_size == "map", make block sizes by the cm map file
+    if (block_size == -1) {
+        string map_file = config_options["block_size"];
+        map<int, vector<uint32_t>> chrm_block_bp_ends =
+                read_cm_map_file(map_file);
+        all_blocks = make_blocks_map(gwas_file,
+                                     num_columns,
+                                     chrm_block_bp_ends,
+                                     delimiter,
+                                     genomic_index);
+    } else {
+        all_blocks =
+            make_blocks(gwas_file,
+                        num_columns,
+                        block_size,
+                        delimiter,
+                        9,
+                        genomic_index);
     }
+    num_blocks = all_blocks.size();
+    if (block_size == -1) {
+        cout << "\t...made " << num_blocks << ", 1cM in length." << endl;
+    } else {
+        cout << "\t...made " << num_blocks << " blocks of size "
+             << block_size << " or less." << endl;
+    }
+    cout << "Done." << endl << endl;
+
 
     // 4. compress blocks AND get second half of header
     cout << "Compressing blocks..." << endl;
@@ -130,7 +134,17 @@ int main(int argc, char *argv[]) {
     }
 
     // write compressed block sizes to file (by column)
-    string block_sizes_file = compressed_file + "_" + to_string(block_size) + "_sizes.csv";
+    fs::path block_sizes_file;
+    if (block_size == -1) {
+        block_sizes_file = out_dir / (gwas_path.stem().string() + "_cm_col-sizes.csv");
+    }else{
+        block_sizes_file = out_dir / (gwas_path.stem().string() +
+                                             "_" + to_string(block_size) + "_col-sizes.csv");
+    }
+
+
+//    string block_sizes_file =
+//        compressed_file + "_" + to_string(block_size) + "_sizes.csv";
     ofstream block_sizes_out;
     block_sizes_out.open(block_sizes_file);
     // write gwas file name
@@ -142,7 +156,8 @@ int main(int argc, char *argv[]) {
         int col_i = 0;
         for (auto const &column : block) {
             // write block_idx, col_idx, column size
-            block_sizes_out << block_i << "," << col_i << "," << column.size() << endl;
+            block_sizes_out << block_i << "," << col_i << "," << column.size()
+                            << endl;
             col_i++;
         }
         block_i++;
@@ -191,7 +206,7 @@ int main(int argc, char *argv[]) {
     string block_sizes = "";
     // if block_size == "map", block sizes are variable
     vector<int> block_sizes_list;
-    if (config_options["block_size"] == "map") {
+    if (block_size == -1) {
         block_sizes_list = get_block_sizes(all_blocks);
         block_sizes = convert_vector_int_to_string(block_sizes_list);
     }
@@ -247,6 +262,39 @@ int main(int argc, char *argv[]) {
         block_idx++;
     }
     compressed_gwas.close();
+
+    // 10. write genomic index to file
+    // get the byte start of each block and add to genomic index
+    cout << "Getting genomic index information..." << endl;
+    get_byte_start_of_blocks(compressed_header_size,
+                             block_header_end_bytes,
+                             block_end_bytes,
+                             genomic_index);
+
+    // write chrm_bp_byte to (master) index file
+    vector<string> indexNames = {"genomic"};
+    auto indexPaths = index_paths_of(gwas_file, indexNames);
+    string genomicIndexPath = indexPaths[0];
+    cout << "Writing genomic index file to: " << genomicIndexPath << endl;
+    ofstream genomicIndexFile;
+    genomicIndexFile.open(genomicIndexPath);
+
+    // write header
+    genomicIndexFile << "block_idx,chrm_start,bp_start,line_start,byte_start" << endl;
+
+    // write genomic index to file
+    for (int block_idx = 0; block_idx < genomic_index.size(); block_idx++) {
+        vector<int> chrm_bp_byte = genomic_index[block_idx];
+        genomicIndexFile << block_idx << ","
+                            << genomic_index[block_idx][0] << ","
+                            << genomic_index[block_idx][1] << ","
+                            << genomic_index[block_idx][2] << ","
+                            << genomic_index[block_idx][3] << endl;
+    }
+
+    genomicIndexFile.close();
+    file.close();
+
     cout << "Done." << endl;
 
     return 0;

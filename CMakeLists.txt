@@ -1,17 +1,12 @@
 cmake_minimum_required(VERSION 3.27)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_INSTALL_PREFIX "./bin")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(gwas_run)
-
-## Enable all external libraries in libzippp
-add_definitions(-DZIP_CM_BZIP2)
-add_definitions(-DZIP_CM_XZ)
-add_definitions(-DZIP_CM_ZSTD)
 
 ## Link directories
 add_subdirectory(lib/FastPFor)
@@ -41,10 +36,14 @@ add_executable(gwas_compress
 # INDEXING
 add_executable(gwas_index
         src/index_main.cpp
+        src/abstract_index/indexers.cpp
         src/decompress.cpp
         src/header.cpp
         src/index.cpp
-        src/utils.cpp)
+        src/utils.cpp
+        src/abstract_index/indexers.cpp
+        src/abstract_index/build_index.cpp
+        src/abstract_index/query_index.cpp)
 
 # DECOMPRESSION
 add_executable(gwas_decompress
@@ -52,7 +51,10 @@ add_executable(gwas_decompress
         src/decompress.cpp
         src/header.cpp
         src/index.cpp
-        src/utils.cpp)
+        src/utils.cpp
+        src/abstract_index/indexers.cpp
+        src/abstract_index/query_index.cpp
+        src/abstract_index/build_index.cpp)
 
 # TESTING
 add_executable(test_gwas

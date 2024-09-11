@@ -1,15 +1,110 @@
+#include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <regex>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "decompress.h"
 #include "header.h"
 #include "index.h"
-#include "utils.h"
+#include "indexers.h"
 
 using namespace std;
+namespace fs = std::filesystem;
+
+unordered_set<int> query_genomic_idx(string genomic_index_path,
+                                     map<int, int> index_block_map) {
+    // INFO:
+    // ----------------------------------------------------------------------
+    //      Hardcoded query parameters
+    // ----------------------------------------------------------------------
+    vector<string> query_list = {"1:693731-758144", "1:798900-845000",
+                                 "18:65659994-67800000"};
+
+    // read genomic index
+    map<int, map<int, vector<int>>> genomic_index_info =
+        read_genomic_index(genomic_index_path);
+
+    vector<tuple<int, int>> all_query_block_indexes = get_start_end_block_idx(
+        query_list, genomic_index_info, index_block_map);
+    unordered_set<int> blocks;
+
+    for (int q_idx = 0; q_idx < all_query_block_indexes.size(); q_idx++) {
+        // cout << "...decompressing query " << q_idx + 1 << ": "
+        //      << query_list[q_idx] << endl;
+        //
+        // output_file << "Query: " << query_list[q_idx] << endl;
+
+        tuple<int, int> query_start_end_byte = all_query_block_indexes[q_idx];
+        int start_block_idx = get<0>(query_start_end_byte);
+        int end_block_idx = get<1>(query_start_end_byte);
+
+        // TODO: should this be (doubly) inclusive as implemented?
+        for (int block_idx = start_block_idx; block_idx <= end_block_idx; block_idx++) {
+            blocks.insert(block_idx);
+        }
+
+        if (start_block_idx == -1 || end_block_idx == -1) {
+            cout << "Query not found in index" << endl;
+            continue;
+        }
+    }
+
+    return blocks;
+}
+
+unordered_set<int> query_abs_idx(string path, BlockLineMap block_line_map) {
+    // And:  query parameters need to be externally provided to this module
+    // INFO:
+    // ----------------------------------------------------------------------
+    //      Hardcoded query parameters
+    // ----------------------------------------------------------------------
+    auto config_bins = vector<string>{"0.5", "0.1", "1e-8"};
+    string config_query = "<= 0.3";
+
+    // parse config_bins
+    vector<float> bins;
+
+    for (string bin : config_bins) {
+        try {
+            bins.push_back(stof(bin));
+        } catch (const invalid_argument &e) {
+            throw invalid_argument("Bin must be a float: " + bin);
+        }
+    }
+
+    // parse config_query
+    int val;
+    ComparisonType op;
+
+    regex re("/(>|<)(=?)\\s*(\\d*\\.?.*)/");
+    smatch matches;
+
+    if (regex_search(config_query, matches, re)) {
+        if (matches[1].str() == "<") {
+            op = matches[2].str() == "=" ? ComparisonType::LessThanOrEqual
+                                         : ComparisonType::LessThan;
+        } else {
+            op = matches[2].str() == "=" ? ComparisonType::GreaterThanOrEqual
+                                         : ComparisonType::GreaterThan;
+        }
+
+        string val_exp = matches[3].str();
+
+        try {
+            val = stof(val_exp);
+        } catch (const invalid_argument &e) {
+            throw invalid_argument("Value must be a float: " + val_exp);
+        }
+    }
+
+    auto index = PValIndexer(path, block_line_map, bins);
+    return index.compare_query(val, op);
+}
 
 int main(int argc, char *argv[]) {
     // DECOMPRESSION STEPS
@@ -28,25 +123,32 @@ int main(int argc, char *argv[]) {
     string query_type = config_options["query_type"];
     vector<string> col_codecs = split_string(config_options["codecs"], ',');
 
-    // open output file in truncate mode
-    ofstream output_file;
-    string output_file_name = config_options["gwas_file"] + ".query";
-    cout << "Opening output file: " << output_file_name << endl;
-    output_file.open(output_file_name, ios::trunc);
-    if (!output_file.is_open()) {
+    // open output file
+    string gwas_file = config_options["gwas_file"];
+    auto gwas_path = fs::path(config_options["gwas_file"]);
+    auto out_dir =
+        gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
+    ofstream query_output_stream;
+    string query_output_file_name =
+        out_dir / (gwas_path.stem().string() + ".query");
+    cout << "Opening output file: " << query_output_file_name << endl;
+    query_output_stream.open(query_output_file_name, ios::trunc);
+    if (!query_output_stream.is_open()) {
         cout << "Error: could not open output file" << endl;
         return 1;
     }
+
     // clear contents of output file and close
-    output_file.close();
-    output_file.open(output_file_name, ios::app);
+    query_output_stream.close();
+    query_output_stream.open(query_output_file_name, ios::app);
     cout << "Done." << endl << endl;
 
     // 1. open compressed file and read header
     cout << "Opening compressed file and reading header..." << endl;
     // TODO: There needs to be a system to vet quality inputs (such as config)
-    string compressed_file = config_options["gwas_file"] + ".grlz";
+    string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
     ifstream file(compressed_file);
+
     // start at beginning and read 4 bytes
     file.seekg(0, ios::beg);
     char header_length_bytes[4];
@@ -77,157 +179,126 @@ int main(int argc, char *argv[]) {
         parse_header_list(header_list, "block sizes");
     cout << "Done." << endl << endl;
 
-    if (query_type == "coordinate") {
-        // 3. opening index file
-        string index_file = compressed_file + ".idx";
-        cout << "Opening index file..." << endl;
-        cout << "\t..." << index_file << endl;
-        ifstream index(index_file);
-        // make map of index file
-        map<int, map<int, tuple<int, int>>> index_file_map =
-            read_index_file(index_file);
-        map<int, int> index_block_map = make_index_block_map(index_file);
-        index.close();
-        cout << "Done." << endl << endl;
+    // 3. opening index file
+    vector<string> index_names = {"genomic", "pval"};
+    auto index_paths = index_paths_of(gwas_path, index_names);
+    auto genomic_index_path = index_paths[0];
+    auto pval_index_path = index_paths[1];
 
-        // get blocks from second index
+    // TODO: impl support for block map
+    cout << "Opening master index file..." << endl;
+    cout << "\t..." << genomic_index_path << endl;
+    ifstream genomic_index_file(
+        genomic_index_path); // TODO: remove: these next fns
+                             // should take path, not stream
 
-        // cross check both
+    auto block_line_map = BlockLineMap(genomic_index_path);
+    map<int, int> index_block_map = make_index_block_map(genomic_index_path);
+    genomic_index_file.close();
+    cout << "Done." << endl << endl;
 
+    // 4. get and aggregate blocks associated with each query
 
-        // 4. get start byte, end byte, start block idx, and end block idx for
-        // each query
-        vector<string> query_list =
-            split_string(config_options["query_coordinate"], ',');
-        // TODO: inefficient to decomp blocks on a per query basis
-        // when dealing with multiple queries.
-        // ... batch queries? -> batch decompression.
-        vector<tuple<int, int>> all_query_block_indexes =
-            get_start_end_block_idx(query_list, index_file_map,
-                                    index_block_map);
+    auto genom_blocks = query_genomic_idx(genomic_index_path, index_block_map);
+    auto pval_blocks = query_abs_idx(genomic_index_path, block_line_map);
+    auto total_blocks_to_decompress = vector<int>();
 
-        // 5. decompress all blocks for each query
-        size_t compressedSize = 0; // Define compressedSize
-        cout << "Decompressing all blocks for each query..." << endl;
-        for (int q_idx = 0; q_idx < all_query_block_indexes.size(); q_idx++) {
-            cout << "...decompressing query " << q_idx + 1 << ": "
-                 << query_list[q_idx] << endl;
-
-            output_file << "Query: " << query_list[q_idx] << endl;
-
-            tuple<int, int> query_start_end_byte =
-                all_query_block_indexes[q_idx];
-            int start_block_idx = get<0>(query_start_end_byte);
-            int end_block_idx = get<1>(query_start_end_byte);
-            // if start_block_idx == -1, or end_block_idx == -1 then query is
-            // not in index
-            if (start_block_idx == -1 || end_block_idx == -1) {
-                cout << "Query not found in index" << endl;
-                output_file << " !! Query not found in index !! " << endl;
-                continue;
-            }
-            int block_header_length;
-            int block_length;
-            for (int block_idx = start_block_idx; block_idx <= end_block_idx;
-                 block_idx++) {
-                size_t block_size = -1;
-                // if there are only two block sizes, block size is fixed except
-                // for last block
-                if (block_sizes_list.size() == 2) {
-                    if (block_idx < stoi(num_blocks) - 1) {
-                        block_size = stoi(block_sizes_list[0]);
-                    } else if (block_idx == stoi(num_blocks) - 1) {
-                        block_size = stoi(block_sizes_list[1]);
-                    }
-                } else {
-                    // if there are more than two block sizes, block size is
-                    // variable
-                    block_size = stoi(block_sizes_list[block_idx]);
-                }
-                vector<string> decompressed_block;
-                if (block_idx == 0) {
-                    block_header_length =
-                        stoi(block_header_end_bytes_list[block_idx]);
-                    block_length = stoi(block_end_bytes_list[block_idx]) -
-                                   block_header_length;
-                } else {
-                    block_header_length =
-                        stoi(block_header_end_bytes_list[block_idx]) -
-                        stoi(block_end_bytes_list[block_idx - 1]);
-                    block_length = stoi(block_end_bytes_list[block_idx]) -
-                                   stoi(block_end_bytes_list[block_idx - 1]) -
-                                   block_header_length;
-                }
-                int start_byte = get_start_byte(block_idx, index_block_map);
-                cout << "......decompressing block " << block_idx
-                     << ", size: " << block_size << endl;
-
-                output_file << "Block: " << block_idx << endl;
-
-                file.seekg(start_byte, ios::beg);
-                char block_header_bytes[block_header_length];
-                file.read(block_header_bytes, block_header_length);
-                // decompress block header
-                string block_header_bitstring =
-                    string(block_header_bytes, block_header_length);
-                string block_header = zlib_decompress(block_header_bitstring);
-                vector<string> block_header_list =
-                    split_string(block_header, ',');
-                // read in compressed block
-                char block_bytes[block_length];
-                file.read(block_bytes, block_length);
-                // convert to string
-                string block_bitstring = string(block_bytes, block_length);
-                // decompress block by column
-                int curr_block_byte = 0;
-                int col_bytes;
-                for (int col_idx = 0; col_idx < stoi(num_columns); col_idx++) {
-                    string col_codec = col_codecs[col_idx];
-                    if (col_idx == 0) {
-                        col_bytes = stoi(block_header_list[col_idx]);
-                    } else if (col_idx == stoi(num_columns) - 1) {
-                        col_bytes =
-                            block_length - stoi(block_header_list[col_idx - 1]);
-                    } else {
-                        col_bytes = stoi(block_header_list[col_idx]) -
-                                    stoi(block_header_list[col_idx - 1]);
-                    }
-                    string col_bitstring =
-                        block_bitstring.substr(curr_block_byte, col_bytes);
-                    curr_block_byte += col_bytes;
-                    compressedSize = col_bitstring.size();
-                    string col_decompressed = decompress_column(
-                        col_bitstring, col_codec, compressedSize, block_size);
-                    decompressed_block.push_back(col_decompressed);
-                }
-
-                // write decompressed block to output file
-                cout << "......writing decompressed block to output file NEW "
-                     << endl;
-                int column_count = stoi(num_columns);
-                vector<string> split_columns[column_count];
-                for (int i = 0; i < column_count; i++) {
-                    split_columns[i] = split_string(decompressed_block[i], ',');
-                }
-                for (int record_i = 0; record_i <= block_size - 1; record_i++) {
-                    for (int col_i = 0; col_i <= column_count - 1; col_i++) {
-                        auto block_list = split_columns[col_i];
-                        // debug statemnt
-                        //                        if (col_i == 0){
-                        //                            cout << record_i << " " <<
-                        //                            col_i << " " <<
-                        //                            block_list.size() << "\n";
-                        //                        }
-                        output_file << block_list[record_i] << ',';
-                    }
-                    output_file << endl;
-                }
-            }
+    for (int block : genom_blocks) {
+        if (pval_blocks.contains(block)) {
+            total_blocks_to_decompress.push_back(block);
         }
-    } else if (query_type == "statistic") {
-        cout << "statistic-based indexing not yet set up" << endl;
     }
 
-    output_file.close();
+    // 5. decompress all blocks for each query
+    std::cout << "Decompressing " << total_blocks_to_decompress.size()
+              << " blocks" << std::endl;
+    for (int block_idx : total_blocks_to_decompress) {
+        size_t block_size = -1;
+        // if there are only two block sizes, block size is fixed except
+        // for last block
+        if (block_sizes_list.size() == 2) {
+            if (block_idx < stoi(num_blocks) - 1) {
+                block_size = stoi(block_sizes_list[0]);
+            } else if (block_idx == stoi(num_blocks) - 1) {
+                block_size = stoi(block_sizes_list[1]);
+            }
+        } else {
+            // if there are more than two block sizes, block size is
+            // variable
+            block_size = stoi(block_sizes_list[block_idx]);
+        }
+        vector<string> decompressed_block;
+        int block_header_length;
+        int block_length;
+        if (block_idx == 0) {
+            block_header_length = stoi(block_header_end_bytes_list[block_idx]);
+            block_length =
+                stoi(block_end_bytes_list[block_idx]) - block_header_length;
+        } else {
+            block_header_length = stoi(block_header_end_bytes_list[block_idx]) -
+                                  stoi(block_end_bytes_list[block_idx - 1]);
+            block_length = stoi(block_end_bytes_list[block_idx]) -
+                           stoi(block_end_bytes_list[block_idx - 1]) -
+                           block_header_length;
+        }
+        int start_byte = get_start_byte(block_idx, index_block_map);
+        cout << "......decompressing block " << block_idx
+             << ", size: " << block_size << endl;
+
+        query_output_stream << "Block: " << block_idx << endl;
+
+        file.seekg(start_byte, ios::beg);
+        char block_header_bytes[block_header_length];
+        file.read(block_header_bytes, block_header_length);
+        // decompress block header
+        string block_header_bitstring =
+            string(block_header_bytes, block_header_length);
+        string block_header = zlib_decompress(block_header_bitstring);
+        vector<string> block_header_list = split_string(block_header, ',');
+        // read in compressed block
+        char block_bytes[block_length];
+        file.read(block_bytes, block_length);
+        // convert to string
+        string block_bitstring = string(block_bytes, block_length);
+        // decompress block by column
+        int curr_block_byte = 0;
+        int col_bytes;
+        for (int col_idx = 0; col_idx < stoi(num_columns); col_idx++) {
+            string col_codec = col_codecs[col_idx];
+            if (col_idx == 0) {
+                col_bytes = stoi(block_header_list[col_idx]);
+            } else if (col_idx == stoi(num_columns) - 1) {
+                col_bytes = block_length - stoi(block_header_list[col_idx - 1]);
+            } else {
+                col_bytes = stoi(block_header_list[col_idx]) -
+                            stoi(block_header_list[col_idx - 1]);
+            }
+            string col_bitstring =
+                block_bitstring.substr(curr_block_byte, col_bytes);
+            curr_block_byte += col_bytes;
+            size_t compressed_size = col_bitstring.size();
+            string col_decompressed = decompress_column(
+                col_bitstring, col_codec, compressed_size, block_size);
+            decompressed_block.push_back(col_decompressed);
+        }
+
+        // write decompressed block to output file
+        cout << "......writing decompressed block to output file" << endl;
+        int column_count = stoi(num_columns);
+        vector<string> split_columns[column_count];
+        for (int i = 0; i < column_count; i++) {
+            split_columns[i] = split_string(decompressed_block[i], ',');
+        }
+        for (int record_i = 0; record_i <= block_size - 1; record_i++) {
+            for (int col_i = 0; col_i <= column_count - 1; col_i++) {
+                auto block_list = split_columns[col_i];
+                string record = block_list[record_i];
+                query_output_stream << record << ',';
+            }
+            query_output_stream << endl;
+        }
+    }
+
+    query_output_stream.close();
     return 0;
 }

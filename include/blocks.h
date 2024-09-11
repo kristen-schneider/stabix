@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 #include <fstream>
 #include <sstream>
 
@@ -16,13 +17,20 @@ vector<vector<vector<string>>> make_blocks(
         int num_columns,
         int block_size,
         char delim,
-        int index_col);
+        int index_col,
+        vector<vector<int>> &genomic_index);
+
+void get_byte_start_of_blocks(int compressed_header_size,
+                              vector<string> block_header_end_bytes,
+                              vector<string> block_end_bytes,
+                              vector<vector<int>> &genomic_index);
 
 vector<vector<vector<string>>> make_blocks_map(
         string gwas_file,
         int num_columns,
         map<int, vector<uint32_t>> chrm_block_bp_ends,
-        char delim);
+        char delim,
+        vector<vector<int>> &genomic_index);
 
 vector<string> get_block_header(
         vector<string> compressed_block);
