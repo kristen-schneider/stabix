@@ -1,13 +1,12 @@
-#include <iostream>
-#include <string>
-#include <vector>
 #include <fstream>
+#include <iostream>
 #include <map>
+#include <string>
 #include <tuple>
+#include <vector>
 
-
-#include "index.h"
 #include "decompress.h"
+#include "index.h"
 #include "utils.h"
 
 using namespace std;
@@ -21,20 +20,18 @@ using namespace std;
  * @param header_length: int length of header
  * @param chrm_col: int column index of chromosome
  * @param bp_col: int column index of genomic coordinates
- * @param block_header_end_bytes: vector<string> list of byte offsets for end of block headers
+ * @param block_header_end_bytes: vector<string> list of byte offsets for end of
+ * block headers
  * @param block_end_bytes: vector<string> list of byte offsets for end of blocks
- * @return vector<tuple<int, int, int>> chrm_bp_byte chromosome, genomic coordinates, byte offset
+ * @return vector<tuple<int, int, int>> chrm_bp_byte chromosome, genomic
+ * coordinates, byte offset
  */
-vector<tuple<int, int, int>> get_chrm_bp_byte(
-        string compressed_file,
-        char delimiter,
-        int header_length,
-        int chrm_col,
-        int bp_col,
-        vector<string> block_header_end_bytes,
-        vector<string> block_end_bytes,
-        vector<string> codecs_list,
-        vector<string> block_sizes_list) {
+vector<tuple<int, int, int>>
+get_chrm_bp_byte(string compressed_file, char delimiter, int header_length,
+                 int chrm_col, int bp_col,
+                 vector<string> block_header_end_bytes,
+                 vector<string> block_end_bytes, vector<string> codecs_list,
+                 vector<string> block_sizes_list) {
     vector<tuple<int, int, int>> chrm_bp_byte;
 
     // get codecs for each column
@@ -59,7 +56,8 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
     int block_start_byte;
     // iterate through block_header_end_bytes and block_end_bytes
     // to get chromosome and genomic coordinates
-    for (int block_idx = 0; block_idx < block_header_end_bytes.size(); block_idx++) {
+    for (int block_idx = 0; block_idx < block_header_end_bytes.size();
+         block_idx++) {
         // get block_size
         size_t block_size;
         // all blocks are the same size except the last one
@@ -75,11 +73,14 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
             block_header_size = stoi(block_header_end_bytes[block_idx]);
             block_start_byte = header_bytes;
         }
-            // else start after previous block
+        // else start after previous block
         else {
-            curr_byte_offset = header_bytes + stoi(block_end_bytes[block_idx - 1]);
-            block_header_size = stoi(block_header_end_bytes[block_idx]) - stoi(block_end_bytes[block_idx - 1]);
-            block_start_byte = header_bytes + stoi(block_end_bytes[block_idx - 1]);
+            curr_byte_offset =
+                header_bytes + stoi(block_end_bytes[block_idx - 1]);
+            block_header_size = stoi(block_header_end_bytes[block_idx]) -
+                                stoi(block_end_bytes[block_idx - 1]);
+            block_start_byte =
+                header_bytes + stoi(block_end_bytes[block_idx - 1]);
         }
         // jump to start of block header
         file.seekg(curr_byte_offset, ios::beg);
@@ -87,17 +88,22 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         char block_header_bytes[block_header_size];
         file.read(block_header_bytes, block_header_size);
         // decompress block header
-        string block_header_bitstring = string(block_header_bytes, block_header_size);
-        string decompressed_block_string = zlib_decompress(block_header_bitstring);
+        string block_header_bitstring =
+            string(block_header_bytes, block_header_size);
+        string decompressed_block_string =
+            zlib_decompress(block_header_bitstring);
         // split block header
-        vector<string> curr_block_header_list = split_string(decompressed_block_string, ',');
-        int chrm_column_byte_start =
-                stoi(block_header_end_bytes[block_idx]) + stoi(curr_block_header_list[chrm_col - 1]);
-        int chrm_column_length = stoi(curr_block_header_list[chrm_col]) - stoi(curr_block_header_list[chrm_col - 1]);
+        vector<string> curr_block_header_list =
+            split_string(decompressed_block_string, ',');
+        int chrm_column_byte_start = stoi(block_header_end_bytes[block_idx]) +
+                                     stoi(curr_block_header_list[chrm_col - 1]);
+        int chrm_column_length = stoi(curr_block_header_list[chrm_col]) -
+                                 stoi(curr_block_header_list[chrm_col - 1]);
 
-        int bp_column_byte_start = stoi(block_header_end_bytes[block_idx]) + stoi(curr_block_header_list[bp_col - 1]);
-        int bp_column_length = stoi(curr_block_header_list[bp_col]) - stoi(curr_block_header_list[bp_col - 1]);
-
+        int bp_column_byte_start = stoi(block_header_end_bytes[block_idx]) +
+                                   stoi(curr_block_header_list[bp_col - 1]);
+        int bp_column_length = stoi(curr_block_header_list[bp_col]) -
+                               stoi(curr_block_header_list[bp_col - 1]);
 
         // jump to start of chromosome column
 
@@ -109,11 +115,10 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         // convert chromosome bytes to string
         string chrm_string = string(chrm_bytes, chrm_column_length);
         // decompress chromosome string
-        string decompressed_chrm_column = decompress_column(chrm_string,
-                                                          chrm_codec,
-                                                          chrm_column_length,
-                                                          block_size);
-        vector<string> chrm_list = split_string(decompressed_chrm_column, delimiter);
+        string decompressed_chrm_column = decompress_column(
+            chrm_string, chrm_codec, chrm_column_length, block_size);
+        vector<string> chrm_list =
+            split_string(decompressed_chrm_column, delimiter);
         int block_chrm_start = stoi(chrm_list[0]);
 
         // jump to start of bp column
@@ -125,30 +130,27 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
         // convert bp bytes to string
         string bp_string = string(bp_bytes, bp_column_length);
         // decompress bp string
-        string decompressed_bp_column = decompress_column(bp_string,
-                                                          bp_codec,
-                                                          bp_column_length,
-                                                          block_size);
-        vector<string> bp_list = split_string(decompressed_bp_column, delimiter);
+        string decompressed_bp_column = decompress_column(
+            bp_string, bp_codec, bp_column_length, block_size);
+        vector<string> bp_list =
+            split_string(decompressed_bp_column, delimiter);
         int block_bp_start = stoi(bp_list[0]);
 
         // add chromosome and genomic coordinates to chrm_bp_byte
-        chrm_bp_byte.push_back(make_tuple(block_chrm_start, block_bp_start, block_start_byte));
-//        cout << " finished block: " << block_idx << endl;
-
+        chrm_bp_byte.push_back(
+            make_tuple(block_chrm_start, block_bp_start, block_start_byte));
+        //        cout << " finished block: " << block_idx << endl;
     }
 
     return chrm_bp_byte;
 }
-
 
 /*
  * Make index block map
  * @param index_file: string
  * @return map<int, int> block_idx, byte_offset
  */
-map<int, int> make_index_block_map(
-        string index_file) {
+map<int, int> make_index_block_map(string index_file) {
     map<int, int> index_map;
     ifstream file(index_file);
     string line;
@@ -174,11 +176,10 @@ map<int, int> make_index_block_map(
 /*
  * Read index file into map
  * @param index_file: string
- * @return index_map: map<string, map<string, string>> chrm, bp, byte_offset, block_idx
- * chrm, bp, byte_offset
+ * @return index_map: map<string, map<string, string>> chrm, bp, byte_offset,
+ * block_idx chrm, bp, byte_offset
  */
-map<int, map<int, tuple<int, int>>> read_index_file(
-        string index_file) {
+map<int, map<int, tuple<int, int>>> read_index_file(string index_file) {
     map<int, map<int, tuple<int, int>>> index_map;
     ifstream file(index_file);
     string line;
@@ -200,7 +201,7 @@ map<int, map<int, tuple<int, int>>> read_index_file(
             if (index_map.find(chrm) == index_map.end()) {
                 index_map[chrm] = line_map;
             }
-                // else add to existing chromosome
+            // else add to existing chromosome
             else {
                 index_map[chrm][bp] = make_tuple(byte_offset, block_idx);
             }
@@ -210,8 +211,7 @@ map<int, map<int, tuple<int, int>>> read_index_file(
     return index_map;
 }
 
-map<int, map<int, vector<int>>> read_genomic_index(
-        string genomic_index_file){
+map<int, map<int, vector<int>>> read_genomic_index(string genomic_index_file) {
 
     map<int, map<int, vector<int>>> genomic_index_info;
 
@@ -257,33 +257,20 @@ map<int, map<int, vector<int>>> read_genomic_index(
  * @param index_file_map: map<int, map<int, vector<int>>> genomic_index_info
  * @return int start_block_idx
  */
-int get_block_idx(
-        int q_chrm,
-        int q_bp,
-        map<int, map<int, vector<int>>> genomic_index_info) {
+int get_block_idx(int q_chrm, int q_bp,
+                  map<int, map<int, vector<int>>> genomic_index_info) {
     int start_block_idx = -1;
-    for (auto const& chrm : genomic_index_info) {
-        if (chrm.first == q_chrm) {
-            for (auto const& bp : chrm.second) {
-                if (q_bp >= bp.first) {
-                    start_block_idx = bp.second[1];
-                }
+
+    auto chrm = genomic_index_info.find(q_chrm);
+    if (chrm != genomic_index_info.end()) {
+        for (auto const &bp : chrm->second) {
+            // this is asking for "give me the biggest bp.first"
+            if (q_bp >= bp.first) {
+                start_block_idx = bp.second[1];
             }
-            return start_block_idx;
         }
     }
 
-
-//    for (auto const& chrm : index_file_map) {
-//        if (chrm.first == q_chrm) {
-//            for (auto const& bp : chrm.second) {
-//                if (q_bp >= bp.first) {
-//                    start_block_idx = get<1>(bp.second);
-//                }
-//            }
-//            return start_block_idx;
-//        }
-//    }
     return start_block_idx;
 }
 
@@ -293,9 +280,7 @@ int get_block_idx(
  * @param index_block_map: map<int, int> index block map
  * @return int start_byte
  */
-int get_start_byte(
-        int block_idx,
-        map<int, int> index_block_map){
+int get_start_byte(int block_idx, map<int, int> index_block_map) {
     return index_block_map[block_idx];
 }
 
@@ -307,16 +292,18 @@ int get_start_byte(
  * @return vector<tuple<int, int>> all_query_info
  */
 vector<tuple<int, int>> get_start_end_block_idx(
-        vector<string>query_list,
-        // TODO: this parameter is not updated to match read_genomic_index
-        map<int, map<int, vector<int>>> genomic_index_info,
-        map<int, int> index_block_map) {
+    vector<string> query_list,
+    // TODO: this parameter is not updated to match read_genomic_index
+    map<int, map<int, vector<int>>> genomic_index_info,
+    map<int, int> index_block_map) {
     vector<tuple<int, int>> all_query_info;
     for (int q_idx = 0; q_idx < query_list.size(); q_idx++) {
         int q_chrm = stoi(split_string(query_list[q_idx], ':')[0]);
         int q_bp_start = stoi(split_string(query_list[q_idx], ':')[1]);
-        int q_bp_end = stoi(split_string(split_string(query_list[q_idx], ':')[1], '-')[1]);
-        int start_block_idx = get_block_idx(q_chrm, q_bp_start, genomic_index_info);
+        int q_bp_end =
+            stoi(split_string(split_string(query_list[q_idx], ':')[1], '-')[1]);
+        int start_block_idx =
+            get_block_idx(q_chrm, q_bp_start, genomic_index_info);
         int end_block_idx = get_block_idx(q_chrm, q_bp_end, genomic_index_info);
         all_query_info.push_back(make_tuple(start_block_idx, end_block_idx));
     }

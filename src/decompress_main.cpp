@@ -31,6 +31,7 @@ unordered_set<int> query_genomic_idx(string genomic_index_path,
 
     vector<tuple<int, int>> all_query_block_indexes = get_start_end_block_idx(
         query_list, genomic_index_info, index_block_map);
+    unordered_set<int> blocks;
 
     for (int q_idx = 0; q_idx < all_query_block_indexes.size(); q_idx++) {
         // cout << "...decompressing query " << q_idx + 1 << ": "
@@ -42,11 +43,18 @@ unordered_set<int> query_genomic_idx(string genomic_index_path,
         int start_block_idx = get<0>(query_start_end_byte);
         int end_block_idx = get<1>(query_start_end_byte);
 
+        // TODO: should this be (doubly) inclusive as implemented?
+        for (int block_idx = start_block_idx; block_idx <= end_block_idx; block_idx++) {
+            blocks.insert(block_idx);
+        }
+
         if (start_block_idx == -1 || end_block_idx == -1) {
             cout << "Query not found in index" << endl;
             continue;
         }
     }
+
+    return blocks;
 }
 
 unordered_set<int> query_abs_idx(string path, BlockLineMap block_line_map) {
