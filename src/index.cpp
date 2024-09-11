@@ -254,24 +254,36 @@ map<int, map<int, vector<int>>> read_genomic_index(
  * Get block index for query
  * @param q_chrm: int of query chromosome
  * @param q_bp: int of query genomic position
- * @param index_file_map: map<int, map<int, tuple<int, int>>> index file map
+ * @param index_file_map: map<int, map<int, vector<int>>> genomic_index_info
  * @return int start_block_idx
  */
 int get_block_idx(
         int q_chrm,
         int q_bp,
-        map<int, map<int, tuple<int, int>>> index_file_map) {
+        map<int, map<int, vector<int>>> genomic_index_info) {
     int start_block_idx = -1;
-    for (auto const& chrm : index_file_map) {
+    for (auto const& chrm : genomic_index_info) {
         if (chrm.first == q_chrm) {
             for (auto const& bp : chrm.second) {
                 if (q_bp >= bp.first) {
-                    start_block_idx = get<1>(bp.second);
+                    start_block_idx = bp.second[1];
                 }
             }
             return start_block_idx;
         }
     }
+
+
+//    for (auto const& chrm : index_file_map) {
+//        if (chrm.first == q_chrm) {
+//            for (auto const& bp : chrm.second) {
+//                if (q_bp >= bp.first) {
+//                    start_block_idx = get<1>(bp.second);
+//                }
+//            }
+//            return start_block_idx;
+//        }
+//    }
     return start_block_idx;
 }
 
@@ -297,15 +309,15 @@ int get_start_byte(
 vector<tuple<int, int>> get_start_end_block_idx(
         vector<string>query_list,
         // TODO: this parameter is not updated to match read_genomic_index
-        map<int, map<int, tuple<int, int>>> index_file_map,
+        map<int, map<int, vector<int>>> genomic_index_info,
         map<int, int> index_block_map) {
     vector<tuple<int, int>> all_query_info;
     for (int q_idx = 0; q_idx < query_list.size(); q_idx++) {
         int q_chrm = stoi(split_string(query_list[q_idx], ':')[0]);
         int q_bp_start = stoi(split_string(query_list[q_idx], ':')[1]);
         int q_bp_end = stoi(split_string(split_string(query_list[q_idx], ':')[1], '-')[1]);
-        int start_block_idx = get_block_idx(q_chrm, q_bp_start, index_file_map);
-        int end_block_idx = get_block_idx(q_chrm, q_bp_end, index_file_map);
+        int start_block_idx = get_block_idx(q_chrm, q_bp_start, genomic_index_info);
+        int end_block_idx = get_block_idx(q_chrm, q_bp_end, genomic_index_info);
         all_query_info.push_back(make_tuple(start_block_idx, end_block_idx));
     }
     return all_query_info;

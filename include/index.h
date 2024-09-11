@@ -43,9 +43,9 @@ int get_block_idx(
         map<int, map<int, tuple<int, int>>> index_file_map);
 
 vector<tuple<int, int>> get_start_end_block_idx(
-        vector<string>query_list,
-        map<int, map<int, tuple<int, int>>> index_file_map,
-        map<int, int> index_block_map);
+            vector<string>query_list,
+            map<int, map<int, vector<int>>> genomic_index_info,
+            map<int, int> index_block_map);
 
 int get_start_byte(
         int block_idx,
