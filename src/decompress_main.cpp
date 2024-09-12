@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
     // ----------------------------------------------------------------------
     //      Hardcoded query parameters
     // ----------------------------------------------------------------------
-    vector<string> query_list = {"2:100-150000"};
+    vector<string> genomic_query_list = {"2:100-150000"};
     // And:  query parameters need to be externally provided to this module
     // INFO:
     // ----------------------------------------------------------------------
@@ -209,19 +209,23 @@ int main(int argc, char *argv[]) {
 
     // 4. get and aggregate blocks associated with each query
     auto total_blocks_to_decompress = vector<int>();
+    // get genomic blocks
     auto genom_blocks = query_genomic_idx(
-            query_list,
+            genomic_query_list,
             genomic_index_info_by_location,
             genomic_index_info_by_block);
+    // if there are no genomic blocks, return early. nothing found.
     if (genom_blocks.empty()) {
         cout << "No blocks found for query" << endl;
         return 0;
+        // if there is no pvalue query, set the query to all genomic blocks
     }else if(config_query.empty()){
         cout << "No query found for second query..." << endl;
         // set total_blocks_to_decompress to genome blocks
         total_blocks_to_decompress = vector<int>(genom_blocks.begin(), genom_blocks.end());
         // sort blocks
         sort(total_blocks_to_decompress.begin(), total_blocks_to_decompress.end());
+        // get blocks from pvalue query
     }else{
         auto pval_blocks = query_abs_idx(genomic_index_path,
                                      config_bins,
