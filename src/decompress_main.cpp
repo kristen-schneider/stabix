@@ -105,18 +105,51 @@ int main(int argc, char *argv[]) {
         return -1;
     }
     string config_file = argv[1];
-    cout << "Reading config options..." << endl;
-    cout << "\t..." << config_file << endl;
-    map<string, string> config_options;
-    config_options = read_config_file(config_file);
-    string query_type = config_options["query_type"];
-    vector<string> col_codecs = split_string(config_options["codecs"], ',');
+    cout << "Reading config options from: " << config_file << endl;
+    map<string, string> config_options = read_config_file(config_file);
+    add_default_config_options(config_options);
 
-    // open output file
     string gwas_file = config_options["gwas_file"];
+    // block size
+    int block_size = -1;
+    // if block_size cannot be converted to an int, it is a map file
+    try {
+        block_size = stoi(config_options["block_size"]);
+    } catch (invalid_argument &e) {
+        block_size = -1;
+    }
+
+    // queries
+    vector<string> index_types = {"genomic"};
+    string query_genomic = config_options["genomic"];
+    vector<string> genomic_query_list = read_bed_file(query_genomic);
+    // TODO: get query types for other optional queries
+    string extra_indices = config_options["extra_indices"];
+    // add extra indices to index_types
+    if (extra_indices != "None") {
+        vector<string> extra_indices_list = split_string(extra_indices, ',');
+        index_types.insert(index_types.end(), extra_indices_list.begin(),
+                           extra_indices_list.end());
+    }
+
+    // codecs by data type
+    string codec_int = config_options["codecs_int"];
+    string codec_float = config_options["float"];
+    string codec_str = config_options["string"];
+    map<string, string> data_type_codecs = {
+            {"int", codec_int},
+            {"float", codec_float},
+            {"string", codec_str}};
+
     auto gwas_path = fs::path(config_options["gwas_file"]);
-    auto out_dir =
-        gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
+    auto out_dir = gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
+    fs::create_directories(out_dir);
+    string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
+
+    cout << "\t...gwas_file: " << gwas_file << endl;
+    cout << "\t...block_size: " << block_size << endl;
+    cout << "\t...indexes: " << convert_vector_str_to_string(index_types) << endl;
+
     ofstream query_output_stream;
     string query_output_file_name =
         out_dir / (gwas_path.stem().string() + ".query");
@@ -127,20 +160,20 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // INFO:
-    // ----------------------------------------------------------------------
-    //      Hardcoded query parameters
-    // ----------------------------------------------------------------------
-    vector<string> genomic_query_list = {"2:100-150000"};
-    // And:  query parameters need to be externally provided to this module
-    // INFO:
-    // ----------------------------------------------------------------------
-    //      Hardcoded query parameters
-    // ----------------------------------------------------------------------
-    auto config_bins = vector<string>{"0.5", "0.1", "1e-8"};
-//    string config_query = "<= 0.5";
-    string config_query = "";
+    cout << "Done." << endl << endl;
 
+//    // INFO:
+//    // ----------------------------------------------------------------------
+//    //      Hardcoded query parameters
+//    // ----------------------------------------------------------------------
+//    vector<string> genomic_query_list = {"2:100-150000"};
+//    // And:  query parameters need to be externally provided to this module
+//    // INFO:
+//    // ----------------------------------------------------------------------
+//    //      Hardcoded query parameters
+//    // ----------------------------------------------------------------------
+    auto pvalue_bins = vector<string>{"0.5", "0.1", "1e-8"};
+    string pvalue_query = "<= 0.5";
 
     // clear contents of output file and close
     query_output_stream.close();
@@ -150,7 +183,6 @@ int main(int argc, char *argv[]) {
     // 1. open compressed file and read header
     cout << "Opening compressed file and reading header..." << endl;
     // TODO: There needs to be a system to vet quality inputs (such as config)
-    string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
     ifstream file(compressed_file);
 
     // start at beginning and read 4 bytes
@@ -169,19 +201,18 @@ int main(int argc, char *argv[]) {
     // decompress header
     string header = zlib_decompress(header_string);
     vector<string> header_list = split_string(header, ',');
-
-    // 2. parse header
+    // parse header
     string num_columns = parse_header_list(header_list, "num columns")[0];
     string num_blocks = parse_header_list(header_list, "num blocks")[0];
     vector<string> column_names_list =
         parse_header_list(header_list, "column names");
+    vector<string> codecs_list = parse_header_list(header_list, "codecs");
     vector<string> block_header_end_bytes_list =
         parse_header_list(header_list, "block header end bytes");
     vector<string> block_end_bytes_list =
         parse_header_list(header_list, "block end bytes");
     vector<string> block_sizes_list =
         parse_header_list(header_list, "block sizes");
-    cout << "Done." << endl << endl;
 
     // 3. opening index file
     vector<string> index_names = {"genomic", "pval"};
@@ -219,8 +250,8 @@ int main(int argc, char *argv[]) {
         cout << "No blocks found for query" << endl;
         return 0;
         // if there is no pvalue query, set the query to all genomic blocks
-    }else if(config_query.empty()){
-        cout << "No query found for second query..." << endl;
+    }else if( extra_indices == "None"){
+        cout << "No extra queries." << endl;
         // set total_blocks_to_decompress to genome blocks
         total_blocks_to_decompress = vector<int>(genom_blocks.begin(), genom_blocks.end());
         // sort blocks
@@ -228,8 +259,8 @@ int main(int argc, char *argv[]) {
         // get blocks from pvalue query
     }else{
         auto pval_blocks = query_abs_idx(genomic_index_path,
-                                     config_bins,
-                                     config_query,
+                                     pvalue_bins,
+                                     pvalue_query,
                                      block_line_map);
         auto total_blocks_to_decompress = vector<int>();
 
@@ -297,7 +328,7 @@ int main(int argc, char *argv[]) {
         int curr_block_byte = 0;
         int col_bytes;
         for (int col_idx = 0; col_idx < stoi(num_columns); col_idx++) {
-            string col_codec = col_codecs[col_idx];
+            string col_codec = codecs_list[col_idx];
             if (col_idx == 0) {
                 col_bytes = stoi(block_header_list[col_idx]);
             } else if (col_idx == stoi(num_columns) - 1) {

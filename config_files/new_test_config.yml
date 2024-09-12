@@ -8,17 +8,17 @@ query_out_file:
   place.out
 
 query:
-    genomic:
-      /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.bed
-    pval:
-      0.5
-    other:
-      0.2
-    uncertainty:
-      1-e8
+  genomic:
+    /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.bed
+  pval:
+    None
+  other:
+    0.2
+  uncertainty:
+    1-e8
 
 extra_indices:
-    pval, other, uncertainty
+  None
 
 codecs:
   int:

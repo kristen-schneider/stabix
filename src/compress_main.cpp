@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
     add_default_config_options(config_options);
 
     string gwas_file = config_options["gwas_file"];
+    // block size
     int block_size = -1;
     // if block_size cannot be converted to an int, it is a map file
     try {
@@ -36,20 +37,34 @@ int main(int argc, char *argv[]) {
     } catch (invalid_argument &e) {
         block_size = -1;
     }
-    string query_type = config_options["query_type"];
+
+    // queries
+    vector<string> index_types = {"genomic"};
+    string query_genomic = config_options["genomic"];
+    vector<string> genomic_queries = read_bed_file(query_genomic);
+    // TODO: get query types for other optional queries
+    string extra_indices = config_options["extra_indices"];
+
+    // codecs by data type
+    string codec_int = config_options["int"];
+    string codec_float = config_options["float"];
+    string codec_str = config_options["string"];
+    map<string, string> data_type_codecs = {
+        {"int", codec_int},
+        {"float", codec_float},
+        {"string", codec_str}};
+
+
+
     // creating output directory for generated files
     auto gwas_path = fs::path(config_options["gwas_file"]);
     auto out_dir = gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
     fs::create_directories(out_dir);
     string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
-    vector<string> codecs_list = split_string(config_options["codecs"], ',');
 
     cout << "\t...gwas_file: " << gwas_file << endl;
     cout << "\t...block_size: " << block_size << endl;
-    cout << "\t...query_type: " << query_type << endl;
-    cout << "\t...codecs_list: " << convert_vector_str_to_string(codecs_list)
-         << endl;
-    cout << "\t...compressed_file: " << compressed_file << endl;
+    cout << "\t...indexes: " << convert_vector_str_to_string(index_types) << endl;
 
     cout << "Done." << endl << endl;
 
@@ -87,6 +102,10 @@ int main(int argc, char *argv[]) {
     int num_columns = column_names_list.size();
     cout << "\t...num columns: " << num_columns << endl;
     cout << "Done." << endl << endl;
+    // get column data types
+    vector<string> col_data_types = get_data_types(line_2, delimiter);
+    // get codecs by data type
+    vector<string> codecs_list = get_codecs_by_data_type(col_data_types, data_type_codecs);
 
     // setting up variables for blocks
     vector<vector<vector<string>>> all_blocks;
@@ -219,10 +238,20 @@ int main(int argc, char *argv[]) {
             to_string(first_block_size) + "," + to_string(last_block_size);
     }
 
+    /*
+     * num_columns = None
+     * num_blocks = None
+     * column_names_list = None
+     * codecs_list = None
+     * block_header_end_bytes = None
+     * block_end_bytes = None
+     * block_sizes_tuple = None
+     */
     vector<string> header = {
         to_string(num_columns),
         to_string(num_blocks),
         column_names_str,
+        convert_vector_str_to_string(codecs_list),
         convert_vector_str_to_string(block_header_end_bytes),
         convert_vector_str_to_string(block_end_bytes),
         block_sizes};
@@ -271,7 +300,7 @@ int main(int argc, char *argv[]) {
                              block_end_bytes,
                              genomic_index);
 
-    // write chrm_bp_byte to (master) index file
+    // write chrm_bp_byte to (genomic) index file
     vector<string> indexNames = {"genomic"};
     auto indexPaths = index_paths_of(gwas_file, indexNames);
     string genomicIndexPath = indexPaths[0];
