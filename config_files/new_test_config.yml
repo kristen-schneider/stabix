@@ -2,10 +2,10 @@ gwas_file:
   /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.tsv
 
 block_size:
-  10
+  /Users/krsc0813/CLionProjects/gwas_local/map_files/test.map
 
-query_out_file:
-  place.out
+out_directory:
+  kristen_out
 
 query:
   genomic:

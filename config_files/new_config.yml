@@ -4,8 +4,8 @@ gwas_file:
 block_size:
   10
 
-query_out_file:
-  place.out
+out_directorys:
+  kristen_out
 
 query:
     genomic:

@@ -359,10 +359,10 @@ vector<string> gwas_column_names(string gwasPathString) {
     return gwasColumns;
 }
 
-vector<string> index_paths_of(string gwasPathStr, vector<string> gwasColumns) {
-    auto gwasPath = fs::path(gwasPathStr);
+vector<string> index_paths_of(string output_dir, vector<string> gwasColumns) {
+    auto gwasPath = fs::path(output_dir);
     auto outDir =
-        gwasPath.parent_path() / (gwasPath.stem().string() + "_output");
+        gwasPath.parent_path() / (gwasPath.stem().string());
     //    fs::create_directories(outDir);
     auto outPaths = vector<string>();
 
