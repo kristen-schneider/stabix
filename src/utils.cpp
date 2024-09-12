@@ -44,15 +44,12 @@ map<string, string> read_config_file(string config_file) {
             // remove ":" from line
             line.erase(remove(line.begin(), line.end(), ':'),
                        line.end());
-            // if it is a sub-option, add to config_option
-            if (!config_option.empty()) {
-                config_option += "_" + line;
-            } else {
-                config_option = line;
-            }
+            config_option = line;
         }
         // if line does not contain ":", and is not blank, it is a config value
         else {
+            // remove newline character from line
+            line.erase(remove(line.begin(), line.end(), '\r'), line.end());
             config_value = line;
             config_options[config_option] = config_value;
             config_option = "";
@@ -67,20 +64,20 @@ void add_default_config_options(map<string, string> &config_options) {
     if (config_options["block_size"].empty()) {
         config_options["block_size"] = "20";
     }
-    if (config_options["query_genomic"].empty()) {
+    if (config_options["genomic"].empty()) {
         // exit program with error message
         cout << "ERROR: genomic query not specified in config file." << endl;
         exit(1);
     }
     // TODO: determine default data type codecs
-    if (config_options["codecs_int"].empty()){
-        config_options["codecs_int"] = "zlib";
+    if (config_options["int"].empty()){
+        config_options["int"] = "zlib";
     }
-    if (config_options["codecs_float"].empty()){
-        config_options["codecs_float"] = "zlib";
+    if (config_options["float"].empty()){
+        config_options["float"] = "zlib";
     }
-    if (config_options["codecs_string"].empty()){
-        config_options["codecs_string"] = "zlib";
+    if (config_options["string"].empty()){
+        config_options["string"] = "zlib";
     }
 }
 

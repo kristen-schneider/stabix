@@ -37,15 +37,16 @@ int main(int argc, char *argv[]) {
     } catch (invalid_argument &e) {
         block_size = -1;
     }
+
     // queries
     vector<string> index_types = {"genomic"};
-    string query_genomic = config_options["query_genomic"];
+    string query_genomic = config_options["genomic"];
     vector<string> genomic_queries = read_bed_file(query_genomic);
     // TODO: get query types for other optional queries
     string extra_indices = config_options["extra_indices"];
 
     // codecs by data type
-    string codec_int = config_options["codecs_int"];
+    string codec_int = config_options["int"];
     string codec_float = config_options["float"];
     string codec_str = config_options["string"];
     map<string, string> data_type_codecs = {
@@ -64,7 +65,6 @@ int main(int argc, char *argv[]) {
     cout << "\t...gwas_file: " << gwas_file << endl;
     cout << "\t...block_size: " << block_size << endl;
     cout << "\t...indexes: " << convert_vector_str_to_string(index_types) << endl;
-    cout << "\t...compressed_file: " << compressed_file << endl;
 
     cout << "Done." << endl << endl;
 

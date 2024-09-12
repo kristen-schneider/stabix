@@ -36,13 +36,13 @@ int main(int argc, char *argv[]) {
     }
     // queries
     vector<string> index_types = {"genomic"};
-    string query_genomic = config_options["query_genomic"];
+    string query_genomic = config_options["genomic"];
     vector<string> genomic_queries = read_bed_file(query_genomic);
     // TODO: get query types for other optional queries
     string extra_indices = config_options["extra_indices"];
 
     // codecs by data type
-    string codec_int = config_options["codecs_int"];
+    string codec_int = config_options["int"];
     string codec_float = config_options["float"];
     string codec_str = config_options["string"];
     map<string, string> data_type_codecs = {
