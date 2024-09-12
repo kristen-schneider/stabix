@@ -59,9 +59,14 @@ int get_index(
  * @param delimiter: char to split by
  * @return column_types_str: string of comma separated data types
  */
-string get_data_types(
+vector<string> get_data_types(
         string line,
         char delimiter);
+
+vector<string> get_codecs_by_data_type(vector<string> data_types,
+                                       map<string, string> codec_types);
+
+vector<string> read_bed_file(string bed_file);
 
 /*
  * Get the delimiter of a file

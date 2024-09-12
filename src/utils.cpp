@@ -15,8 +15,10 @@ char *int_to_bytes(int value);
 
 vector<string> split_string(string str, char delimiter);
 
-// TODO: impl assumes values on new lines which isn't the guaranteed format for
-// yml files.
+/*
+ * Reads and parses options in configuration file
+ * returns a map of options
+ */
 map<string, string> read_config_file(string config_file) {
     map<string, string> config_options;
 
@@ -27,16 +29,34 @@ map<string, string> read_config_file(string config_file) {
         exit(1);
     }
     // read and parse config file
-    string option_name;
-    string option_item;
-    while (getline(config_stream, option_name)) {
-        // remove ":" from option name
-        option_name.erase(remove(option_name.begin(), option_name.end(), ':'),
-                          option_name.end());
-        getline(config_stream, option_item);
-        // remove leading whitespace from option item
-        option_item.erase(0, option_item.find_first_not_of(' '));
-        config_options[option_name] = option_item;
+    string config_option = "";
+    string config_value = "";
+    string line;
+    while (getline(config_stream, line)) {
+        // remove white space from lines
+        line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
+        // skip empty lines
+        if (line.empty()) {
+            continue;
+        }
+        // if line contains ":" it is a config option
+        else if(line.find(":") != string::npos) {
+            // remove ":" from line
+            line.erase(remove(line.begin(), line.end(), ':'),
+                       line.end());
+            // if it is a sub-option, add to config_option
+            if (!config_option.empty()) {
+                config_option += "_" + line;
+            } else {
+                config_option = line;
+            }
+        }
+        // if line does not contain ":", and is not blank, it is a config value
+        else {
+            config_value = line;
+            config_options[config_option] = config_value;
+            config_option = "";
+        }
     }
     config_stream.close();
     return config_options;
@@ -47,11 +67,34 @@ void add_default_config_options(map<string, string> &config_options) {
     if (config_options["block_size"].empty()) {
         config_options["block_size"] = "20";
     }
-    if (config_options["query_type"].empty()) {
+    if (config_options["query_genomic"].empty()) {
         // exit program with error message
-        cout << "ERROR: query_type not specified in config file." << endl;
+        cout << "ERROR: genomic query not specified in config file." << endl;
         exit(1);
     }
+    // TODO: determine default data type codecs
+    if (config_options["codecs_int"].empty()){
+        config_options["codecs_int"] = "zlib";
+    }
+    if (config_options["codecs_float"].empty()){
+        config_options["codecs_float"] = "zlib";
+    }
+    if (config_options["codecs_string"].empty()){
+        config_options["codecs_string"] = "zlib";
+    }
+}
+
+/*
+ * return a list of codecs according to the data types in the file
+ */
+vector<string> get_codecs_by_data_type(vector<string> data_types,
+                                       map<string, string> codec_types) {
+    vector<string> codecs;
+    for (int i = 0; i < data_types.size(); i++) {
+        string codec = codec_types[data_types[i]];
+        codecs.push_back(codec);
+    }
+    return codecs;
 }
 
 int get_index(vector<string> vec, string str) {
@@ -65,9 +108,41 @@ int get_index(vector<string> vec, string str) {
     return idx;
 }
 
-string get_data_types(string line, char delimiter) {
+vector<string> read_bed_file(string bed_file){
+    vector<string> bed_data;
+    // check if file exists
+    ifstream bed_stream(bed_file);
+    if (!bed_stream.good()) {
+        cout << "ERROR: Bed file does not exist: " << bed_file << endl;
+        exit(1);
+    }
+    // read bed file, splitting by delimiter
+    // store as "chrm:bp_start-bp_end"
+    string line;
+    while (getline(bed_stream, line)) {
+        // skip empty lines
+        if (line.empty()) {
+            continue;
+        }
+        // split line by tab
+        istringstream iss(line);
+        string token;
+        vector<string> tokens;
+        while(std::getline(iss, token, ' '))
+            tokens.push_back(token);
+        string chrm = tokens[0];
+        string bp_start = tokens[1];
+        string bp_end = tokens[2];
+        string bed_line = chrm + ":" + bp_start + "-" + bp_end;
+        bed_data.push_back(bed_line);
+    }
 
-    string column_types_str;
+    return bed_data;
+}
+
+vector<string> get_data_types(string line, char delimiter) {
+
+    vector<string> column_data_types;
     // split line by delimiter find data type and store in comma separated
     // string
     stringstream ss(line);
@@ -79,19 +154,17 @@ string get_data_types(string line, char delimiter) {
         // if none of the above, throw error
         // search for '.' in item
         if (item.find('.') != string::npos) {
-            column_types_str += "float,";
+            column_data_types.push_back("float");
         } else {
             try {
                 stoi(item);
-                column_types_str += "int,";
+                column_data_types.push_back("int");
             } catch (invalid_argument &e) {
-                column_types_str += "string,";
+                column_data_types.push_back("string");
             }
         }
     }
-    // remove last comma
-    column_types_str.pop_back();
-    return column_types_str;
+    return column_data_types;
 }
 
 char get_delimiter(string line) {

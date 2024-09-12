@@ -1,18 +1,15 @@
 gwas_file:
-  /Users/krsc0813/CLionProjects/gwas_local/gwas_files/GCST90179150_buildGRCh37.tsv
+  /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.tsv
 
 block_size:
-  # coolboundaries.map
-  # OR,
-  # 20000
-  # OR, optional!
+  10
 
 query_out_file:
   place.out
 
 query:
     genomic:
-      genes.bed
+      /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.bed
     pval:
       0.5
     other:
@@ -25,8 +22,8 @@ extra_indicies:
 
 codecs:
   int:
-    bz2
+    zlib
   float:
     zlib
   string:
-    fpzip
+    zlib
