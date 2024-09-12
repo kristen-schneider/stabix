@@ -24,14 +24,10 @@ vector<tuple<int, int, int>> get_chrm_bp_byte(
 map<int, map<int, tuple<int, int>>> read_index_file(
         string index_file);
 
-/*
- * read genomic index file into a map whose
- * Key: block IDX
- *    Key: chromosome
- *
- *
- */
-map<int, map<int, vector<int>>> read_genomic_index(
+map<int, map<int, vector<int>>> read_genomic_index_by_location(
+        string genomic_index_file);
+
+map<int, vector<int>> read_genomic_index_by_block(
         string genomic_index_file);
 
 map<int, int> make_index_block_map(
@@ -43,13 +39,13 @@ int get_block_idx(
         map<int, map<int, tuple<int, int>>> index_file_map);
 
 vector<tuple<int, int>> get_start_end_block_idx(
-            vector<string>query_list,
-            map<int, map<int, vector<int>>> genomic_index_info,
-            map<int, int> index_block_map);
+        vector<string> query_list,
+        map<int, map<int, vector<int>>> genomic_index_info_by_location,
+        map<int, vector<int>> genomic_index_info_by_block);
 
 int get_start_byte(
         int block_idx,
-        map<int, int> index_block_map);
+        map<int, vector<int>> index_block_map);
 
 //vector<vector<int>> find_query_bytes_blocks_(
 //        vector<string> query_list,

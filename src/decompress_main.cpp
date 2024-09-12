@@ -16,21 +16,14 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-unordered_set<int> query_genomic_idx(string genomic_index_path,
-                                     map<int, int> index_block_map) {
-    // INFO:
-    // ----------------------------------------------------------------------
-    //      Hardcoded query parameters
-    // ----------------------------------------------------------------------
-    vector<string> query_list = {"1:693731-758144", "1:798900-845000",
-                                 "18:65659994-67800000"};
-
-    // read genomic index
-    map<int, map<int, vector<int>>> genomic_index_info =
-        read_genomic_index(genomic_index_path);
+unordered_set<int> query_genomic_idx(vector<string> query_list,
+                                     map<int, map<int, vector<int>>> genomic_index_info_by_location,
+                                     map<int, vector<int>> genomic_index_info_by_block) {
 
     vector<tuple<int, int>> all_query_block_indexes = get_start_end_block_idx(
-        query_list, genomic_index_info, index_block_map);
+        query_list,
+        genomic_index_info_by_location,
+        genomic_index_info_by_block);
     unordered_set<int> blocks;
 
     for (int q_idx = 0; q_idx < all_query_block_indexes.size(); q_idx++) {
@@ -57,14 +50,10 @@ unordered_set<int> query_genomic_idx(string genomic_index_path,
     return blocks;
 }
 
-unordered_set<int> query_abs_idx(string path, BlockLineMap block_line_map) {
-    // And:  query parameters need to be externally provided to this module
-    // INFO:
-    // ----------------------------------------------------------------------
-    //      Hardcoded query parameters
-    // ----------------------------------------------------------------------
-    auto config_bins = vector<string>{"0.5", "0.1", "1e-8"};
-    string config_query = "<= 0.3";
+unordered_set<int> query_abs_idx(string path,
+                                 auto config_bins,
+                                 string config_query,
+                                 BlockLineMap block_line_map) {
 
     // parse config_bins
     vector<float> bins;
@@ -138,6 +127,21 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // INFO:
+    // ----------------------------------------------------------------------
+    //      Hardcoded query parameters
+    // ----------------------------------------------------------------------
+    vector<string> query_list = {"2:100-150000"};
+    // And:  query parameters need to be externally provided to this module
+    // INFO:
+    // ----------------------------------------------------------------------
+    //      Hardcoded query parameters
+    // ----------------------------------------------------------------------
+    auto config_bins = vector<string>{"0.5", "0.1", "1e-8"};
+//    string config_query = "<= 0.5";
+    string config_query = "";
+
+
     // clear contents of output file and close
     query_output_stream.close();
     query_output_stream.open(query_output_file_name, ios::app);
@@ -185,28 +189,53 @@ int main(int argc, char *argv[]) {
     auto genomic_index_path = index_paths[0];
     auto pval_index_path = index_paths[1];
 
-    // TODO: impl support for block map
-    cout << "Opening master index file..." << endl;
+    // read genomic index
+    cout << "Opening genomic index file..." << endl;
     cout << "\t..." << genomic_index_path << endl;
     ifstream genomic_index_file(
         genomic_index_path); // TODO: remove: these next fns
                              // should take path, not stream
+    map<int, map<int, vector<int>>> genomic_index_info_by_location =
+            read_genomic_index_by_location(
+                    genomic_index_path);
+
+    map<int, vector<int>> genomic_index_info_by_block =
+            read_genomic_index_by_block(
+                    genomic_index_path);
 
     auto block_line_map = BlockLineMap(genomic_index_path);
-    map<int, int> index_block_map = make_index_block_map(genomic_index_path);
     genomic_index_file.close();
     cout << "Done." << endl << endl;
 
     // 4. get and aggregate blocks associated with each query
-
-    auto genom_blocks = query_genomic_idx(genomic_index_path, index_block_map);
-    auto pval_blocks = query_abs_idx(genomic_index_path, block_line_map);
     auto total_blocks_to_decompress = vector<int>();
+    auto genom_blocks = query_genomic_idx(
+            query_list,
+            genomic_index_info_by_location,
+            genomic_index_info_by_block);
+    if (genom_blocks.empty()) {
+        cout << "No blocks found for query" << endl;
+        return 0;
+    }else if(config_query.empty()){
+        cout << "No query found for second query..." << endl;
+        // set total_blocks_to_decompress to genome blocks
+        total_blocks_to_decompress = vector<int>(genom_blocks.begin(), genom_blocks.end());
+        // sort blocks
+        sort(total_blocks_to_decompress.begin(), total_blocks_to_decompress.end());
+    }else{
+        auto pval_blocks = query_abs_idx(genomic_index_path,
+                                     config_bins,
+                                     config_query,
+                                     block_line_map);
+        auto total_blocks_to_decompress = vector<int>();
 
-    for (int block : genom_blocks) {
-        if (pval_blocks.contains(block)) {
-            total_blocks_to_decompress.push_back(block);
+        for (int block : genom_blocks) {
+            if (pval_blocks.contains(block)) {
+                total_blocks_to_decompress.push_back(block);
+            }
         }
+        // sort blocks
+        sort(total_blocks_to_decompress.begin(), total_blocks_to_decompress.end());
     }
 
     // 5. decompress all blocks for each query
@@ -241,7 +270,7 @@ int main(int argc, char *argv[]) {
                            stoi(block_end_bytes_list[block_idx - 1]) -
                            block_header_length;
         }
-        int start_byte = get_start_byte(block_idx, index_block_map);
+        int start_byte = get_start_byte(block_idx, genomic_index_info_by_block);
         cout << "......decompressing block " << block_idx
              << ", size: " << block_size << endl;
 
