@@ -191,6 +191,7 @@ int main(int argc, char *argv[]) {
     // decompress header
     string header = zlib_decompress(header_string);
     vector<string> header_list = split_string(header, ',');
+
     // parse header
     string num_columns = parse_header_list(header_list, "num columns")[0];
     string num_blocks = parse_header_list(header_list, "num blocks")[0];
@@ -300,7 +301,7 @@ int main(int argc, char *argv[]) {
         int start_byte = get_start_byte(block_idx, genomic_index_info_by_block);
         cout << "\t...decompressing block " << block_idx
              << ", size: " << block_size << endl;
-        
+
 //        query_output_stream << "Block: " << block_idx << endl;
 
         file.seekg(start_byte, ios::beg);
