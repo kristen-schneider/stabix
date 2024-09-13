@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
 
     // get paths for index files
     vector<string> indexNames = {"genomic", "pval"};
-    auto indexPaths = index_paths_of(gwas_file, indexNames);
+    auto indexPaths = index_paths_of(out_dir_path, indexNames);
     string genomicIndexPath = indexPaths[0];
     auto blockLineMap = BlockLineMap(genomicIndexPath);
 
@@ -105,8 +105,8 @@ int main(int argc, char *argv[]) {
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto bins = std::vector<float>{0.5, 0.1, 1e-8};
     auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, bins);
-    int block_size = 10; // TODO: block size via map file not implemented
-    pValIndexer.build_index(gwas_file, block_size, 9);
+//    int block_size = 10; // TODO: block size via map file not implemented
+    pValIndexer.build_index(gwas_file, 9);
     cout << "Done." << endl;
     // ----------------------------------------------------------------------
 
