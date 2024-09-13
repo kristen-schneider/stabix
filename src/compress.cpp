@@ -69,6 +69,7 @@ string zlib_compress(string in_data) {
     //    return outstring;
 }
 
+
 /*
  * Decompress a string using fastpfor variable byte decoding
  * @param in_data: uint32_t*, the compressed data
@@ -90,32 +91,12 @@ vector<uint32_t> fastpfor_vb_compress(vector<uint32_t> in_data,
     return compressed;
 }
 
-///*
-// * use fastpfor variable byte delta to compress a vector of integers
-// * @param in_data: vector<uint32_t> - input data
-// * @param compressedSize: size_t - size of compressed data
-// * @return encoded_deltas: vector<uint32_t> - compressed data
-// */
-// vector<uint32_t> fastpfor_vb_delta_compress(vector<uint32_t> in_data, size_t&
-// compressedSize){
-//    FastPForLib::VariableByte vb;
-//    vector<uint32_t> deltas;
-//    deltas.reserve(in_data.size());
-//
-//    // Compute deltas between consecutive values
-//    for (size_t i = 1; i < in_data.size(); ++i) {
-//        deltas.push_back(in_data[i] - in_data[i - 1]);
-//    }
-//
-//    // Encode deltas using FastPFor's variable byte encoding
-//    vector<uint32_t> encoded_deltas(in_data.size() * 2);
-//    size_t encoded_size;
-//    vb.encodeArray(deltas.data(), deltas.size(), encoded_deltas.data(),
-//    encoded_size); encoded_deltas.resize(encoded_size);
-//
-//    return encoded_deltas;
-//}
 
+/*
+ * Compress a string using bxz variable byte decoding
+ * @param in_data: string, the compressed data
+ * @return: string, the decompressed data
+ */
 string bxzstr_compress(string input, bxz::Compression codec) {
     std::stringstream out;
     bxz::ostream to(out, codec, 9);
@@ -124,18 +105,42 @@ string bxzstr_compress(string input, bxz::Compression codec) {
     return out.str().substr(magicNumberCullSize(codec));
 }
 
+
+/*
+ * Compress a string using zlib deflate
+ * @param inputData: string, the input data
+ * @return: string, the compressed data
+ */
 string deflate_compress(string inputData) {
     return bxzstr_compress(inputData, bxz::z);
 }
 
+
+/*
+ * Compress a string using bzip2
+ * @param inputData: string, the input data
+ * @return: string, the compressed data
+ */
 string bz2_compress(string inputData) {
     return bxzstr_compress(inputData, bxz::bz2);
 }
 
+
+/*
+ * Compress a string using xz
+ * @param inputData: string, the input data
+ * @return: string, the compressed data
+ */
 string xz_compress(string inputData) {
     return bxzstr_compress(inputData, bxz::lzma);
 }
 
+
+/*
+ * Compress a string using zstd
+ * @param inputData: string, the input data
+ * @return: string, the compressed data
+ */
 string zstd_compress(string inputData) {
     return bxzstr_compress(inputData, bxz::zstd);
 }

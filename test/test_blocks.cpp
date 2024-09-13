@@ -165,7 +165,7 @@ TEST(GetBlockLength, test_tsv){
 }
 
 TEST(CompressBlock, test_tsv){
-    vector<string> codecs_list = {"gzip", "gzip", "gzip", "gzip", "gzip", "gzip"};
+    vector<string> codecs_list = {"zlib", "zlib", "zlib", "zlib", "zlib", "zlib"};
     vector<vector<string>> block = {{"aaa", "bbb", "ccc", "ddd", "eee", "fff"},
                                     {"aaa", "bbb", "ccc", "ddd", "eee", "fff"},
                                     {"aaa", "bbb", "ccc", "ddd", "eee", "fff"},
