@@ -9,8 +9,15 @@
 
 using namespace std;
 
-vector<string> parse_header_list(vector<string> header_list,
-                                 string header_query) {
+/*
+ * Parse header list
+ * @param header_list: vector<string> header_list
+ * @param header_query: header columm to query
+ * @return header_query_list: vector<string> header from query
+ */
+vector<string> parse_header_list(
+        vector<string> header_list,
+        string header_query) {
     vector<string> header_query_list;
     map<string, int> switch_case;
     switch_case["num columns"] = 0;
@@ -81,17 +88,42 @@ vector<string> parse_header_list(vector<string> header_list,
     return header_query_list;
 }
 
-string remove_zlib_header(string compressed_string, string zlib_header) {
+
+/*
+ * Remove the common header from
+ * a string compressed with zlib
+ * @param compressed_string: string compressed with zlib
+ * @param zlib_header: string zlib header
+ * @return zlib_header_removed: string zlib header removed
+ */
+string remove_zlib_header(
+        string compressed_string,
+        string zlib_header) {
     string zlib_header_removed = compressed_string.substr(zlib_header.length());
     return zlib_header_removed;
 }
 
-string add_zlib_header(string compressed_string, string zlib_header) {
+/*
+ * Add the common header to
+ * a string compressed with zlib
+ * @param compressed_string: string compressed with zlib
+ * @param zlib_header: string zlib header
+ * @return zlib_header_added: string zlib header added
+ */
+string add_zlib_header(
+        string compressed_string,
+        string zlib_header) {
     string zlib_header_added = zlib_header + compressed_string;
     return zlib_header_added;
 }
 
-string magicNumberOf(bxz::Compression codec) {
+/*
+ * Return headers for given codecs
+ * @param codec: bxz::Compression codec
+ * @return magicNumberOf: string magic number of codec
+ */
+string magicNumberOf(
+        bxz::Compression codec) {
     switch (codec) {
     case bxz::z:
         // Header for gzip
@@ -106,6 +138,12 @@ string magicNumberOf(bxz::Compression codec) {
     throw std::runtime_error("Unknown compression codec.");
 }
 
-int magicNumberCullSize(bxz::Compression codec) {
+/*
+ * Return size of headers for given codecs
+ * @param codec: bxz::Compression codec
+ * @return magicNumberCullSize: int size of magic number of codec
+ */
+int magicNumberCullSize(
+        bxz::Compression codec) {
     return magicNumberOf(codec).size();
 }

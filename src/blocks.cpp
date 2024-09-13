@@ -283,9 +283,10 @@ vector<vector<vector<string>>> make_blocks_map(
  * @param block_end_bytes: vector<string> of block end bytes
  * @param genomic_index: vector<vector<int>> of genomic index
  */
-void get_byte_start_of_blocks(int compressed_header_size,
-                              vector<string> block_end_bytes,
-                              vector<vector<int>> &genomic_index){
+void get_byte_start_of_blocks(
+        int compressed_header_size,
+        vector<string> block_end_bytes,
+        vector<vector<int>> &genomic_index){
 
     // for each block, start byte =
     // header bytes + compressed header size + end of last block
@@ -302,12 +303,12 @@ void get_byte_start_of_blocks(int compressed_header_size,
 
 
 /*
- * Function to compress a block
- * @param block: vector<vector<string>> of block
- * @param codecs_list: vector<string> of codecs
- * @return compressed_block: vector<string> of compressed columns
+ * Return the header of a block
+ * @param compressed_block: vector<string> of compressed columns
+ * @return block_header_column_end_bytes: vector<string> of block header column end bytes
  */
-vector<string> get_block_header(vector<string> compressed_block) {
+vector<string> get_block_header(
+        vector<string> compressed_block) {
     vector<string> block_header_column_end_bytes;
     int curr_byte_idx = 0;
     // iterate over all column bitstrings and store the end byte of each column
@@ -338,8 +339,9 @@ int get_block_length(vector<string> compressed_block) {
  * @param codecs_list: vector<string> - list of codecs to use for each column
  * @return compressed_block: vector<string> - compressed block of data
  */
-vector<string> compress_block(vector<vector<string>> block,
-                              vector<string> codecs_list) {
+vector<string> compress_block(
+        vector<vector<string>> block,
+        vector<string> codecs_list) {
     // TODO: Somewhere, have a help message of available codecs and,
     // Confirm codec is installed before attempting compression
     vector<string> compressed_block;
