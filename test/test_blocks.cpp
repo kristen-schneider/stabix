@@ -143,3 +143,36 @@ TEST(GetByteStartOfBlocks, test_tsv) {
     ASSERT_EQ(genomic_index[4], vector<int>({3,100,21,50}));
     ASSERT_EQ(genomic_index[5], vector<int>({3,500,26,60}));
 }
+
+TEST(GetBlockHeader, test_tsv){
+    vector<string> compressed_block = {"aaa", "bbb", "ccc", "ddd", "eee", "fff"};
+    vector<string> block_end_bytes = get_block_header(compressed_block);
+
+    ASSERT_EQ(block_end_bytes.size(), 6);
+    ASSERT_EQ(block_end_bytes[0], "3");
+    ASSERT_EQ(block_end_bytes[1], "6");
+    ASSERT_EQ(block_end_bytes[2], "9");
+    ASSERT_EQ(block_end_bytes[3], "12");
+    ASSERT_EQ(block_end_bytes[4], "15");
+    ASSERT_EQ(block_end_bytes[5], "18");
+}
+
+TEST(GetBlockLength, test_tsv){
+    vector<string> compressed_block = {"aaa", "bbb", "ccc", "ddd", "eee", "fff"};
+    int block_lengths = get_block_length(compressed_block);
+
+    ASSERT_EQ(block_lengths, 18);
+}
+
+TEST(CompressBlock, test_tsv){
+    vector<string> codecs_list = {"gzip", "gzip", "gzip", "gzip", "gzip", "gzip"};
+    vector<vector<string>> block = {{"aaa", "bbb", "ccc", "ddd", "eee", "fff"},
+                                    {"aaa", "bbb", "ccc", "ddd", "eee", "fff"},
+                                    {"aaa", "bbb", "ccc", "ddd", "eee", "fff"},
+                                    {"aaa", "bbb", "ccc", "ddd", "eee", "fff"},
+                                    {"aaa", "bbb", "ccc", "ddd", "eee", "fff"},
+                                    {"aaa", "bbb", "ccc", "ddd", "eee", "fff"}};
+
+    vector<string> compressed_block = compress_block(block, codecs_list);
+    ASSERT_EQ(compressed_block.size(), 6);
+}
