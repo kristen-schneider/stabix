@@ -24,7 +24,7 @@ void Indexer::build_index(std::string inPath, int queryColumn) {
 
     // 1. Bin the distribution of data
 
-    int line_id = 0;
+    int line_id = 1;
 
     while (std::getline(file, lineStr)) {
         auto row_vals = split_string(lineStr, '\t');
