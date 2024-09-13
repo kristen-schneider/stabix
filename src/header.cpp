@@ -16,45 +16,55 @@ vector<string> parse_header_list(vector<string> header_list,
     switch_case["num columns"] = 0;
     switch_case["num blocks"] = 1;
     switch_case["column names"] = 2;
-    switch_case["block header end bytes"] = 3;
-    switch_case["block end bytes"] = 4;
-    switch_case["block sizes"] = 5;
+    switch_case["codecs"] = 3;
+    switch_case["block header end bytes"] = 4;
+    switch_case["block end bytes"] = 5;
+    switch_case["block sizes"] = 6;
 
     int num_blocks = stoi(header_list[1]);
+    int already_processed = 0;
 
     // switch statement for query element
     switch (switch_case[header_query]) {
-    case 0:
+    case 0: // num columns
         header_query_list.push_back(header_list[0]);
         break;
-    case 1:
+    case 1: // num blocks
         header_query_list.push_back(header_list[1]);
         break;
-    case 2:
+    case 2: // column names
         for (int i = 2; i < stoi(header_list[0]) + 2; i++) {
             header_query_list.push_back(header_list[i]);
         }
         break;
-    case 3:
-        for (int i = stoi(header_list[0]) + 2;
-             i < stoi(header_list[0]) + 2 + stoi(header_list[1]); i++) {
+    case 3: // codecs
+        already_processed = 2 + stoi(header_list[0]);
+        for (int i = 2 + stoi(header_list[0]);
+        i < already_processed + stoi(header_list[0]);
+        i++) {
             header_query_list.push_back(header_list[i]);
         }
         break;
-    case 4:
-        for (int i = stoi(header_list[0]) + 2 + stoi(header_list[1]);
-             i < stoi(header_list[0]) + 2 + stoi(header_list[1]) * 2; i++) {
+    case 4: // block header end bytes
+        already_processed = 2 + 2 * stoi(header_list[0]);
+        for (int i = already_processed;
+             i < already_processed + stoi(header_list[1]);
+             i++) {
             header_query_list.push_back(header_list[i]);
         }
         break;
-    case 5:
-        //            for (int i =
-        //            stoi(header_list[0])+2+stoi(header_list[1])*2; i <
-        //            stoi(header_list[0])+num_blocks+stoi(header_list[1])*2+num_blocks;
-        //            i++){
-        for (int i = stoi(header_list[0]) + 2 + stoi(header_list[1]) * 2;
-             i <
-             stoi(header_list[0]) + 2 + stoi(header_list[1]) * 2 + num_blocks;
+    case 5: // block end bytes
+        already_processed = 2 + 2 * stoi(header_list[0]) + stoi(header_list[1]);
+        for (int i = already_processed;
+             i < already_processed + stoi(header_list[1]);
+             i++) {
+            header_query_list.push_back(header_list[i]);
+        }
+        break;
+    case 6: // block sizes
+        already_processed = 2 + 2 * stoi(header_list[0]) + 2 * stoi(header_list[1]);
+        for (int i = already_processed;
+             i < already_processed + num_blocks;
              i++) {
             if (header_list[i] != "") {
                 header_query_list.push_back(header_list[i]);

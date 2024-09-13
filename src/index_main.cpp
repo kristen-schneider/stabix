@@ -15,31 +15,62 @@ namespace fs = std::filesystem;
 int main(int argc, char *argv[]) {
 
     // 0. read config options
+    // open file, exit
+    if (argc != 2) {
+        // prevent seg faults
+        cout << "1 argument required: config_path" << endl;
+        return -1;
+    }
     string config_file = argv[1];
     cout << "Reading config options from: " << config_file << endl;
-    map<string, string> config_options;
-    config_options = read_config_file(config_file);
+    map<string, string> config_options = read_config_file(config_file);
+    add_default_config_options(config_options);
+
+    // - input gwas file
     string gwas_file = config_options["gwas_file"];
 
-    auto gwas_path = fs::path(config_options["gwas_file"]);
-    auto out_dir =
-        gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
-    string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
+    // - queries
+    vector<string> index_types = {"genomic"};
+    string query_genomic = config_options["genomic"];
+    vector<string> genomic_query_list = read_bed_file(query_genomic);
+    // TODO: get query types for other optional queries
+    string extra_indices = config_options["extra_indices"];
+    // add extra indices to index_types
+    if (extra_indices != "None") {
+        vector<string> extra_indices_list = split_string(extra_indices, ',');
+        index_types.insert(index_types.end(), extra_indices_list.begin(),
+                           extra_indices_list.end());
+    }
 
-    vector<string> codecs_list = split_string(config_options["codecs"], ',');
+    // - codecs (by data type)
+    string codec_int = config_options["int"];
+    string codec_float = config_options["float"];
+    string codec_str = config_options["string"];
+    map<string, string> data_type_codecs = {
+            {"int", codec_int},
+            {"float", codec_float},
+            {"string", codec_str}};
+
+    // -out
+    string output_dir = config_options["out_directory"];
+    auto gwas_path = fs::path(config_options["gwas_file"]);
+    auto out_dir_path = gwas_path.parent_path() / output_dir;
+    string compressed_file =
+            out_dir_path / (gwas_path.stem().string() + ".grlz");
+
     cout << "Done." << endl << endl;
 
-    // 1. READ COMPRESSED FILE
-    // open compressed file and reading header
+    // 1. open compressed file and read header
     cout << "Opening compressed file and reading header..." << endl;
+    // TODO: There needs to be a system to vet quality inputs (such as config)
     ifstream file(compressed_file);
+
     // start at beginning and read 4 bytes
     file.seekg(0, ios::beg);
     char header_length_bytes[4];
     file.read(header_length_bytes, 4);
     // convert 4 bytes to int
     int header_length = bytes_to_int(header_length_bytes);
-    //    cout << "header length: " << header_length << endl;
 
     // read header_length bytes starting at byte 4
     file.seekg(4, ios::beg);
@@ -49,76 +80,33 @@ int main(int argc, char *argv[]) {
     string header_string = string(header_bytes, header_length);
     // decompress header
     string header = zlib_decompress(header_string);
-    //    cout << "header: " << header << endl;
     vector<string> header_list = split_string(header, ',');
 
     // parse header
     string num_columns = parse_header_list(header_list, "num columns")[0];
     string num_blocks = parse_header_list(header_list, "num blocks")[0];
-    vector<string> column_names_list =
-        parse_header_list(header_list, "column names");
-    vector<string> block_header_lengths_list =
-        parse_header_list(header_list, "block header end bytes");
-    vector<string> block_lengths_list =
-        parse_header_list(header_list, "block end bytes");
     vector<string> block_sizes_list =
-        parse_header_list(header_list, "block sizes");
+            parse_header_list(header_list, "block sizes");
 
-    cout << "Done." << endl << endl;
-
-    // 2. GENOMIC INDEX
-    // for each block, determine:
-    //      start chromosome
-    //      start base pair
-    //      start byte
-    //      start line number
-
-    int chrm_idx = get_index(column_names_list, "chromosome");
-    int bp_idx = get_index(column_names_list, "base_pair_location");
-    //    vector<int> block_sizes = get_index(column_names_list, "block_sizes");
-
-    vector<tuple<int, int, int>> chrm_bp_byte =
-        get_chrm_bp_byte(compressed_file, ',', header_length, chrm_idx, bp_idx,
-                         block_header_lengths_list, block_lengths_list,
-                         codecs_list, block_sizes_list);
 
     // get paths for index files
-    vector<string> indexNames = {"master", "pval"};
+    vector<string> indexNames = {"genomic", "pval"};
     auto indexPaths = index_paths_of(gwas_file, indexNames);
-
-    // write chrm_bp_byte to (master) index file
-    string masterIndexPath = indexPaths[0];
-    cout << "Writing master index file to: " << masterIndexPath << endl;
-    ofstream masterIndexFile;
-    masterIndexFile.open(masterIndexPath);
-    // write header
-    masterIndexFile << "block_idx,chromosome,base_pair_location,byte_offset"
-                    << endl;
-    // write chrm_bp_byte
-    for (int i = 0; i < chrm_bp_byte.size(); i++) {
-        masterIndexFile << i << "," << get<0>(chrm_bp_byte[i]) << ","
-                        << get<1>(chrm_bp_byte[i]) << ","
-                        << get<2>(chrm_bp_byte[i]) << endl;
-    }
-    masterIndexFile.close();
-    file.close();
-    cout << "Done." << endl << endl;
-
-    // initialize line -> blockID map for specialized indexes
-    auto blockLineMap = BlockLineMap(masterIndexPath);
-
-    // write p value index file
+    string genomicIndexPath = indexPaths[0];
+    auto blockLineMap = BlockLineMap(genomicIndexPath);
 
     // INFO:
     // ----------------------------------------------------------------------
     //      Hardcoded query parameters
     // ----------------------------------------------------------------------
+    // TODO: This index does not work
+    //      - block size cannot be fixed int (might be variable)
     string pValIndexPath = indexPaths[1];
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto bins = std::vector<float>{0.5, 0.1, 1e-8};
     auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, bins);
-    int blockSize = 10; // TODO: blockSize needs to be controlled by config
-    pValIndexer.build_index(gwas_file, blockSize, 9);
+    int block_size = 10; // TODO: block size via map file not implemented
+    pValIndexer.build_index(gwas_file, block_size, 9);
     cout << "Done." << endl;
     // ----------------------------------------------------------------------
 

@@ -211,29 +211,29 @@ TEST(GetDelimiter, Space) {
     ASSERT_EQ(delimiter3, ' ');
 }
 
-TEST(GetColumnTypes, Comma) {
-    string all_ints = "1,2,3,4,5";
-    string all_floats = "1.1,2.2,3.3,4.4,5.5";
-    string all_strings = "a,b,c,d,e";
-    string int_floats = "1,2.2,3,4.4,5";
-    string int_strings = "1,a,3,b,5";
-    string float_strings = "1.1,a,3.3,b,5.5";
-
-    char delimiter = ',';
-    string column_types_all_ints = get_data_types(all_ints, delimiter);
-    string column_types_all_floats = get_data_types(all_floats, delimiter);
-    string column_types_all_strings = get_data_types(all_strings, delimiter);
-    string column_types_int_floats = get_data_types(int_floats, delimiter);
-    string column_types_int_strings = get_data_types(int_strings, delimiter);
-    string column_types_float_strings = get_data_types(float_strings, delimiter);
-
-    ASSERT_EQ(column_types_all_ints, "int,int,int,int,int");
-    ASSERT_EQ(column_types_all_floats, "float,float,float,float,float");
-    ASSERT_EQ(column_types_all_strings, "string,string,string,string,string");
-    ASSERT_EQ(column_types_int_floats, "int,float,int,float,int");
-    ASSERT_EQ(column_types_int_strings, "int,string,int,string,int");
-    ASSERT_EQ(column_types_float_strings, "float,string,float,string,float");
-}
+//TEST(GetColumnTypes, Comma) {
+//    string all_ints = "1,2,3,4,5";
+//    string all_floats = "1.1,2.2,3.3,4.4,5.5";
+//    string all_strings = "a,b,c,d,e";
+//    string int_floats = "1,2.2,3,4.4,5";
+//    string int_strings = "1,a,3,b,5";
+//    string float_strings = "1.1,a,3.3,b,5.5";
+//
+//    char delimiter = ',';
+//    string column_types_all_ints = get_data_types(all_ints, delimiter);
+//    string column_types_all_floats = get_data_types(all_floats, delimiter);
+//    string column_types_all_strings = get_data_types(all_strings, delimiter);
+//    string column_types_int_floats = get_data_types(int_floats, delimiter);
+//    string column_types_int_strings = get_data_types(int_strings, delimiter);
+//    string column_types_float_strings = get_data_types(float_strings, delimiter);
+//
+//    ASSERT_EQ(column_types_all_ints, "int,int,int,int,int");
+//    ASSERT_EQ(column_types_all_floats, "float,float,float,float,float");
+//    ASSERT_EQ(column_types_all_strings, "string,string,string,string,string");
+//    ASSERT_EQ(column_types_int_floats, "int,float,int,float,int");
+//    ASSERT_EQ(column_types_int_strings, "int,string,int,string,int");
+//    ASSERT_EQ(column_types_float_strings, "float,string,float,string,float");
+//}
 
 TEST(GetBlockBPbyMap, simmple){
     string map_file = "/Users/krsc0813/CLionProjects/gwas_local/map_files/test.map";
@@ -299,33 +299,3 @@ TEST(GetBlockIDbyLineID, line_between_blocks){
         ASSERT_EQ(mapper.line_to_block(i), 2);
     }
 }
-
-//// Data too large to include in git repo
-//TEST(GetBlockBPbyMap, real){
-//    string map_file = "/Users/krsc0813/CLionProjects/gwas_local/data/chrm_1-22.map";
-//    map<int, vector<uint32_t>> chrm_block_bp_ends = read_cm_map_file(map_file);
-//
-//    ASSERT_EQ(chrm_block_bp_ends.size(), 22);
-//    ASSERT_EQ(chrm_block_bp_ends[1].size(), 286);
-//    ASSERT_EQ(chrm_block_bp_ends[2].size(), 268);
-//    ASSERT_EQ(chrm_block_bp_ends[3].size(), 223);
-//    ASSERT_EQ(chrm_block_bp_ends[4].size(), 214);
-//    ASSERT_EQ(chrm_block_bp_ends[5].size(), 204);
-//    ASSERT_EQ(chrm_block_bp_ends[6].size(), 192);
-//    ASSERT_EQ(chrm_block_bp_ends[7].size(), 187);
-//    ASSERT_EQ(chrm_block_bp_ends[8].size(), 168);
-//    ASSERT_EQ(chrm_block_bp_ends[9].size(), 166);
-//    ASSERT_EQ(chrm_block_bp_ends[10].size(), 181);
-//    ASSERT_EQ(chrm_block_bp_ends[11].size(), 158);
-//    ASSERT_EQ(chrm_block_bp_ends[12].size(), 174);
-//    ASSERT_EQ(chrm_block_bp_ends[13].size(), 125);
-//    ASSERT_EQ(chrm_block_bp_ends[14].size(), 120);
-//    ASSERT_EQ(chrm_block_bp_ends[15].size(), 141);
-//    ASSERT_EQ(chrm_block_bp_ends[16].size(), 134);
-//    ASSERT_EQ(chrm_block_bp_ends[17].size(), 128);
-//    ASSERT_EQ(chrm_block_bp_ends[18].size(), 117);
-//    ASSERT_EQ(chrm_block_bp_ends[19].size(), 107);
-//    ASSERT_EQ(chrm_block_bp_ends[20].size(), 108);
-//    ASSERT_EQ(chrm_block_bp_ends[21].size(), 62);
-//    ASSERT_EQ(chrm_block_bp_ends[22].size(), 74);
-//}

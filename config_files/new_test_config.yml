@@ -1,0 +1,29 @@
+gwas_file:
+  /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.tsv
+
+block_size:
+  5
+
+out_directory:
+  test_block5_zlib
+
+query:
+  genomic:
+    /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.bed
+  pval:
+    None
+  other:
+    0.2
+  uncertainty:
+    1-e8
+
+extra_indices:
+  None
+
+codecs:
+  int:
+    zlib
+  float:
+    zlib
+  string:
+    zlib

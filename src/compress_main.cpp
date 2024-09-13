@@ -15,9 +15,10 @@ using namespace std;
 namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) {
-    // COMPRESSION STEPS
 
-    // 0. read config options
+    // COMPRESSION STEPS
+    // 0. Read Config Options
+    // open file, exit
     if (argc != 2) {
         // prevent seg faults
         cout << "1 argument required: config_path" << endl;
@@ -28,28 +29,42 @@ int main(int argc, char *argv[]) {
     map<string, string> config_options = read_config_file(config_file);
     add_default_config_options(config_options);
 
+    // - input gwas file
     string gwas_file = config_options["gwas_file"];
+
+    // - block size
+    // -->if block_size cannot be converted to an int, it is a map file
     int block_size = -1;
-    // if block_size cannot be converted to an int, it is a map file
     try {
         block_size = stoi(config_options["block_size"]);
     } catch (invalid_argument &e) {
         block_size = -1;
     }
-    string query_type = config_options["query_type"];
-    // creating output directory for generated files
-    auto gwas_path = fs::path(config_options["gwas_file"]);
-    auto out_dir = gwas_path.parent_path() / (gwas_path.stem().string() + "_output");
-    fs::create_directories(out_dir);
-    string compressed_file = out_dir / (gwas_path.stem().string() + ".grlz");
-    vector<string> codecs_list = split_string(config_options["codecs"], ',');
 
+    // - automatically generate a genomic index
+    vector<string> index_types = {"genomic"};
+
+    // - codecs (by data type)
+    string codec_int = config_options["int"];
+    string codec_float = config_options["float"];
+    string codec_str = config_options["string"];
+    map<string, string> data_type_codecs = {
+        {"int", codec_int},
+        {"float", codec_float},
+        {"string", codec_str}};
+
+    // -out
+    // -->creating output directory for generated files
+    string output_dir = config_options["out_directory"];
+    auto gwas_path = fs::path(config_options["gwas_file"]);
+    auto out_dir_path = gwas_path.parent_path() / output_dir;
+    fs::create_directories(out_dir_path);
+    string compressed_file = out_dir_path / (gwas_path.stem().string() + ".grlz");
+
+    // print some information to screen
     cout << "\t...gwas_file: " << gwas_file << endl;
     cout << "\t...block_size: " << block_size << endl;
-    cout << "\t...query_type: " << query_type << endl;
-    cout << "\t...codecs_list: " << convert_vector_str_to_string(codecs_list)
-         << endl;
-    cout << "\t...compressed_file: " << compressed_file << endl;
+    cout << "\t...indexes: " << convert_vector_str_to_string(index_types) << endl;
 
     cout << "Done." << endl << endl;
 
@@ -87,6 +102,10 @@ int main(int argc, char *argv[]) {
     int num_columns = column_names_list.size();
     cout << "\t...num columns: " << num_columns << endl;
     cout << "Done." << endl << endl;
+    // get column data types
+    vector<string> col_data_types = get_data_types(line_2, delimiter);
+    // get codecs by data type
+    vector<string> codecs_list = get_codecs_by_data_type(col_data_types, data_type_codecs);
 
     // setting up variables for blocks
     vector<vector<vector<string>>> all_blocks;
@@ -112,12 +131,11 @@ int main(int argc, char *argv[]) {
                         num_columns,
                         block_size,
                         delimiter,
-                        9,
                         genomic_index);
     }
     num_blocks = all_blocks.size();
     if (block_size == -1) {
-        cout << "\t...made " << num_blocks << ", 1cM in length." << endl;
+        cout << "\t...made " << num_blocks << " blocks, each 1cM in length." << endl;
     } else {
         cout << "\t...made " << num_blocks << " blocks of size "
              << block_size << " or less." << endl;
@@ -136,15 +154,14 @@ int main(int argc, char *argv[]) {
     // write compressed block sizes to file (by column)
     fs::path block_sizes_file;
     if (block_size == -1) {
-        block_sizes_file = out_dir / (gwas_path.stem().string() + "_cm_col-sizes.csv");
+        block_sizes_file = out_dir_path / (gwas_path.stem().string() + "_cm_col-sizes.csv");
     }else{
-        block_sizes_file = out_dir / (gwas_path.stem().string() +
+        block_sizes_file = out_dir_path / (gwas_path.stem().string() +
                                              "_" + to_string(block_size) + "_col-sizes.csv");
     }
 
-
-//    string block_sizes_file =
-//        compressed_file + "_" + to_string(block_size) + "_sizes.csv";
+    // TODO: look at this output data (compressed col sizes)
+    // for plotting purposes
     ofstream block_sizes_out;
     block_sizes_out.open(block_sizes_file);
     // write gwas file name
@@ -163,7 +180,7 @@ int main(int argc, char *argv[]) {
         block_i++;
     }
     block_sizes_out.close();
-    cout << "Wrote compressed block sizes to: " << block_sizes_file << endl;
+    cout << "\t...wrote compressed block sizes to: " << block_sizes_file << endl;
 
     // get block headers
     vector<vector<string>> block_headers;
@@ -219,10 +236,20 @@ int main(int argc, char *argv[]) {
             to_string(first_block_size) + "," + to_string(last_block_size);
     }
 
+    /*
+     * num_columns = None
+     * num_blocks = None
+     * column_names_list = None
+     * codecs_list = None
+     * block_header_end_bytes = None
+     * block_end_bytes = None
+     * block_sizes_tuple = None
+     */
     vector<string> header = {
         to_string(num_columns),
         to_string(num_blocks),
         column_names_str,
+        convert_vector_str_to_string(codecs_list),
         convert_vector_str_to_string(block_header_end_bytes),
         convert_vector_str_to_string(block_end_bytes),
         block_sizes};
@@ -263,17 +290,13 @@ int main(int argc, char *argv[]) {
     }
     compressed_gwas.close();
 
-    // 10. write genomic index to file
-    // get the byte start of each block and add to genomic index
-    cout << "Getting genomic index information..." << endl;
+    // 10. write genomic index
     get_byte_start_of_blocks(compressed_header_size,
-                             block_header_end_bytes,
                              block_end_bytes,
                              genomic_index);
 
-    // write chrm_bp_byte to (master) index file
     vector<string> indexNames = {"genomic"};
-    auto indexPaths = index_paths_of(gwas_file, indexNames);
+    auto indexPaths = index_paths_of(out_dir_path, indexNames);
     string genomicIndexPath = indexPaths[0];
     cout << "Writing genomic index file to: " << genomicIndexPath << endl;
     ofstream genomicIndexFile;
@@ -295,7 +318,7 @@ int main(int argc, char *argv[]) {
     genomicIndexFile.close();
     file.close();
 
-    cout << "Done." << endl;
+    cout << endl << "---Compression Complete---" << endl;
 
     return 0;
 }
