@@ -12,12 +12,12 @@ float PValIndexer::nearest_bin(float value) {
     return -HUGE_VALF;
 }
 
-Indexer::Indexer(std::string indexPath, BlockLineMap map) {
+Indexer::Indexer(std::string indexPath, BlockLineMap *map) {
     this->indexPath = indexPath;
-    this->blockLineMap = &map;
+    this->blockLineMap = map;
 }
 
-PValIndexer::PValIndexer(std::string indexPath, BlockLineMap map,
+PValIndexer::PValIndexer(std::string indexPath, BlockLineMap *map,
                          vector<float> bins)
     : Indexer(indexPath, map) {
     // sort bins in descending order

@@ -40,10 +40,9 @@ map<string, string> read_config_file(string config_file) {
             continue;
         }
         // if line contains ":" it is a config option
-        else if(line.find(":") != string::npos) {
+        else if (line.find(":") != string::npos) {
             // remove ":" from line
-            line.erase(remove(line.begin(), line.end(), ':'),
-                       line.end());
+            line.erase(remove(line.begin(), line.end(), ':'), line.end());
             config_option = line;
         }
         // if line does not contain ":", and is not blank, it is a config value
@@ -70,13 +69,13 @@ void add_default_config_options(map<string, string> &config_options) {
         exit(1);
     }
     // TODO: determine default data type codecs
-    if (config_options["int"].empty()){
+    if (config_options["int"].empty()) {
         config_options["int"] = "zlib";
     }
-    if (config_options["float"].empty()){
+    if (config_options["float"].empty()) {
         config_options["float"] = "zlib";
     }
-    if (config_options["string"].empty()){
+    if (config_options["string"].empty()) {
         config_options["string"] = "zlib";
     }
 }
@@ -105,7 +104,7 @@ int get_index(vector<string> vec, string str) {
     return idx;
 }
 
-vector<string> read_bed_file(string bed_file){
+vector<string> read_bed_file(string bed_file) {
     vector<string> bed_data;
     // check if file exists
     ifstream bed_stream(bed_file);
@@ -125,7 +124,7 @@ vector<string> read_bed_file(string bed_file){
         istringstream iss(line);
         string token;
         vector<string> tokens;
-        while(std::getline(iss, token, ' '))
+        while (std::getline(iss, token, ' '))
             tokens.push_back(token);
         string chrm = tokens[0];
         string bp_start = tokens[1];
@@ -361,8 +360,7 @@ vector<string> gwas_column_names(string gwasPathString) {
 
 vector<string> index_paths_of(string output_dir, vector<string> gwasColumns) {
     auto gwasPath = fs::path(output_dir);
-    auto outDir =
-        gwasPath.parent_path() / (gwasPath.stem().string());
+    auto outDir = gwasPath.parent_path() / (gwasPath.stem().string());
     //    fs::create_directories(outDir);
     auto outPaths = vector<string>();
 
@@ -451,7 +449,7 @@ BlockLineMap::BlockLineMap(string index_file)
     : BlockLineMap(make_lineID_blockID_map(index_file)) {}
 
 int BlockLineMap::line_to_block(int line_number) {
-    map<int, int> lineID_blockID_map = this->lineID_blockID_map;
+    map<int, int> &lineID_blockID_map = this->lineID_blockID_map;
 
     // try and return block ID
     try {

@@ -93,23 +93,21 @@ int main(int argc, char *argv[]) {
     vector<string> indexNames = {"genomic", "pval"};
     auto indexPaths = index_paths_of(out_dir_path, indexNames);
     string genomicIndexPath = indexPaths[0];
-    auto blockLineMap = BlockLineMap(genomicIndexPath);
+    BlockLineMap *blockLineMap = new BlockLineMap(genomicIndexPath);
 
     // INFO:
     // ----------------------------------------------------------------------
     //      Hardcoded query parameters
     // ----------------------------------------------------------------------
-    // TODO: This index does not work
-    //      - block size cannot be fixed int (might be variable)
     string pValIndexPath = indexPaths[1];
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto bins = std::vector<float>{0.5, 0.1, 1e-8};
     auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, bins);
-//    int block_size = 10; // TODO: block size via map file not implemented
     pValIndexer.build_index(gwas_file, 9);
     cout << "Done." << endl;
     // ----------------------------------------------------------------------
 
+    delete blockLineMap;
     return 0;
 }
 

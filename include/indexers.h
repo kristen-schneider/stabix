@@ -14,7 +14,7 @@ class Indexer {
     virtual std::string bin_to_value(float bin) = 0;
     virtual ~Indexer() = default;
 
-    Indexer(std::string indexPath, BlockLineMap blockLineMap);
+    Indexer(std::string indexPath, BlockLineMap *blockLineMap);
     void build_index(std::string inPath, int queryColumn);
     std::unordered_set<int> query_index(std::function<bool(float)> predicate);
 };
@@ -33,7 +33,7 @@ class PValIndexer : public Indexer {
     float nearest_bin(float value);
 
   public:
-    PValIndexer(std::string indexPath, BlockLineMap blockLineMap,
+    PValIndexer(std::string indexPath, BlockLineMap *blockLineMap,
                 std::vector<float> bins);
     float value_to_bin(std::string line) override;
     std::string bin_to_value(float bin) override;
