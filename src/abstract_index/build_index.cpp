@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-void Indexer::build_index(std::string inPath, int blockSize, int queryColumn) {
+void Indexer::build_index(std::string inPath, int queryColumn) {
     auto outPath = this->indexPath;
     std::ifstream file(inPath);
 
@@ -24,28 +24,15 @@ void Indexer::build_index(std::string inPath, int blockSize, int queryColumn) {
 
     // 1. Bin the distribution of data
 
-    int lineId = 0;
-    bool moreBlocks = true;
-    while (moreBlocks) {
-        int blockId = this->blockLineMap->line_to_block(lineId);
-        std::set<float> bins;
+    int line_id = 0;
 
-        for (int i = 0; i < blockSize; i++) {
-            if (!std::getline(file, lineStr)) {
-                moreBlocks = false;
-                break;
-            }
-
-            lineId++;
-            auto rowVals = split_string(lineStr, '\t');
-            std::string queryVal = rowVals[queryColumn];
-            float bin = value_to_bin(queryVal);
-            bins.insert(bin);
-        }
-
-        for (auto bin : bins) {
-            index[bin].push_back(blockId);
-        }
+    while (std::getline(file, lineStr)) {
+        auto row_vals = split_string(lineStr, '\t');
+        std::string query_val = row_vals[queryColumn];
+        float bin = value_to_bin(query_val);
+        int block_id = this->blockLineMap->line_to_block(line_id);
+        index[bin].push_back(block_id);
+        line_id++;
     }
 
     // 2. Serialize the index map

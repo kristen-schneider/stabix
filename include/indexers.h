@@ -15,7 +15,7 @@ class Indexer {
     virtual ~Indexer() = default;
 
     Indexer(std::string indexPath, BlockLineMap blockLineMap);
-    void build_index(std::string inPath, int blockSize, int queryColumn);
+    void build_index(std::string inPath, int queryColumn);
     std::unordered_set<int> query_index(std::function<bool(float)> predicate);
 };
 
