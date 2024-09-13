@@ -211,29 +211,46 @@ TEST(GetDelimiter, Space) {
     ASSERT_EQ(delimiter3, ' ');
 }
 
-//TEST(GetColumnTypes, Comma) {
-//    string all_ints = "1,2,3,4,5";
-//    string all_floats = "1.1,2.2,3.3,4.4,5.5";
-//    string all_strings = "a,b,c,d,e";
-//    string int_floats = "1,2.2,3,4.4,5";
-//    string int_strings = "1,a,3,b,5";
-//    string float_strings = "1.1,a,3.3,b,5.5";
-//
-//    char delimiter = ',';
-//    string column_types_all_ints = get_data_types(all_ints, delimiter);
-//    string column_types_all_floats = get_data_types(all_floats, delimiter);
-//    string column_types_all_strings = get_data_types(all_strings, delimiter);
-//    string column_types_int_floats = get_data_types(int_floats, delimiter);
-//    string column_types_int_strings = get_data_types(int_strings, delimiter);
-//    string column_types_float_strings = get_data_types(float_strings, delimiter);
-//
-//    ASSERT_EQ(column_types_all_ints, "int,int,int,int,int");
-//    ASSERT_EQ(column_types_all_floats, "float,float,float,float,float");
-//    ASSERT_EQ(column_types_all_strings, "string,string,string,string,string");
-//    ASSERT_EQ(column_types_int_floats, "int,float,int,float,int");
-//    ASSERT_EQ(column_types_int_strings, "int,string,int,string,int");
-//    ASSERT_EQ(column_types_float_strings, "float,string,float,string,float");
-//}
+TEST(GetColumnTypes, Comma) {
+    string all_ints = "1,2,3,4,5";
+    string all_floats = "1.1,2.2,3.3,4.4,5.5";
+    string all_strings = "a,b,c,d,e";
+    string int_floats = "1,2.2,3,4.4,5";
+    string int_strings = "1,a,3,b,5";
+    string float_strings = "1.1,a,3.3,b,5.5";
+
+    char delimiter = ',';
+    vector<string> column_types_all_ints = get_data_types(all_ints, delimiter);
+    vector<string> column_types_all_floats = get_data_types(all_floats, delimiter);
+    vector<string> column_types_all_strings = get_data_types(all_strings, delimiter);
+    vector<string> column_types_int_floats = get_data_types(int_floats, delimiter);
+    vector<string> column_types_int_strings = get_data_types(int_strings, delimiter);
+    vector<string> column_types_float_strings = get_data_types(float_strings, delimiter);
+
+    for (int i = 0; i < 5; i++) {
+        ASSERT_EQ("int", column_types_all_ints[i]);
+        ASSERT_EQ("float", column_types_all_floats[i]);
+        ASSERT_EQ("string", column_types_all_strings[i]);
+    }
+
+    ASSERT_EQ("int", column_types_int_floats[0]);
+    ASSERT_EQ("float", column_types_int_floats[1]);
+    ASSERT_EQ("int", column_types_int_floats[2]);
+    ASSERT_EQ("float", column_types_int_floats[3]);
+    ASSERT_EQ("int", column_types_int_floats[4]);
+
+    ASSERT_EQ("int", column_types_int_strings[0]);
+    ASSERT_EQ("string", column_types_int_strings[1]);
+    ASSERT_EQ("int", column_types_int_strings[2]);
+    ASSERT_EQ("string", column_types_int_strings[3]);
+    ASSERT_EQ("int", column_types_int_strings[4]);
+
+    ASSERT_EQ("float", column_types_float_strings[0]);
+    ASSERT_EQ("string", column_types_float_strings[1]);
+    ASSERT_EQ("float", column_types_float_strings[2]);
+    ASSERT_EQ("string", column_types_float_strings[3]);
+    ASSERT_EQ("float", column_types_float_strings[4]);
+}
 
 TEST(GetBlockBPbyMap, simmple){
     string map_file = "/Users/krsc0813/CLionProjects/gwas_local/map_files/test.map";

@@ -11,15 +11,31 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-char *int_to_bytes(int value);
-
-vector<string> split_string(string str, char delimiter);
+/*
+ * Convert int to bytes
+ * @param value: int
+ * @return bytes: char *
+ */
+char *int_to_bytes(
+        int value);
 
 /*
- * Reads and parses options in configuration file
- * returns a map of options
+ * Split string by delimiter
+ * @param str: string
+ * @param delimiter: char to split by
+ * @return vector of strings
  */
-map<string, string> read_config_file(string config_file) {
+vector<string> split_string(
+        string str,
+        char delimiter);
+
+/*
+ * Read config file
+ * @param config_file
+ * @return vector of config options
+ */
+map<string, string> read_config_file(
+        string config_file) {
     map<string, string> config_options;
 
     // check if file exists
@@ -58,7 +74,13 @@ map<string, string> read_config_file(string config_file) {
     return config_options;
 }
 
-void add_default_config_options(map<string, string> &config_options) {
+/*
+ * Add default config options if not present
+ * @param config_options
+ * @return void
+ */
+void add_default_config_options(
+        map<string, string> &config_options) {
     // add default config options if option is empty
     if (config_options["block_size"].empty()) {
         config_options["block_size"] = "20";
@@ -93,7 +115,12 @@ vector<string> get_codecs_by_data_type(vector<string> data_types,
     return codecs;
 }
 
-int get_index(vector<string> vec, string str) {
+/*
+ *
+ */
+int get_index(
+        vector<string> vec,
+        string str) {
     int idx = -1;
     for (int i = 0; i < vec.size(); i++) {
         if (vec[i] == str) {
@@ -104,6 +131,11 @@ int get_index(vector<string> vec, string str) {
     return idx;
 }
 
+/*
+ * Read bed file
+ * @param bed_file
+ * @return vector of bed data
+ */
 vector<string> read_bed_file(string bed_file) {
     vector<string> bed_data;
     // check if file exists
@@ -136,7 +168,15 @@ vector<string> read_bed_file(string bed_file) {
     return bed_data;
 }
 
-vector<string> get_data_types(string line, char delimiter) {
+/*
+ * Get the column types of a file
+ * @param line: string
+ * @param delimiter: char to split by
+ * @return column_types_str: string of comma separated data types
+ */
+vector<string> get_data_types(
+        string line,
+        char delimiter) {
 
     vector<string> column_data_types;
     // split line by delimiter find data type and store in comma separated
@@ -163,7 +203,13 @@ vector<string> get_data_types(string line, char delimiter) {
     return column_data_types;
 }
 
-char get_delimiter(string line) {
+/*
+ * Get the delimiter of a file
+ * @param line: string of first line of file
+ * @return delimiter: char to split by
+ */
+char get_delimiter(
+        string line) {
     char delimiter;
     // determine delimiter
     if (line.find('\t') != string::npos) {
@@ -181,7 +227,13 @@ char get_delimiter(string line) {
     return delimiter;
 }
 
-string convert_vector_str_to_string(vector<string> vec) {
+/*
+ * Convert vector string to string
+ * @param vec: vector of strings
+ * @return str: string of comma separated values
+ */
+string convert_vector_str_to_string(
+        vector<string> vec) {
     string str = "";
     for (int i = 0; i < vec.size(); i++) {
         str += vec[i] + ",";
@@ -190,7 +242,13 @@ string convert_vector_str_to_string(vector<string> vec) {
     return str;
 }
 
-string convert_vector_int_to_string(vector<int> vec) {
+/*
+ * Convert vector of ints to string
+ * @param vec: vector of integers
+ * @return str: string of comma separated values
+ */
+string convert_vector_int_to_string(
+        vector<int> vec) {
     string str;
     for (int i = 0; i < vec.size(); i++) {
         str += to_string(vec[i]) + ",";
@@ -199,8 +257,14 @@ string convert_vector_int_to_string(vector<int> vec) {
     return str;
 }
 
-string convert_vector_uint32_to_string(uint32_t *compressed_arr,
-                                       size_t compressed_size) {
+/* Convert vector of uint32_t to string
+ * @param compressed_arr: uint32_t array
+ * @param compressed_size: size of compressed array
+ * @return compressed_string: string of comma separated values
+ */
+string convert_vector_uint32_to_string(
+        uint32_t *compressed_arr,
+        size_t compressed_size) {
     string compressed_string;
     for (int i = 0; i < compressed_size; i++) {
         compressed_string += to_string(compressed_arr[i]) + ",";
@@ -209,7 +273,13 @@ string convert_vector_uint32_to_string(uint32_t *compressed_arr,
     return compressed_string;
 }
 
-vector<string> convert_string_to_vector_string(string str) {
+/*
+ * Convert string to vector
+ * @param str: string of comma separated values
+ * @return vector of strings
+ */
+vector<string> convert_string_to_vector_string(
+        string str) {
     vector<string> vec;
     istringstream line_stream(str);
     string column_value;
@@ -223,7 +293,15 @@ vector<string> convert_string_to_vector_string(string str) {
     return vec;
 }
 
-uint32_t *convert_string_to_vector_uint32(string in_string, char delimiter) {
+
+/* Convert string to vector of uint32_t
+ * @param in_string: string of comma separated values
+ * @param delimiter: char to split by
+ * @return compressed_arr: uint32_t array
+ */
+uint32_t *convert_string_to_vector_uint32(
+        string in_string,
+        char delimiter) {
     // split string by comma
     vector<string> vec = split_string(in_string, delimiter);
     // convert string to vector of uint32_t
@@ -234,7 +312,8 @@ uint32_t *convert_string_to_vector_uint32(string in_string, char delimiter) {
     return compressed_arr;
 }
 
-vector<uint32_t> convert_string_to_vector_unsignedlong(string str) {
+vector<uint32_t> convert_string_to_vector_unsignedlong(
+        string str) {
     vector<uint32_t> out_vec;
     istringstream line_stream(str);
     string column_value;
@@ -249,7 +328,13 @@ vector<uint32_t> convert_string_to_vector_unsignedlong(string str) {
     return out_vec;
 }
 
-int bytes_to_int(char bytes[4]) {
+/*
+ * Convert bytes to int
+ * @param line: bytes
+ * @return value: int value
+ */
+int bytes_to_int(
+        char bytes[4]) {
     int value = 0;
     value += (unsigned char)bytes[0];
     value += (unsigned char)bytes[1] << 8;
@@ -258,7 +343,8 @@ int bytes_to_int(char bytes[4]) {
     return value;
 }
 
-char *int_to_bytes(int value) {
+char *int_to_bytes(
+        int value) {
     char *bytes = new char[4];
     bytes[0] = (char)(value & 0xFF);
     bytes[1] = (char)((value >> 8) & 0xFF);
@@ -267,7 +353,9 @@ char *int_to_bytes(int value) {
     return bytes;
 }
 
-vector<string> split_string(string str, char delimiter) {
+vector<string> split_string(
+        string str,
+        char delimiter) {
     vector<string> vec;
     istringstream line_stream(str);
     string column_value;
@@ -281,7 +369,13 @@ vector<string> split_string(string str, char delimiter) {
     return vec;
 }
 
-vector<uint32_t> convert_vector_string_to_vector_int(vector<string> vec) {
+/*
+ * Convert a vector of strings to vector of integers
+ * @param vec: vector of strings
+ * @return vector of integers
+ */
+vector<uint32_t> convert_vector_string_to_vector_int(
+        vector<string> vec) {
     vector<uint32_t> vec_int;
     for (int i = 0; i < vec.size(); i++) {
         vec_int.push_back(stoi(vec[i]));
@@ -289,7 +383,13 @@ vector<uint32_t> convert_vector_string_to_vector_int(vector<string> vec) {
     return vec_int;
 }
 
-map<int, vector<uint32_t>> read_cm_map_file(string map_file) {
+/*
+ * Function to read a map file and find bp end of blocks
+ * @param map_file: string
+ * @return map of chrm: <bp, bp, bp...>
+ */
+map<int, vector<uint32_t>> read_cm_map_file(
+        string map_file) {
     map<int, vector<uint32_t>> chrm_block_bp_ends;
     int BLOCK_CM_SIZE = 1;
     // open map file, exit if file does not exist
@@ -332,7 +432,14 @@ map<int, vector<uint32_t>> read_cm_map_file(string map_file) {
     return chrm_block_bp_ends;
 }
 
-vector<int> get_block_sizes(vector<vector<vector<string>>> all_blocks) {
+
+/*
+ * Function to get the sizes of blocks when using a map file
+ * @param all_blocks: vector of blocks
+ * @return vector of block sizes
+ */
+vector<int> get_block_sizes(
+        vector<vector<vector<string>>> all_blocks) {
     vector<int> block_sizes;
     for (int i = 0; i < all_blocks.size(); i++) {
         block_sizes.push_back(all_blocks[i][0].size());
@@ -340,7 +447,13 @@ vector<int> get_block_sizes(vector<vector<vector<string>>> all_blocks) {
     return block_sizes;
 }
 
-vector<string> gwas_column_names(string gwasPathString) {
+/*
+ * get column names
+ * @param gwasPathString: string
+ * @return vector of column names
+ */
+vector<string> gwas_column_names(
+        string gwasPathString) {
     auto gwasPath = fs::path(gwasPathString);
     // TODO: block_size via map file not implemented
     cout << "...Success" << endl;
@@ -358,7 +471,13 @@ vector<string> gwas_column_names(string gwasPathString) {
     return gwasColumns;
 }
 
-vector<string> index_paths_of(string output_dir, vector<string> gwasColumns) {
+/*
+ * Get the paths for each index corresponding
+ * to a column in a GWAS file.
+ * */
+vector<string> index_paths_of(
+        string output_dir,
+        vector<string> gwasColumns) {
     auto gwasPath = fs::path(output_dir);
     auto outDir = gwasPath.parent_path() / (gwasPath.stem().string());
     //    fs::create_directories(outDir);
@@ -373,8 +492,8 @@ vector<string> index_paths_of(string output_dir, vector<string> gwasColumns) {
     return outPaths;
 }
 
-map<int, map<int, tuple<int, int, int>>>
-read_genomic_index_file(string index_file) {
+map<int, map<int, tuple<int, int, int>>> read_genomic_index_file(
+        string index_file) {
 
     map<int, map<int, tuple<int, int, int>>> genomic_index_file_map;
 
@@ -410,7 +529,14 @@ read_genomic_index_file(string index_file) {
     return genomic_index_file_map;
 }
 
-map<int, int> make_lineID_blockID_map(string index_file) {
+/*
+ * read genomic index into a data structure
+ * key: block_idx
+ *  key: chrm_start
+ *      value: tuple(bp_start, line_number, byte_start)
+ */
+map<int, int> make_lineID_blockID_map(
+        string index_file) {
     map<int, int> lineID_blockID_map;
 
     // check if file exists

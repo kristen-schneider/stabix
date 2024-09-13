@@ -84,7 +84,7 @@ TEST(MakeBlocksMap, test_tsv) {
             {2, {5000,8999,12999}},
             {3, {5000,8999,12999}}};
 
-    vector<vector<vector<string>>> blocks = make_blocks_map(gwas_file,
+    vector<vector<vector<string>>> blocks_map = make_blocks_map(gwas_file,
                                                             num_columns,
                                                             chrm_block_bp_ends,
                                                             delim,
