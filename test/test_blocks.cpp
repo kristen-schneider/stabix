@@ -116,24 +116,30 @@ TEST(MakeBlocksMap, test_tsv) {
     ASSERT_EQ(blocks_map[11][0].size(), 1);
 }
 
-//TEST(GetByteStartOfBlocks, test_tsv) {
-//
-//    int compressed_header_size = 6;
-//    vector<string> block_end_bytes = {"10", "20", "30", "40", "50", "60"};
-//    vector<vector<int>> genomic_index = {
-//            {0,1,100,1,146,
-//             1,1,5090,6,590,
-//             2,2,100,11,1032,
-//             3,2,5090,16,1452,
-//             4,3,100,21,1895,
-//             5,3,5090,26,2328}
-//    };
-//
-//    get_byte_start_of_blocks(
-//            compressed_header_size,
-//            block_end_bytes,
-//            genomic_index);
-//
-//    ASSERT_EQ(genomic_index.size(), 3);
-////    ASSERT_EQ(genomic_index[1], vector<int>({100, 1, 10}));
-//}
+TEST(GetByteStartOfBlocks, test_tsv) {
+
+    int compressed_header_size = 6;
+    vector<string> block_end_bytes = {"10", "20", "30", "40", "50", "60"};
+    // chrm, bp, line, byte
+    vector<vector<int>> genomic_index = {
+            {1,100,1,0},
+            {1,500,6,0},
+            {2,100,11,0},
+            {2,500,16,0},
+            {3,100,21,0},
+            {3,500,26,0}
+    };
+
+    get_byte_start_of_blocks(
+            compressed_header_size,
+            block_end_bytes,
+            genomic_index);
+
+    ASSERT_EQ(genomic_index.size(), 6);
+    ASSERT_EQ(genomic_index[0], vector<int>({1,100,1,10}));
+    ASSERT_EQ(genomic_index[1], vector<int>({1,500,6,20}));
+    ASSERT_EQ(genomic_index[2], vector<int>({2,100,11,30}));
+    ASSERT_EQ(genomic_index[3], vector<int>({2,500,16,40}));
+    ASSERT_EQ(genomic_index[4], vector<int>({3,100,21,50}));
+    ASSERT_EQ(genomic_index[5], vector<int>({3,500,26,60}));
+}
