@@ -77,14 +77,14 @@ TEST(MakeBlocksMap, test_tsv) {
     string gwas_file = "/Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.tsv";
     int num_columns = 10;
     char delim = '\t';
+  
+    vector<vector<int>> genomic_index;
+    map<int, vector<uint32_t>> chrm_block_bp_ends = {
+            {1, {5000,8999,12999}},
+            {2, {5000,8999,12999}},
+            {3, {5000,8999,12999}}};
 
-    vector<vector<int>> genomic_index;map<int, vector<uint32_t>> chrm_block_bp_ends = {
-            {1, {5000, 9000, 13000}},
-            {2, {5000, 9000, 13000}},
-            {3, {5000, 9000, 13000}}
-    };
-
-    vector<vector<vector<string>>> blocks_map = make_blocks_map(gwas_file,
+    vector<vector<vector<string>>> blocks = make_blocks_map(gwas_file,
                                                             num_columns,
                                                             chrm_block_bp_ends,
                                                             delim,
