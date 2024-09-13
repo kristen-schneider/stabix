@@ -22,8 +22,7 @@ unordered_set<int> query_genomic_idx(vector<string> query_list,
 
     vector<tuple<int, int>> all_query_block_indexes = get_start_end_block_idx(
         query_list,
-        genomic_index_info_by_location,
-        genomic_index_info_by_block);
+        genomic_index_info_by_location);
     unordered_set<int> blocks;
 
     for (int q_idx = 0; q_idx < all_query_block_indexes.size(); q_idx++) {
@@ -91,7 +90,7 @@ unordered_set<int> query_abs_idx(string path,
         }
     }
 
-    auto index = PValIndexer(path, block_line_map, bins);
+    auto index = PValIndexer(path, &block_line_map, bins);
     return index.compare_query(val, op);
 }
 
