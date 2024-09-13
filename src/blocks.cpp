@@ -25,6 +25,7 @@ struct IndexEntry {
  * @param num_columns: int of number of columns in gwas file
  * @param block_size: int of block size
  * @param delim: char of delimiter
+ * @param genomic_index: vector<vector<int>> genomic index: chrm, bp, line_number, byte_offset
  * @return all_blocks: vector<vector<vector<string>>> of blocks in gwas file
  */
 vector<vector<vector<string>>> make_blocks(
@@ -55,7 +56,7 @@ vector<vector<vector<string>>> make_blocks(
     getline(gwas, line);
 
     // create an empty block index
-    // chrm, bp, byte_offset, line_number (starting at 1)
+    // chrm, bp, line_number, byte_offset
     vector<int> block_genomic_index = {-1, -1, -1, -1};
 
     // read in lines
@@ -136,29 +137,16 @@ vector<vector<vector<string>>> make_blocks(
     return all_blocks;
 }
 
-/*
- *
- */
-void get_byte_start_of_blocks(int compressed_header_size,
-                              vector<string> block_header_end_bytes,
-                              vector<string> block_end_bytes,
-                              vector<vector<int>> &genomic_index){
-
-    // get the byte start of each block
-    // for each block, start byte = 4 + compressed_header_size + block_end_bytes[block_idx - 1]
-
-    for (int block_idx = 0; block_idx < block_end_bytes.size(); block_idx++){
-        if (block_idx == 0){
-            genomic_index[block_idx][3] = 4 + compressed_header_size;
-        }
-        else{
-            genomic_index[block_idx][3] = 4 + compressed_header_size + stoi(block_end_bytes[block_idx - 1]);
-        }
-    }
-}
 
 /*
- *
+ * Split a file into blocks, using a MAP file.
+ * --Read in gwas file and make a new block every 1cM
+ * @param gwas_file: string of gwas file
+ * @param num_columns: int of number of columns in gwas file
+ * @param chrm_block_bp_ends: ending of each 1cM block
+ * @param delim: char of delimiter
+ * @param genomic_index: vector<vector<int>> genomic index: chrm, bp, line_number, byte_offset
+ * @return all_blocks: vector<vector<vector<string>>> of blocks in gwas file
  */
 vector<vector<vector<string>>> make_blocks_map(
         string gwas_file,
@@ -287,6 +275,31 @@ vector<vector<vector<string>>> make_blocks_map(
 
     return all_blocks;
 }
+
+
+/*
+ * Add the byte starting of each block to the genomic index
+ * @param compressed_header_size: int of compressed header size
+ * @param block_end_bytes: vector<string> of block end bytes
+ * @param genomic_index: vector<vector<int>> of genomic index
+ */
+void get_byte_start_of_blocks(int compressed_header_size,
+                              vector<string> block_end_bytes,
+                              vector<vector<int>> &genomic_index){
+
+    // for each block, start byte =
+    // header bytes + compressed header size + end of last block
+    // 4 + compressed_header_size + block_end_bytes[block_idx - 1]
+    for (int block_idx = 0; block_idx < block_end_bytes.size(); block_idx++){
+        if (block_idx == 0){
+            genomic_index[block_idx][3] = 4 + compressed_header_size;
+        }
+        else{
+            genomic_index[block_idx][3] = 4 + compressed_header_size + stoi(block_end_bytes[block_idx - 1]);
+        }
+    }
+}
+
 
 /*
  * Function to compress a block

@@ -30,7 +30,6 @@ vector<vector<vector<string>>> make_blocks_map(
 
 void get_byte_start_of_blocks(
         int compressed_header_size,
-        vector<string> block_header_end_bytes,
         vector<string> block_end_bytes,
         vector<vector<int>> &genomic_index);
 
