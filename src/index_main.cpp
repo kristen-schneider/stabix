@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
 
     // get paths for index files
     vector<string> indexNames = {"genomic", "pval"};
-    auto indexPaths = index_paths_of(gwas_file, indexNames);
+    auto indexPaths = index_paths_of(out_dir_path, indexNames);
     string genomicIndexPath = indexPaths[0];
     auto blockLineMap = BlockLineMap(genomicIndexPath);
 
