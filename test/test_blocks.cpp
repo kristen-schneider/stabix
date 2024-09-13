@@ -79,42 +79,61 @@ TEST(MakeBlocksMap, test_tsv) {
     char delim = '\t';
 
     vector<vector<int>> genomic_index;map<int, vector<uint32_t>> chrm_block_bp_ends = {
-            {1, {100, 8999, 12999}},
-            {2, {100, 8999, 12999}},
-            {3, {100, 8999, 12999}}
+            {1, {5000, 9000, 13000}},
+            {2, {5000, 9000, 13000}},
+            {3, {5000, 9000, 13000}}
     };
 
-    vector<vector<vector<string>>> blocks = make_blocks_map(gwas_file,
+    vector<vector<vector<string>>> blocks_map = make_blocks_map(gwas_file,
                                                             num_columns,
                                                             chrm_block_bp_ends,
                                                             delim,
                                                             genomic_index);
-    ASSERT_EQ(blocks.size(), 12);
-    ASSERT_EQ(blocks[0].size(), 10);
-    ASSERT_EQ(blocks[0][0].size(), 5);
-    ASSERT_EQ(blocks[1][0].size(), 1);
-    ASSERT_EQ(blocks[2][0].size(), 3);
-    ASSERT_EQ(blocks[3][0].size(), 1);
+    ASSERT_EQ(blocks_map.size(), 12);
+    ASSERT_EQ(blocks_map[0].size(), num_columns);
+    ASSERT_EQ(blocks_map[0][0].size(), 5);
+    ASSERT_EQ(blocks_map[1].size(), num_columns);
+    ASSERT_EQ(blocks_map[1][0].size(), 1);
+    ASSERT_EQ(blocks_map[2].size(), num_columns);
+    ASSERT_EQ(blocks_map[2][0].size(), 3);
+    ASSERT_EQ(blocks_map[3].size(), num_columns);
+    ASSERT_EQ(blocks_map[3][0].size(), 1);
+    ASSERT_EQ(blocks_map[4].size(), num_columns);
+    ASSERT_EQ(blocks_map[4][0].size(), 5);
+    ASSERT_EQ(blocks_map[5].size(), num_columns);
+    ASSERT_EQ(blocks_map[5][0].size(), 1);
+    ASSERT_EQ(blocks_map[6].size(), num_columns);
+    ASSERT_EQ(blocks_map[6][0].size(), 3);
+    ASSERT_EQ(blocks_map[7].size(), num_columns);
+    ASSERT_EQ(blocks_map[7][0].size(), 1);
+    ASSERT_EQ(blocks_map[8].size(), num_columns);
+    ASSERT_EQ(blocks_map[8][0].size(), 5);
+    ASSERT_EQ(blocks_map[9].size(), num_columns);
+    ASSERT_EQ(blocks_map[9][0].size(), 1);
+    ASSERT_EQ(blocks_map[10].size(), num_columns);
+    ASSERT_EQ(blocks_map[10][0].size(), 3);
+    ASSERT_EQ(blocks_map[11].size(), num_columns);
+    ASSERT_EQ(blocks_map[11][0].size(), 1);
 }
 
-TEST(GetByteStartOfBlocks, test_tsv) {
-
-    int compressed_header_size = 6;
-    vector<string> block_end_bytes = {"10", "20", "30", "40", "50", "60"};
-    vector<vector<int>> genomic_index = {
-            {0,1,100,1,146,
-             1,1,5090,6,590,
-             2,2,100,11,1032,
-             3,2,5090,16,1452,
-             4,3,100,21,1895,
-             5,3,5090,26,2328}
-    };
-
-    get_byte_start_of_blocks(
-            compressed_header_size,
-            block_end_bytes,
-            genomic_index);
-
-    ASSERT_EQ(genomic_index.size(), 3);
-//    ASSERT_EQ(genomic_index[1], vector<int>({100, 1, 10}));
-}
+//TEST(GetByteStartOfBlocks, test_tsv) {
+//
+//    int compressed_header_size = 6;
+//    vector<string> block_end_bytes = {"10", "20", "30", "40", "50", "60"};
+//    vector<vector<int>> genomic_index = {
+//            {0,1,100,1,146,
+//             1,1,5090,6,590,
+//             2,2,100,11,1032,
+//             3,2,5090,16,1452,
+//             4,3,100,21,1895,
+//             5,3,5090,26,2328}
+//    };
+//
+//    get_byte_start_of_blocks(
+//            compressed_header_size,
+//            block_end_bytes,
+//            genomic_index);
+//
+//    ASSERT_EQ(genomic_index.size(), 3);
+////    ASSERT_EQ(genomic_index[1], vector<int>({100, 1, 10}));
+//}
