@@ -451,6 +451,7 @@ BlockLineMap::BlockLineMap(string index_file)
     : BlockLineMap(make_lineID_blockID_map(index_file)) {}
 
 int BlockLineMap::line_to_block(int line_number) {
+    // TODO: line numbers start on 1
     map<int, int> lineID_blockID_map = this->lineID_blockID_map;
 
     // try and return block ID
