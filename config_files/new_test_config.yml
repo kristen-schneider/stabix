@@ -2,10 +2,10 @@ gwas_file:
   /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.tsv
 
 block_size:
-  /Users/krsc0813/CLionProjects/gwas_local/map_files/test.map
+  5
 
 out_directory:
-  kristen_out
+  test_block5_zlib
 
 query:
   genomic:

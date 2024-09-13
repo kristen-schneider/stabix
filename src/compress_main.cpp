@@ -131,7 +131,6 @@ int main(int argc, char *argv[]) {
                         num_columns,
                         block_size,
                         delimiter,
-                        9,
                         genomic_index);
     }
     num_blocks = all_blocks.size();
@@ -293,7 +292,6 @@ int main(int argc, char *argv[]) {
 
     // 10. write genomic index
     get_byte_start_of_blocks(compressed_header_size,
-                             block_header_end_bytes,
                              block_end_bytes,
                              genomic_index);
 
