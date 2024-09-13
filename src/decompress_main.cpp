@@ -356,7 +356,6 @@ int main(int argc, char *argv[]) {
     }
     query_output_stream.close();
 
-    cout << endl;
     cout << endl << "---Decompression Complete---" << endl;
     return 0;
 }

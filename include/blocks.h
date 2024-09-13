@@ -17,13 +17,8 @@ vector<vector<vector<string>>> make_blocks(
         int num_columns,
         int block_size,
         char delim,
-        int index_col,
         vector<vector<int>> &genomic_index);
 
-void get_byte_start_of_blocks(int compressed_header_size,
-                              vector<string> block_header_end_bytes,
-                              vector<string> block_end_bytes,
-                              vector<vector<int>> &genomic_index);
 
 vector<vector<vector<string>>> make_blocks_map(
         string gwas_file,
@@ -32,11 +27,20 @@ vector<vector<vector<string>>> make_blocks_map(
         char delim,
         vector<vector<int>> &genomic_index);
 
+
+void get_byte_start_of_blocks(
+        int compressed_header_size,
+        vector<string> block_header_end_bytes,
+        vector<string> block_end_bytes,
+        vector<vector<int>> &genomic_index);
+
+
 vector<string> get_block_header(
         vector<string> compressed_block);
 
 int get_block_length(
         vector<string> compressed_block);
 
-vector<string> compress_block(vector<vector<string>> block,
-                              vector<string> codecs_list);
+vector<string> compress_block(
+        vector<vector<string>> block,
+        vector<string> codecs_list);

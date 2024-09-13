@@ -9,13 +9,18 @@
 
 using namespace std;
 
+// TODO: make this autodetect the chrm and bp columns in case not 1 and 2
+const int chrm_idx = 1;
+const int bp_idx = 2;
+
 struct IndexEntry {
     double value; // floating point value to sort by
     int blockNumber; // Block number in the compressed file
 };
 
 /*
- * Function to split a file into blocks
+ * Split a file into blocks.
+ * --Read in gwas file and make a new block every block_size lines
  * @param gwas_file: string of gwas file
  * @param num_columns: int of number of columns in gwas file
  * @param block_size: int of block size
@@ -27,14 +32,10 @@ vector<vector<vector<string>>> make_blocks(
         int num_columns,
         int block_size,
         char delim,
-        int index_col,
         vector<vector<int>> &genomic_index){
 
-    // read in gwas file and make a new block every block_size lines
-    // return a vector of blocks
-    // creates an index for floating point values in the index column
+    // to return (stores all blocks)
     vector<vector<vector<string>>> all_blocks;
-//    vector<IndexEntry> indexEntries;
 
     // open gwas file
     ifstream gwas(gwas_file);
@@ -54,7 +55,7 @@ vector<vector<vector<string>>> make_blocks(
     getline(gwas, line);
 
     // create an empty block index
-    // chrm, bp, byte_offset,
+    // chrm, bp, byte_offset, line_number (starting at 1)
     vector<int> block_genomic_index = {-1, -1, -1, -1};
 
     // read in lines
@@ -71,9 +72,8 @@ vector<vector<vector<string>>> make_blocks(
             // if this is the first line in the block, store the genomic index
             // starting chrm, starting bp, and line number
             if (line_count == 0){
-                // TODO: make this autodetect the chrm and bp columns in case not 1 and 2
-                block_genomic_index[0] = stoi(line_vector[1]);
-                block_genomic_index[1] = stoi(line_vector[2]);
+                block_genomic_index[0] = stoi(line_vector[chrm_idx]);
+                block_genomic_index[1] = stoi(line_vector[bp_idx]);
                 block_genomic_index[2] = 1 + block_count * block_size;
                 genomic_index.push_back(block_genomic_index);
             }
@@ -110,11 +110,20 @@ vector<vector<vector<string>>> make_blocks(
 
             // store the genomic index
             // starting chrm, starting bp, and line number
-            // TODO: make this autodetect the chrm and bp columns in case not 1 and 2
-            block_genomic_index[0] = stoi(line_vector[1]);
-            block_genomic_index[1] = stoi(line_vector[2]);
-            block_genomic_index[2] = 1 + block_count * block_size;
-            genomic_index.push_back(block_genomic_index);
+            // try and convert chrm and bp to ints
+            try{
+                block_genomic_index[0] = stoi(line_vector[chrm_idx]);
+                block_genomic_index[1] = stoi(line_vector[bp_idx]);
+                block_genomic_index[2] = 1 + block_count * block_size;
+                genomic_index.push_back(block_genomic_index);
+            }
+            // catch stoi exceptions for sex chromosomes
+            catch (const std::invalid_argument& e){
+                // do nothing, just catch
+            }
+            catch (const std::out_of_range& e) {
+                // do nothing, just catch
+            }
         }
     }
     // add last block to all_blocks if it is not empty
@@ -127,6 +136,9 @@ vector<vector<vector<string>>> make_blocks(
     return all_blocks;
 }
 
+/*
+ *
+ */
 void get_byte_start_of_blocks(int compressed_header_size,
                               vector<string> block_header_end_bytes,
                               vector<string> block_end_bytes,
@@ -145,12 +157,15 @@ void get_byte_start_of_blocks(int compressed_header_size,
     }
 }
 
-vector<vector<vector<string>>>
-make_blocks_map(string gwas_file,
-                int num_columns,
-                map<int, vector<uint32_t>> chrm_block_bp_ends,
-                char delim,
-                vector<vector<int>> &genomic_index) {
+/*
+ *
+ */
+vector<vector<vector<string>>> make_blocks_map(
+        string gwas_file,
+        int num_columns,
+        map<int, vector<uint32_t>> chrm_block_bp_ends,
+        char delim,
+        vector<vector<int>> &genomic_index) {
 
     // read in gwas file and make a new block every block_size lines
     // return a vector of blocks
@@ -189,8 +204,9 @@ make_blocks_map(string gwas_file,
         istringstream line_stream(line);
         string column_value;
         vector<string> line_vector = split_string(line, '\t');
-        int curr_chrm = stoi(line_vector[1]);
-        curr_bp = stoul(line_vector[2]);
+
+        int curr_chrm = stoi(line_vector[chrm_idx]);
+        curr_bp = stoul(line_vector[bp_idx]);
 
         // if new chromosome and not first chromosome
         if (curr_chrm != block_chrm) {
@@ -210,16 +226,6 @@ make_blocks_map(string gwas_file,
             curr_block_idx = 0;
             curr_bp_end = chrm_block_bp_ends[curr_chrm][curr_block_idx];
             line_count = 1;
-
-//            // store the genomic index
-//            if (line_count == 1) {
-//                // store the genomic index
-//                // starting chrm, starting bp, and line number
-//                block_genomic_index[0] = curr_chrm;
-//                block_genomic_index[1] = curr_bp;
-//                block_genomic_index[2] = 1 + total_line_count;
-//                genomic_index.push_back(block_genomic_index);
-//            }
         }
         // keep adding to current block until bp is greater than bp_end
         if (curr_bp <= curr_bp_end) {

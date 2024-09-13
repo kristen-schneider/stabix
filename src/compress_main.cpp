@@ -131,7 +131,6 @@ int main(int argc, char *argv[]) {
                         num_columns,
                         block_size,
                         delimiter,
-                        9,
                         genomic_index);
     }
     num_blocks = all_blocks.size();
