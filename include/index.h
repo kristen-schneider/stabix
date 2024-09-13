@@ -46,13 +46,3 @@ vector<tuple<int, int>> get_start_end_block_idx(
 int get_start_byte(
         int block_idx,
         map<int, vector<int>> index_block_map);
-
-//vector<vector<int>> find_query_bytes_blocks_(
-//        vector<string> query_list,
-//        map<string, map<string, tuple<string, string>>> index_map);
-//
-//vector<int> find_query_start_byte(
-//        int q_chrm,
-//        int q_bp,
-//        map<int, int> index_map);
-
