@@ -2,28 +2,28 @@ gwas_file:
   /Users/krsc0813/Desktop/gwas/pan_ukbb/continuous-22409-both_sexes-irnt.tsv
 
 block_size:
-  20000
+  10000
 
-out_directory:
-  ukbb_block20000_zlib
+out_name:
+  combo
 
 query:
   genomic:
     /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.bed
   pval:
-    None
+    NA
   other:
-    0.2
+    None
   uncertainty:
-    1-e8
+    None
 
 extra_indices:
   None
 
 codecs:
   int:
-    zlib
+    zstd
   float:
-    zlib
+    bz2
   string:
     zlib
