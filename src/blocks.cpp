@@ -10,8 +10,8 @@
 using namespace std;
 
 // TODO: make this autodetect the chrm and bp columns in case not 1 and 2
-const int chrm_idx = 1;
-const int bp_idx = 2;
+const int chrm_idx = 0;
+const int bp_idx = 1;
 
 struct IndexEntry {
     double value; // floating point value to sort by
@@ -64,6 +64,12 @@ vector<vector<vector<string>>> make_blocks(
         // if line_count is less than block_size, split line by column and add
         // to block remove newline character from line
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
+
+        // if chrm == X; skip line
+        if (line.find("X") != string::npos) {
+            continue;
+        }
+
         if (line_count < block_size) {
             istringstream line_stream(line);
             string column_value;
@@ -108,6 +114,7 @@ vector<vector<vector<string>>> make_blocks(
 
             line_count = 1;
             block_count++;
+
 
             // store the genomic index
             // starting chrm, starting bp, and line number
