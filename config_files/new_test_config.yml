@@ -2,10 +2,10 @@ gwas_file:
   /Users/krsc0813/Desktop/gwas/pan_ukbb/continuous-22409-both_sexes-irnt.tsv
 
 block_size:
-  10000
+  map_files/chrm_1-22.map
 
 out_name:
-  combo
+  bz2
 
 query:
   genomic:
@@ -22,8 +22,8 @@ extra_indices:
 
 codecs:
   int:
-    zstd
+    bz2
   float:
     bz2
   string:
-    zlib
+    bz2
