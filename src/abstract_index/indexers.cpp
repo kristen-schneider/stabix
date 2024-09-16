@@ -32,7 +32,9 @@ float PValIndexer::value_to_bin(std::string line) {
     float value = std::strtof(line.c_str(), &end);
 
     if (end == line.c_str()) {
-        throw std::runtime_error("Invalid float format.");
+//        throw std::runtime_error("Invalid float format.");
+        // skip NA values
+        return -HUGE_VALF;
     }
 
     if (errno == ERANGE && !badFloatSemaphore) {
