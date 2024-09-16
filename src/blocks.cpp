@@ -195,6 +195,12 @@ vector<vector<vector<string>>> make_blocks_map(
 
     // read in lines
     while (getline(gwas, line)) {
+
+        // if chrm == X; skip line
+        if (line.find("X") != string::npos) {
+            continue;
+        }
+
         line_count++;
         total_line_count++;
         // to block remove newline character from line

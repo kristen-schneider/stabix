@@ -134,6 +134,13 @@ int main(int argc, char *argv[]) {
                            extra_indices_list.end());
     }
 
+    int block_size = -1;
+    try {
+        block_size = stoi(config_options["block_size"]);
+    } catch (invalid_argument &e) {
+        block_size = -1;
+    }
+
     // - codecs (by data type)
     string codec_int = config_options["int"];
     string codec_float = config_options["float"];
@@ -146,17 +153,34 @@ int main(int argc, char *argv[]) {
     // -out
     auto gwas_path = fs::path(config_options["gwas_file"]);
     // out dir naming scheme = "gwasfilename_blocksize_out"
-    auto out_dir_path = gwas_path.parent_path() /
-                        (gwas_path.stem().string() +
+
+    auto out_dir_path = fs::path();
+    string compressed_file;
+    if (block_size == -1) {
+        out_dir_path = gwas_path.parent_path() /
+                       (gwas_path.stem().string() +
+                        "_map" +
+                        "_" + config_options["out_name"]);
+
+        compressed_file = out_dir_path / (gwas_path.stem().string() +
+                                          "_map" +
+                                          "_" + config_options["out_name"] +
+                                          ".grlz");
+    } else {
+        out_dir_path = gwas_path.parent_path() /
+                       (gwas_path.stem().string() +
                         "_" + config_options["block_size"] +
                         "_" + config_options["out_name"]);
+
+        compressed_file = out_dir_path / (gwas_path.stem().string() +
+                                          "_" + config_options["block_size"] +
+                                          "_" + config_options["out_name"] +
+                                          ".grlz");
+    }
+
 //    string output_dir = config_options["out_directory"];
 //    auto gwas_path = fs::path(config_options["gwas_file"]);
 //    auto out_dir_path = gwas_path.parent_path() / output_dir;
-    string compressed_file = out_dir_path / (gwas_path.stem().string() +
-                                             "_" + config_options["block_size"] +
-                                             "_" + config_options["out_name"] +
-                                             ".grlz");
 
     ofstream query_output_stream;
     string query_output_file_name =
@@ -172,17 +196,31 @@ int main(int argc, char *argv[]) {
     // outfile for decompression times
     fs::create_directories(out_dir_path.parent_path() / "decompression_times");
     fs::path compression_times_file;
-    compression_times_file = out_dir_path.parent_path() / "decompression_times" /
-                             (gwas_path.stem().string() +
-                             "_" + config_options["block_size"] +
-                             "_" + config_options["out_name"] + "_decompression.csv");
+    fs::path col_times_file;
+    if (block_size == -1) {
+        compression_times_file = out_dir_path.parent_path() / "decompression_times" /
+                                 (gwas_path.stem().string() +
+                                 "_map" +
+                                 "_" + config_options["out_name"] + "_decompression.csv");
+
+        col_times_file = out_dir_path.parent_path() / "decompression_times" /
+                            (gwas_path.stem().string() +
+                            "_map" +
+                            "_" + config_options["out_name"] + "_column_decompression.csv");
+    } else {
+        compression_times_file = out_dir_path.parent_path() / "decompression_times" /
+                                 (gwas_path.stem().string() +
+                                 "_" + config_options["block_size"] +
+                                 "_" + config_options["out_name"] + "_decompression.csv");
+
+        col_times_file = out_dir_path.parent_path() / "decompression_times" /
+                         (gwas_path.stem().string() +
+                          "_" + config_options["block_size"] +
+                          "_" + config_options["out_name"] + "_column_decompression.csv");
+    }
 
     // outfile for column decompression times
-    fs::path col_times_file;
-    col_times_file = out_dir_path.parent_path() / "decompression_times" /
-                     (gwas_path.stem().string() +
-                     "_" + config_options["block_size"] +
-                     "_" + config_options["out_name"] + "_column_decompression.csv");
+
     ofstream col_times;
     col_times.open(col_times_file, ios::trunc);
     // write header

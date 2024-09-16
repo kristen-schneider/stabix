@@ -59,17 +59,34 @@ int main(int argc, char *argv[]) {
     // -->creating output directory for generated files
     auto gwas_path = fs::path(config_options["gwas_file"]);
     // out dir naming scheme = "gwasfilename_blocksize_out"
-    auto out_dir_path = gwas_path.parent_path() /
-                        (gwas_path.stem().string() +
-                        "_" + config_options["block_size"] +
-                        "_" + config_options["out_name"]);
+    auto out_dir_path = fs::path();
+    if (block_size == -1) {
+        out_dir_path = gwas_path.parent_path() /
+                            (gwas_path.stem().string() +
+                             "_map" +
+                             "_" + config_options["out_name"]);
+    } else {
+        out_dir_path = gwas_path.parent_path() /
+                            (gwas_path.stem().string() +
+                             "_" + to_string(block_size) +
+                             "_" + config_options["out_name"]);
+    }
+
 //    auto out_dir_path = gwas_path.parent_path() / output_dir /
 //            (gwas_path.stem().string() + "_" + config_options["block_size"] + "_");
     fs::create_directories(out_dir_path);
-    string compressed_file = out_dir_path / (gwas_path.stem().string() +
-            "_" + to_string(block_size) +
-            "_" + config_options["out_name"] +
-            ".grlz");
+    string compressed_file;
+    if (block_size == -1) {
+        compressed_file = out_dir_path / (gwas_path.stem().string() +
+                "_map" +
+                "_" + config_options["out_name"] +
+                ".grlz");
+    } else {
+        compressed_file = out_dir_path / (gwas_path.stem().string() +
+                "_" + to_string(block_size) +
+                "_" + config_options["out_name"] +
+                ".grlz");
+    }
 
     // print some information to screen
     cout << "\t...gwas_file: " << gwas_file << endl;
@@ -82,17 +99,32 @@ int main(int argc, char *argv[]) {
     // outfile for compression times
     fs::create_directories(out_dir_path.parent_path() / "compression_times");
     fs::path compression_times_file;
-    compression_times_file = out_dir_path.parent_path() / "compression_times" /
+    if (block_size == -1) {
+        compression_times_file = out_dir_path.parent_path() / "compression_times" /
+                                 (gwas_path.stem().string() +
+                                 "_map" +
+                                 "_" + config_options["out_name"] + "_compression.csv");
+    } else {
+        compression_times_file = out_dir_path.parent_path() / "compression_times" /
                              (gwas_path.stem().string() +
                              "_" + to_string(block_size) +
                              "_" + config_options["out_name"] + "_compression.csv");
+    }
 
     // outfile for column compression times
     fs::path col_times_file;
-    col_times_file = out_dir_path.parent_path() / "compression_times" /
-                       (gwas_path.stem().string() +
-                       "_" + to_string(block_size) +
-                       "_" + config_options["out_name"] + "_column_compression.csv");
+    if (block_size == -1) {
+        col_times_file = out_dir_path.parent_path() / "compression_times" /
+                         (gwas_path.stem().string() +
+                         "_map" +
+                         "_" + config_options["out_name"] + "_column_compression.csv");
+    } else {
+        col_times_file = out_dir_path.parent_path() / "compression_times" /
+                         (gwas_path.stem().string() +
+                         "_" + to_string(block_size) +
+                         "_" + config_options["out_name"] + "_column_compression.csv");
+    }
+
     ofstream col_times;
     col_times.open(col_times_file, ios::trunc);
     // write header
@@ -204,10 +236,17 @@ int main(int argc, char *argv[]) {
     // make directory one level up
     fs::create_directories(out_dir_path.parent_path() / "block_sizes");
     fs::path block_sizes_file;
-    block_sizes_file = out_dir_path.parent_path() / "block_sizes" /
+    if (block_size == -1) {
+        block_sizes_file = out_dir_path.parent_path() / "block_sizes" /
             (gwas_path.stem().string() +
-            "_" + to_string(block_size) +
+            "_map" +
             "_" + config_options["out_name"] + "_sizes.csv");
+    } else {
+        block_sizes_file = out_dir_path.parent_path() / "block_sizes" /
+                (gwas_path.stem().string() +
+                "_" + to_string(block_size) +
+                "_" + config_options["out_name"] + "_sizes.csv");
+    }
     ofstream block_sizes_out;
     block_sizes_out.open(block_sizes_file);
 
