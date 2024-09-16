@@ -24,8 +24,10 @@ string ZLIB_HEADER_D = "x\xda";
  * @param codec: string, the codec used to compress the column
  * @return: string, the decompressed column
  */
-string decompress_column(string compressed_column, string codec,
-                         size_t compressedSize, size_t block_size) {
+string decompress_column(string compressed_column,
+                         string codec,
+                         size_t compressedSize,
+                         size_t block_size) {
     if (codec == "zlib") {
         return zlib_decompress(compressed_column);
     } else if (codec == "deflate") {

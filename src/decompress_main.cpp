@@ -35,14 +35,21 @@ unordered_set<int> query_genomic_idx(vector<string> query_list,
         int start_block_idx = get<0>(query_start_end_byte);
         int end_block_idx = get<1>(query_start_end_byte);
 
-        // TODO: should this be (doubly) inclusive as implemented?
-        for (int block_idx = start_block_idx; block_idx <= end_block_idx; block_idx++) {
-            blocks.insert(block_idx);
-        }
-
-        if (start_block_idx == -1 || end_block_idx == -1) {
-            cout << "Query not found in index" << endl;
+        // if start and end block indexes are -1, query not found in index
+        if (start_block_idx == -1 && end_block_idx == -1) {
+            cout << "Query " << q_idx << " NOT found in genomic index." << endl;
             continue;
+        }
+        else{
+            // if start block is -1; it means that the query starts before the first block
+            // make start block idx 0
+            if (start_block_idx == -1) {
+                start_block_idx = 0;
+            }
+            // TODO: should this be (doubly) inclusive as implemented?
+            for (int block_idx = start_block_idx; block_idx <= end_block_idx; block_idx++) {
+                blocks.insert(block_idx);
+            }
         }
     }
 
@@ -162,7 +169,7 @@ int main(int argc, char *argv[]) {
 //    //      Hardcoded query parameters
 //    // ----------------------------------------------------------------------
     auto pvalue_bins = vector<string>{"0.5", "0.1", "1e-8"};
-    string pvalue_query = "<= 0.5";
+    string pvalue_query = "<= 0.4";
 
     // clear contents of output file and close
     query_output_stream.close();
@@ -239,7 +246,7 @@ int main(int argc, char *argv[]) {
     // TODO: generalize to other custom index types
     // if there are no genomic blocks, return early. nothing found.
     if (genom_blocks.empty()) {
-        cout << "No blocks found for query" << endl;
+        cout << endl << "No blocks found for given query." << endl;
         return 0;
         // if there is no p-value query, set the query to all genomic blocks
     }else if( extra_indices == "None"){

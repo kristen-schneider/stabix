@@ -1,8 +1,10 @@
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "blocks.h"
@@ -57,7 +59,11 @@ int main(int argc, char *argv[]) {
     // -->creating output directory for generated files
     string output_dir = config_options["out_directory"];
     auto gwas_path = fs::path(config_options["gwas_file"]);
-    auto out_dir_path = gwas_path.parent_path() / output_dir;
+    // out dir naming scheme = "gwasfilename_blocksize_out"
+    auto out_dir_path = gwas_path.parent_path() /
+            (gwas_path.stem().string() + "_" + config_options["block_size"] + "_out");
+//    auto out_dir_path = gwas_path.parent_path() / output_dir /
+//            (gwas_path.stem().string() + "_" + config_options["block_size"] + "_");
     fs::create_directories(out_dir_path);
     string compressed_file = out_dir_path / (gwas_path.stem().string() + ".grlz");
 
@@ -67,6 +73,27 @@ int main(int argc, char *argv[]) {
     cout << "\t...indexes: " << convert_vector_str_to_string(index_types) << endl;
 
     cout << "Done." << endl << endl;
+
+    // TODO TAKE OUT; for plotting purposes only
+    fs::create_directories(out_dir_path.parent_path() / "compression_times");
+    fs::path compression_times_file;
+    compression_times_file = out_dir_path.parent_path() / "compression_times" /
+                             (gwas_path.stem().string() + "_" + to_string(block_size) + "_compression_times.csv");
+
+    // outfile for column compression times
+    fs::path col_sizes_file;
+    col_sizes_file = out_dir_path.parent_path() / "compression_times" /
+                       (gwas_path.stem().string() + "_" + to_string(block_size) + "_col_times.csv");
+    ofstream col_sizes;
+    col_sizes.open(col_sizes_file, ios::app);
+    // clear file contents if it exists
+    col_sizes.clear();
+
+    // write header
+    col_sizes << "block_idx,col_idx,comp_time,codec" << endl;
+    col_sizes.close();
+    // TODO TAKE OUT; for plotting purposes only
+
 
 
     // 1. get file information to store in first half of compressed file header
@@ -115,6 +142,9 @@ int main(int argc, char *argv[]) {
 
     // 2. create blocks
     cout << "Making blocks..." << endl;
+
+    // TIME MAKING BLOCKS
+    auto make_blocks_start = chrono::high_resolution_clock::now();
     // if block_size == "map", make block sizes by the cm map file
     if (block_size == -1) {
         string map_file = config_options["block_size"];
@@ -140,47 +170,58 @@ int main(int argc, char *argv[]) {
         cout << "\t...made " << num_blocks << " blocks of size "
              << block_size << " or less." << endl;
     }
+
+    // TIME MAKING BLOCKS
+    auto make_blocks_end = chrono::high_resolution_clock::now();
     cout << "Done." << endl << endl;
 
 
     // 4. compress blocks AND get second half of header
     cout << "Compressing blocks..." << endl;
+
+    // TIME COMPRESSING BLOCKS
+    auto compress_blocks_start = chrono::high_resolution_clock::now();
     // compress each block and add to compressed_blocks
+    int com_block_idx = 0;
     for (auto const &block : all_blocks) {
-        vector<string> compressed_block = compress_block(block, codecs_list);
+        vector<string> compressed_block = compress_block(
+                col_sizes_file,
+                com_block_idx,
+                block,
+                codecs_list);
         compressed_blocks.push_back(compressed_block);
+        com_block_idx++;
     }
 
+    // TODO: TAKE OUT; for plotting purposes only
     // write compressed block sizes to file (by column)
+    // make directory one level up
+    fs::create_directories(out_dir_path.parent_path() / "block_sizes");
     fs::path block_sizes_file;
-    if (block_size == -1) {
-        block_sizes_file = out_dir_path / (gwas_path.stem().string() + "_cm_col-sizes.csv");
-    }else{
-        block_sizes_file = out_dir_path / (gwas_path.stem().string() +
-                                             "_" + to_string(block_size) + "_col-sizes.csv");
-    }
-
-    // TODO: look at this output data (compressed col sizes)
-    // for plotting purposes
+    block_sizes_file = out_dir_path.parent_path() / "block_sizes" /
+            (gwas_path.stem().string() + "_" + to_string(block_size) + "_block_sizes.csv");
     ofstream block_sizes_out;
     block_sizes_out.open(block_sizes_file);
-    // write gwas file name
-    block_sizes_out << gwas_file << endl;
+    block_sizes_out.clear();
+
+    // write gwas file name and block size
+    string gwas_basename = fs::path(gwas_file).filename();
+    block_sizes_out << gwas_basename << "," << block_size << endl;
     // write header
-    block_sizes_out << "block_idx,col_idx,column_size" << endl;
+    block_sizes_out << "block_idx,col_idx,column_size,codec" << endl;
     int block_i = 0;
     for (auto const &block : compressed_blocks) {
         int col_i = 0;
         for (auto const &column : block) {
             // write block_idx, col_idx, column size
-            block_sizes_out << block_i << "," << col_i << "," << column.size()
+            block_sizes_out << block_i << "," << col_i << "," << column.size() << "," << codecs_list[col_i]
                             << endl;
             col_i++;
         }
         block_i++;
     }
     block_sizes_out.close();
-    cout << "\t...wrote compressed block sizes to: " << block_sizes_file << endl;
+    // TODO: TAKE OUT; for plotting purposes only
 
     // get block headers
     vector<vector<string>> block_headers;
@@ -196,6 +237,9 @@ int main(int argc, char *argv[]) {
         string compressed_block_header = zlib_compress(string_block_header);
         compressed_block_headers.push_back(compressed_block_header);
     }
+
+    // TIME COMPRESSING BLOCKS
+    auto compress_blocks_end = chrono::high_resolution_clock::now();
     cout << "Done." << endl << endl;
 
     // 5. get second half of header
@@ -269,6 +313,10 @@ int main(int argc, char *argv[]) {
 
     // 8. write compressed header to file
     // reserve first 4 bytes for size of compressed header
+
+    // TIME WRITING COMPRESSED FILE
+    auto write_compressed_file_start = chrono::high_resolution_clock::now();
+
     int compressed_header_size = compressed_header.length();
     char *compressed_header_size_bytes = int_to_bytes(compressed_header_size);
     compressed_gwas.write(compressed_header_size_bytes, 4);
@@ -290,7 +338,13 @@ int main(int argc, char *argv[]) {
     }
     compressed_gwas.close();
 
+    // TIME WRITING COMPRESSED FILE
+    auto write_compressed_file_end = chrono::high_resolution_clock::now();
+
     // 10. write genomic index
+
+    // TIME WRITING GENOMIC INDEX
+    auto write_genomic_index_start = chrono::high_resolution_clock::now();
     get_byte_start_of_blocks(compressed_header_size,
                              block_end_bytes,
                              genomic_index);
@@ -317,6 +371,32 @@ int main(int argc, char *argv[]) {
 
     genomicIndexFile.close();
     file.close();
+
+    // TIME WRITING GENOMIC INDEX
+    auto write_genomic_index_end = chrono::high_resolution_clock::now();
+
+    // write all times out to file
+    // TODO: TAKE OUT; for plotting purposes only
+    // write big compression times file
+    // make directory one level up
+    ofstream compression_times_out;
+    compression_times_out.open(compression_times_file);
+    // clear file contents
+    compression_times_out.clear();
+
+    // write gwas file name and block size
+    compression_times_out << gwas_basename << "," << block_size << endl;
+    compression_times_out << "Making blocks:" <<
+        chrono::duration_cast<chrono::milliseconds>(make_blocks_end - make_blocks_start).count() << "ms" << endl;
+    compression_times_out << "Compressing blocks:" <<
+        chrono::duration_cast<chrono::milliseconds>(compress_blocks_end - compress_blocks_start).count() << "ms" << endl;
+    compression_times_out << "Writing compressed file:" <<
+        chrono::duration_cast<chrono::milliseconds>(write_compressed_file_end - write_compressed_file_start).count() << "ms" << endl;
+    compression_times_out << "Writing genomic index:" <<
+        chrono::duration_cast<chrono::milliseconds>(write_genomic_index_end - write_genomic_index_start).count() << "ms" << endl;
+
+    cout << "Writing compression times to: " << compression_times_file << endl;
+    cout << "Writing block sizes to: " << block_sizes_file << endl;
 
     cout << endl << "---Compression Complete---" << endl;
 
