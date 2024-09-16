@@ -153,8 +153,10 @@ int main(int argc, char *argv[]) {
 //    string output_dir = config_options["out_directory"];
 //    auto gwas_path = fs::path(config_options["gwas_file"]);
 //    auto out_dir_path = gwas_path.parent_path() / output_dir;
-    string compressed_file =
-            out_dir_path / (gwas_path.stem().string() + ".grlz");
+    string compressed_file = out_dir_path / (gwas_path.stem().string() +
+                                             "_" + config_options["block_size"] +
+                                             "_" + config_options["out_name"] +
+                                             ".grlz");
 
     ofstream query_output_stream;
     string query_output_file_name =
@@ -171,12 +173,16 @@ int main(int argc, char *argv[]) {
     fs::create_directories(out_dir_path.parent_path() / "decompression_times");
     fs::path compression_times_file;
     compression_times_file = out_dir_path.parent_path() / "decompression_times" /
-                             (gwas_path.stem().string() + "_" + config_options["block_size"] + "_decompression_times.csv");
+                             (gwas_path.stem().string() +
+                             "_" + config_options["block_size"] +
+                             "_" + config_options["out_name"] + "_decompression.csv");
 
     // outfile for column decompression times
     fs::path col_times_file;
     col_times_file = out_dir_path.parent_path() / "decompression_times" /
-                     (gwas_path.stem().string() + "_" + config_options["block_size"] + "_col_times.csv");
+                     (gwas_path.stem().string() +
+                     "_" + config_options["block_size"] +
+                     "_" + config_options["out_name"] + "_column_decompression.csv");
     ofstream col_times;
     col_times.open(col_times_file, ios::trunc);
     // write header

@@ -66,7 +66,10 @@ int main(int argc, char *argv[]) {
 //    auto out_dir_path = gwas_path.parent_path() / output_dir /
 //            (gwas_path.stem().string() + "_" + config_options["block_size"] + "_");
     fs::create_directories(out_dir_path);
-    string compressed_file = out_dir_path / (gwas_path.stem().string() + ".grlz");
+    string compressed_file = out_dir_path / (gwas_path.stem().string() +
+            "_" + to_string(block_size) +
+            "_" + config_options["out_name"] +
+            ".grlz");
 
     // print some information to screen
     cout << "\t...gwas_file: " << gwas_file << endl;
@@ -80,12 +83,16 @@ int main(int argc, char *argv[]) {
     fs::create_directories(out_dir_path.parent_path() / "compression_times");
     fs::path compression_times_file;
     compression_times_file = out_dir_path.parent_path() / "compression_times" /
-                             (gwas_path.stem().string() + "_" + to_string(block_size) + "_compression_times.csv");
+                             (gwas_path.stem().string() +
+                             "_" + to_string(block_size) +
+                             "_" + config_options["out_name"] + "_compression.csv");
 
     // outfile for column compression times
     fs::path col_times_file;
     col_times_file = out_dir_path.parent_path() / "compression_times" /
-                       (gwas_path.stem().string() + "_" + to_string(block_size) + "_col_times.csv");
+                       (gwas_path.stem().string() +
+                       "_" + to_string(block_size) +
+                       "_" + config_options["out_name"] + "_column_compression.csv");
     ofstream col_times;
     col_times.open(col_times_file, ios::trunc);
     // write header
@@ -198,7 +205,9 @@ int main(int argc, char *argv[]) {
     fs::create_directories(out_dir_path.parent_path() / "block_sizes");
     fs::path block_sizes_file;
     block_sizes_file = out_dir_path.parent_path() / "block_sizes" /
-            (gwas_path.stem().string() + "_" + to_string(block_size) + "_block_sizes.csv");
+            (gwas_path.stem().string() +
+            "_" + to_string(block_size) +
+            "_" + config_options["out_name"] + "_sizes.csv");
     ofstream block_sizes_out;
     block_sizes_out.open(block_sizes_file);
 

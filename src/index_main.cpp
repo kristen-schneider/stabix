@@ -58,8 +58,11 @@ int main(int argc, char *argv[]) {
                         (gwas_path.stem().string() +
                         "_" + config_options["block_size"] +
                         "_" + config_options["out_name"]);
-    string compressed_file =
-            out_dir_path / (gwas_path.stem().string() + ".grlz");
+
+    string compressed_file = out_dir_path / (gwas_path.stem().string() +
+                                             "_" + config_options["block_size"] +
+                                             "_" + config_options["out_name"] +
+                                             ".grlz");
 
     cout << "Done." << endl << endl;
 
