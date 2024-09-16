@@ -11,6 +11,7 @@
 #include <sstream>
 
 using namespace std;
+namespace fs = std::filesystem;
 
 vector<vector<vector<string>>> make_blocks(
         string gwas_file,
@@ -41,5 +42,7 @@ int get_block_length(
         vector<string> compressed_block);
 
 vector<string> compress_block(
+        fs::path col_sizes_file,
+        int block_idx,
         vector<vector<string>> block,
         vector<string> codecs_list);

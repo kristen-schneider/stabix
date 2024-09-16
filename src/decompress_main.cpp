@@ -1,10 +1,12 @@
 #include <algorithm>
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <regex>
 #include <string>
+#include <thread>
 #include <unordered_set>
 #include <vector>
 
@@ -35,14 +37,21 @@ unordered_set<int> query_genomic_idx(vector<string> query_list,
         int start_block_idx = get<0>(query_start_end_byte);
         int end_block_idx = get<1>(query_start_end_byte);
 
-        // TODO: should this be (doubly) inclusive as implemented?
-        for (int block_idx = start_block_idx; block_idx <= end_block_idx; block_idx++) {
-            blocks.insert(block_idx);
-        }
-
-        if (start_block_idx == -1 || end_block_idx == -1) {
-            cout << "Query not found in index" << endl;
+        // if start and end block indexes are -1, query not found in index
+        if (start_block_idx == -1 && end_block_idx == -1) {
+            cout << "Query " << q_idx << " NOT found in genomic index." << endl;
             continue;
+        }
+        else{
+            // if start block is -1; it means that the query starts before the first block
+            // make start block idx 0
+            if (start_block_idx == -1) {
+                start_block_idx = 0;
+            }
+            // TODO: should this be (doubly) inclusive as implemented?
+            for (int block_idx = start_block_idx; block_idx <= end_block_idx; block_idx++) {
+                blocks.insert(block_idx);
+            }
         }
     }
 
@@ -125,6 +134,13 @@ int main(int argc, char *argv[]) {
                            extra_indices_list.end());
     }
 
+    int block_size = -1;
+    try {
+        block_size = stoi(config_options["block_size"]);
+    } catch (invalid_argument &e) {
+        block_size = -1;
+    }
+
     // - codecs (by data type)
     string codec_int = config_options["int"];
     string codec_float = config_options["float"];
@@ -135,11 +151,36 @@ int main(int argc, char *argv[]) {
             {"string", codec_str}};
 
     // -out
-    string output_dir = config_options["out_directory"];
     auto gwas_path = fs::path(config_options["gwas_file"]);
-    auto out_dir_path = gwas_path.parent_path() / output_dir;
-    string compressed_file =
-            out_dir_path / (gwas_path.stem().string() + ".grlz");
+    // out dir naming scheme = "gwasfilename_blocksize_out"
+
+    auto out_dir_path = fs::path();
+    string compressed_file;
+    if (block_size == -1) {
+        out_dir_path = gwas_path.parent_path() /
+                       (gwas_path.stem().string() +
+                        "_map" +
+                        "_" + config_options["out_name"]);
+
+        compressed_file = out_dir_path / (gwas_path.stem().string() +
+                                          "_map" +
+                                          "_" + config_options["out_name"] +
+                                          ".grlz");
+    } else {
+        out_dir_path = gwas_path.parent_path() /
+                       (gwas_path.stem().string() +
+                        "_" + config_options["block_size"] +
+                        "_" + config_options["out_name"]);
+
+        compressed_file = out_dir_path / (gwas_path.stem().string() +
+                                          "_" + config_options["block_size"] +
+                                          "_" + config_options["out_name"] +
+                                          ".grlz");
+    }
+
+//    string output_dir = config_options["out_directory"];
+//    auto gwas_path = fs::path(config_options["gwas_file"]);
+//    auto out_dir_path = gwas_path.parent_path() / output_dir;
 
     ofstream query_output_stream;
     string query_output_file_name =
@@ -151,6 +192,40 @@ int main(int argc, char *argv[]) {
     }
     cout << "Done." << endl << endl;
 
+    // TODO: time decompression steps
+    // outfile for decompression times
+    fs::create_directories(out_dir_path.parent_path() / "decompression_times");
+    fs::path compression_times_file;
+    fs::path col_times_file;
+    if (block_size == -1) {
+        compression_times_file = out_dir_path.parent_path() / "decompression_times" /
+                                 (gwas_path.stem().string() +
+                                 "_map" +
+                                 "_" + config_options["out_name"] + "_decompression.csv");
+
+        col_times_file = out_dir_path.parent_path() / "decompression_times" /
+                            (gwas_path.stem().string() +
+                            "_map" +
+                            "_" + config_options["out_name"] + "_column_decompression.csv");
+    } else {
+        compression_times_file = out_dir_path.parent_path() / "decompression_times" /
+                                 (gwas_path.stem().string() +
+                                 "_" + config_options["block_size"] +
+                                 "_" + config_options["out_name"] + "_decompression.csv");
+
+        col_times_file = out_dir_path.parent_path() / "decompression_times" /
+                         (gwas_path.stem().string() +
+                          "_" + config_options["block_size"] +
+                          "_" + config_options["out_name"] + "_column_decompression.csv");
+    }
+
+    // outfile for column decompression times
+
+    ofstream col_times;
+    col_times.open(col_times_file, ios::trunc);
+    // write header
+    col_times << "block_idx,col_idx,comp_time,col_size,codec" << endl;
+    col_times.close();
 //    // INFO:
 //    // ----------------------------------------------------------------------
 //    //      Hardcoded query parameters
@@ -162,11 +237,11 @@ int main(int argc, char *argv[]) {
 //    //      Hardcoded query parameters
 //    // ----------------------------------------------------------------------
     auto pvalue_bins = vector<string>{"0.5", "0.1", "1e-8"};
-    string pvalue_query = "<= 0.5";
+    string pvalue_query = "<= 0.4";
 
     // clear contents of output file and close
     query_output_stream.close();
-    query_output_stream.open(query_output_file_name, ios::app);
+    query_output_stream.open(query_output_file_name, ios::trunc);
     cout << "Done." << endl << endl;
 
     // 1. open compressed file and read header
@@ -213,6 +288,9 @@ int main(int argc, char *argv[]) {
     // read genomic index
     cout << "Opening genomic index file..." << endl;
     cout << "\t..." << genomic_index_path << endl;
+
+    // time reading genomic index
+    auto read_genomic_index_start = chrono::high_resolution_clock::now();
     ifstream genomic_index_file(
         genomic_index_path); // TODO: remove: these next fns
                              // should take path, not stream
@@ -227,8 +305,12 @@ int main(int argc, char *argv[]) {
     auto block_line_map = BlockLineMap(genomic_index_path);
     genomic_index_file.close();
     cout << "Done." << endl << endl;
+    auto read_genomic_index_end = chrono::high_resolution_clock::now();
 
     // 4. get and aggregate blocks associated with each query
+    // time query genomic index
+    auto query_genomic_index_start = chrono::high_resolution_clock::now();
+
     auto total_blocks_to_decompress = vector<int>();
     // get genomic blocks
     auto genom_blocks = query_genomic_idx(
@@ -236,10 +318,12 @@ int main(int argc, char *argv[]) {
             genomic_index_info_by_location,
             genomic_index_info_by_block);
 
+    auto query_genomic_index_end = chrono::high_resolution_clock::now();
+
     // TODO: generalize to other custom index types
     // if there are no genomic blocks, return early. nothing found.
     if (genom_blocks.empty()) {
-        cout << "No blocks found for query" << endl;
+        cout << endl << "No blocks found for given query." << endl;
         return 0;
         // if there is no p-value query, set the query to all genomic blocks
     }else if( extra_indices == "None"){
@@ -250,12 +334,18 @@ int main(int argc, char *argv[]) {
         sort(total_blocks_to_decompress.begin(), total_blocks_to_decompress.end());
         // get blocks from pvalue query
     }else{
+
+        // time query p-value index
+        auto query_pval_index_start = chrono::high_resolution_clock::now();
         auto pval_blocks = query_abs_idx(genomic_index_path,
                                      pvalue_bins,
                                      pvalue_query,
                                      block_line_map);
         auto total_blocks_to_decompress = vector<int>();
 
+        auto query_pval_index_end = chrono::high_resolution_clock::now();
+
+        // get blocks that are in both genomic and p-value queries
         for (int block : genom_blocks) {
             if (pval_blocks.contains(block)) {
                 total_blocks_to_decompress.push_back(block);
@@ -266,9 +356,14 @@ int main(int argc, char *argv[]) {
     }
 
     // 5. decompress all blocks for each query
+    // open col times file
+    col_times.open(col_times_file, ios::app);
     std::cout << "Decompressing " << total_blocks_to_decompress.size()
               << " blocks" << std::endl;
+    vector<float> decompress_block_times;
     for (int block_idx : total_blocks_to_decompress) {
+        // time decompression
+        auto decompress_block_start = chrono::high_resolution_clock::now();
         size_t block_size = -1;
         // if there are only two block sizes, block size is fixed except
         // for last block
@@ -333,12 +428,35 @@ int main(int argc, char *argv[]) {
                 block_bitstring.substr(curr_block_byte, col_bytes);
             curr_block_byte += col_bytes;
             size_t compressed_size = col_bitstring.size();
+
+            // time decompressing column
+            auto col_decompress_start = chrono::high_resolution_clock::now();
             string col_decompressed = decompress_column(
-                col_bitstring, col_codec, compressed_size, block_size);
+                    col_bitstring,
+                    col_codec,
+                    compressed_size,
+                    block_size);
+            auto col_decompress_end = chrono::high_resolution_clock::now();
+//            col_times.open(col_times_file, ios::app);
+            col_times << block_idx << "," << col_idx << ","
+                      << chrono::duration_cast<chrono::microseconds>(
+                             col_decompress_end - col_decompress_start)
+                             .count()
+                      << "μs," << col_bytes << "," << col_codec << endl;
             decompressed_block.push_back(col_decompressed);
         }
 
+        auto decompress_block_end = chrono::high_resolution_clock::now();
+        decompress_block_times.push_back(
+            chrono::duration_cast<chrono::microseconds>(
+                decompress_block_end - decompress_block_start)
+                .count());
+
+        // time writing decompressed block to output file
+        auto write_block_start = chrono::high_resolution_clock::now();
+
         // write decompressed block to output file
+        cout << "Writing block " << block_idx << " to output file..." << endl;
         int column_count = stoi(num_columns);
         vector<string> split_columns[column_count];
         for (int i = 0; i < column_count; i++) {
@@ -352,8 +470,34 @@ int main(int argc, char *argv[]) {
             }
             query_output_stream << endl;
         }
+
+        auto write_block_end = chrono::high_resolution_clock::now();
     }
     query_output_stream.close();
+    col_times.close();
+
+    // write decompression times to file
+    ofstream decompression_times_stream;
+    decompression_times_stream.open(compression_times_file, ios::trunc);
+
+    decompression_times_stream << gwas_file << endl;
+    decompression_times_stream << "genomic_index_read,"
+                               << chrono::duration_cast<chrono::microseconds>(
+                                      read_genomic_index_end - read_genomic_index_start)
+                                          .count() << "μs" << endl;
+    decompression_times_stream << "genomic_index_query,"
+                                 << chrono::duration_cast<chrono::microseconds >(
+                                          query_genomic_index_end - query_genomic_index_start)
+                                            .count() << "μs" << endl;
+    // write decompress_block_times
+    for (int i = 0; i < decompress_block_times.size(); i++) {
+        decompression_times_stream << "block_" << i << "_decompression,"
+                                   << decompress_block_times[i] << "μs" << endl;
+    }
+
+    decompression_times_stream.close();
+
+
 
     cout << endl << "---Decompression Complete---" << endl;
     return 0;
