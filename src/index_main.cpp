@@ -54,7 +54,10 @@ int main(int argc, char *argv[]) {
     // -out
     string output_dir = config_options["out_directory"];
     auto gwas_path = fs::path(config_options["gwas_file"]);
-    auto out_dir_path = gwas_path.parent_path() / output_dir;
+    auto out_dir_path = gwas_path.parent_path() /
+                        (gwas_path.stem().string() +
+                        "_" + config_options["block_size"] +
+                        "_" + config_options["out_name"]);
     string compressed_file =
             out_dir_path / (gwas_path.stem().string() + ".grlz");
 
@@ -103,7 +106,7 @@ int main(int argc, char *argv[]) {
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto bins = std::vector<float>{0.5, 0.1, 1e-8};
     auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, bins);
-    pValIndexer.build_index(gwas_file, 9);
+    pValIndexer.build_index(gwas_file, 8);
     cout << "Done." << endl;
     // ----------------------------------------------------------------------
 

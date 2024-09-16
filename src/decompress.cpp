@@ -14,6 +14,7 @@
 #include "utils.h"
 
 using namespace std;
+namespace fs = std::filesystem;
 using namespace FastPForLib;
 
 string ZLIB_HEADER_D = "x\xda";

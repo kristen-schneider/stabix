@@ -14,8 +14,8 @@ namespace fs = std::filesystem;
 
 // TODO: make this autodetect the chrm and bp columns
 //  OR include in config file in case not 1 and 2
-const int chrm_idx = 1;
-const int bp_idx = 2;
+const int chrm_idx = 0;
+const int bp_idx = 1;
 
 struct IndexEntry {
     double value; // floating point value to sort by
@@ -351,7 +351,7 @@ int get_block_length(vector<string> compressed_block) {
  * @return compressed_block: vector<string> - compressed block of data
  */
 vector<string> compress_block(
-        fs::path col_sizes_file,
+        fs::path col_times_file,
         int block_idx,
         vector<vector<string>> block,
         vector<string> codecs_list) {
@@ -361,9 +361,9 @@ vector<string> compress_block(
 
     // write all column times out to file
     // TODO: TAKE OUT; for plotting purposes only
-    // open block_sizes file in append mode
-    ofstream col_sizes_out_file;
-    col_sizes_out_file.open(col_sizes_file, ios::app);
+    // open col_times file in append mode
+    ofstream col_times_out_file;
+    col_times_out_file.open(col_times_file, ios::app);
 
     for (int col_i = 0; col_i < block.size(); col_i++) {
         // time compression
@@ -420,9 +420,9 @@ vector<string> compress_block(
         // write compression time to file
         auto duration_compress_column =
                 chrono::duration_cast<chrono::microseconds>(end_compress_column - start_compress_column);
-        col_sizes_out_file << block_idx << "," << col_i << "," << duration_compress_column.count() << ","  << codec << endl;
+        col_times_out_file << block_idx << "," << col_i << "," << duration_compress_column.count() << ","  << codec << endl;
 
     }
-    col_sizes_out_file.close();
+    col_times_out_file.close();
     return compressed_block;
 }

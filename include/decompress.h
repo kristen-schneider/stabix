@@ -11,9 +11,12 @@
 #include <zlib.h>
 
 using namespace std;
+namespace fs = std::filesystem;
 
-string decompress_column(string compressed_column, string codec,
-                         size_t compressedSize, size_t block_size);
+string decompress_column(string compressed_column,
+                         string codec,
+                         size_t compressedSize,
+                         size_t block_size);
 
 string zlib_decompress(string in_data);
 
