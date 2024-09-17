@@ -59,7 +59,7 @@ unordered_set<int> query_genomic_idx(vector<string> query_list,
 }
 
 unordered_set<int> query_abs_idx(string path,
-                                 auto config_bins,
+                                 vector<string> config_bins,
                                  string config_query,
                                  BlockLineMap block_line_map) {
 
@@ -75,10 +75,10 @@ unordered_set<int> query_abs_idx(string path,
     }
 
     // parse config_query
-    int val;
+    float val;
     ComparisonType op;
 
-    regex re("/(>|<)(=?)\\s*(\\d*\\.?.*)/");
+    regex re("(>|<)(=?)\\s*(\\d*\\.?.*)");
     smatch matches;
 
     if (regex_search(config_query, matches, re)) {
@@ -97,6 +97,8 @@ unordered_set<int> query_abs_idx(string path,
         } catch (const invalid_argument &e) {
             throw invalid_argument("Value must be a float: " + val_exp);
         }
+    } else {
+        throw invalid_argument("Could not parse \"" + config_query + "\". Expected something like \"<= 0.3\".");
     }
 
     auto index = PValIndexer(path, &block_line_map, bins);
@@ -277,6 +279,8 @@ int main(int argc, char *argv[]) {
     cout << "Opening genomic index file..." << endl;
     cout << "\t..." << genomic_index_path << endl;
 
+    auto total_blocks_to_decompress = vector<int>();
+
     // time reading genomic index
     auto read_genomic_index_start = chrono::high_resolution_clock::now();
     ifstream genomic_index_file(
@@ -299,7 +303,6 @@ int main(int argc, char *argv[]) {
     // time query genomic index
     auto query_genomic_index_start = chrono::high_resolution_clock::now();
 
-    auto total_blocks_to_decompress = vector<int>();
     // get genomic blocks
     auto genom_blocks = query_genomic_idx(
             genomic_query_list,
@@ -309,12 +312,6 @@ int main(int argc, char *argv[]) {
     auto query_genomic_index_end = chrono::high_resolution_clock::now();
 
     // TODO: generalize to other custom index types
-    //    // INFO:
-    //    // ----------------------------------------------------------------------
-    //    //      Hardcoded query parameters
-    //    // ----------------------------------------------------------------------
-    //    vector<string> genomic_query_list = {"2:100-150000"};
-    //    // And:  query parameters need to be externally provided to this module
     //    // INFO:
     //    // ----------------------------------------------------------------------
     //    //      Hardcoded query parameters
@@ -338,11 +335,10 @@ int main(int argc, char *argv[]) {
 
         // time query p-value index
         auto query_pval_index_start = chrono::high_resolution_clock::now();
-        auto pval_blocks = query_abs_idx(genomic_index_path,
+        auto pval_blocks = query_abs_idx(pval_index_path,
                                      pvalue_bins,
                                      pvalue_query,
                                      block_line_map);
-        auto total_blocks_to_decompress = vector<int>();
 
         auto query_pval_index_end = chrono::high_resolution_clock::now();
 

@@ -17,9 +17,9 @@ Indexer::Indexer(std::string indexPath, BlockLineMap *map) {
     this->blockLineMap = map;
 }
 
-PValIndexer::PValIndexer(std::string indexPath, BlockLineMap *map,
+PValIndexer::PValIndexer(std::string index_path, BlockLineMap *map,
                          vector<float> bins)
-    : Indexer(indexPath, map) {
+    : Indexer(index_path, map) {
     // sort bins in descending order
     std::sort(bins.begin(), bins.end(), std::greater<float>());
     this->bins = bins;
