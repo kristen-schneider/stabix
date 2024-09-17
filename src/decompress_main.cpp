@@ -78,7 +78,7 @@ unordered_set<int> query_abs_idx(string path,
     int val;
     ComparisonType op;
 
-    regex re("/(>|<)(=?)\\s*(\\d*\\.?.*)/");
+    regex re("(>|<)(=?)\\s*(\\d*\\.?.*)");
     smatch matches;
 
     if (regex_search(config_query, matches, re)) {
@@ -334,7 +334,7 @@ int main(int argc, char *argv[]) {
 
         // time query p-value index
         auto query_pval_index_start = chrono::high_resolution_clock::now();
-        auto pval_blocks = query_abs_idx(genomic_index_path,
+        auto pval_blocks = query_abs_idx(pval_index_path,
                                      pvalue_bins,
                                      pvalue_query,
                                      block_line_map);
