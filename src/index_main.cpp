@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
                            extra_indices_list.end());
     }
 
-    int block_size = -1;
+    int block_size;
     try {
         block_size = stoi(config_options["block_size"]);
     } catch (invalid_argument &e) {
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
                         "_map" +
                         "_" + config_options["out_name"]);
 
-        string compressed_file = out_dir_path / (gwas_path.stem().string() +
+        compressed_file = out_dir_path / (gwas_path.stem().string() +
                                                  "_map" +
                                                  "_" + config_options["out_name"] +
                                                  ".grlz");
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
                         "_" + to_string(block_size) +
                         "_" + config_options["out_name"]);
 
-        string compressed_file = out_dir_path / (gwas_path.stem().string() +
+        compressed_file = out_dir_path / (gwas_path.stem().string() +
                                                  "_" + config_options["block_size"] +
                                                  "_" + config_options["out_name"] +
                                                  ".grlz");
