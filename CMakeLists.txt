@@ -19,7 +19,7 @@ endif()
 
 ## Include directories
 include_directories(include)
-# include_directories(lib)
+include_directories(lib)
 include_directories(lib/FastPFor/headers)
 include_directories(lib/bzxstr/include)
 include_directories(lib/googletest/googletest/include)
@@ -72,6 +72,11 @@ add_executable(test_gwas
         test/test_blocks.cpp)
 
 # Additional configuration if needed, e.g., linking libraries, "adding -lz"
+#target_link_libraries(gwas_compress bxzstr z)
+#target_link_libraries(gwas_index bxzstr z)
+#target_link_libraries(gwas_decompress bxzstr z)
+#target_link_libraries(test_gwas gtest gtest_main bxzstr z)
+
 target_link_libraries(gwas_compress bxzstr FastPFOR z)
 target_link_libraries(gwas_index bxzstr FastPFOR z)
 target_link_libraries(gwas_decompress bxzstr FastPFOR z)
