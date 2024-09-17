@@ -18,7 +18,7 @@ query:
     None
 
 extra_indices:
-  None
+  pval
 
 codecs:
   int:
