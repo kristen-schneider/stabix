@@ -173,6 +173,12 @@ TEST(CompressBlock, test_tsv){
                                     {"aaa", "bbb", "ccc", "ddd", "eee", "fff"},
                                     {"aaa", "bbb", "ccc", "ddd", "eee", "fff"}};
 
-    vector<string> compressed_block = compress_block(block, codecs_list);
+    fs::path col_times_file = "/fake/file/path";
+    int block_idx = 0;
+    vector<string> compressed_block = compress_block(
+            col_times_file,
+            block_idx,
+            block,
+            codecs_list);
     ASSERT_EQ(compressed_block.size(), 6);
 }
