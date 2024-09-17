@@ -2,14 +2,14 @@ gwas_file:
   /Users/krsc0813/Desktop/gwas/pan_ukbb/continuous-22409-both_sexes-irnt.tsv
 
 block_size:
-  15000
+  10000
 
 out_name:
-  fpfvb-xz
+  bz2
 
 query:
   genomic:
-    /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.bed
+    /Users/krsc0813/CLionProjects/gwas_local/gwas_files/ukbb.bed
   pval:
     NA
   other:
@@ -22,8 +22,8 @@ extra_indices:
 
 codecs:
   int:
-    fpfVB
+    bz2
   float:
-    xz
+    bz2
   string:
-    xz
+    bz2

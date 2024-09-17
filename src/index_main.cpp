@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
     // ----------------------------------------------------------------------
     string pValIndexPath = indexPaths[1];
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
-    auto bins = std::vector<float>{0.5, 0.1, 1e-8};
+    auto bins = std::vector<float>{0.2, 0.1, 1e-8};
     auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, bins);
     pValIndexer.build_index(gwas_file, 8);
     cout << "Done." << endl;
