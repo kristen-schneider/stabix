@@ -1,15 +1,15 @@
 gwas_file:
-  /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.tsv
+  /Users/krsc0813/Desktop/gwas/pan_ukbb/continuous-22409-both_sexes-irnt.tsv
 
 block_size:
-  5
+  10000
 
 out_name:
-  xz
+  bz2
 
 query:
   genomic:
-    /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.bed
+    /Users/krsc0813/CLionProjects/gwas_local/gwas_files/ukbb.bed
   pval:
     NA
   other:
@@ -18,12 +18,12 @@ query:
     None
 
 extra_indices:
-  pval
+  None
 
 codecs:
   int:
-    xz
+    bz2
   float:
-    xz
+    bz2
   string:
-    xz
+    bz2
