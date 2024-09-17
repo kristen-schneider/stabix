@@ -78,7 +78,7 @@ unordered_set<int> query_abs_idx(string path,
     int val;
     ComparisonType op;
 
-    regex re("/(>|<)(=?)\\s*(\\d*\\.?.*)/");
+    regex re("(>|<)(=?)\\s*(\\d*\\.?.*)");
     smatch matches;
 
     if (regex_search(config_query, matches, re)) {
