@@ -226,18 +226,6 @@ int main(int argc, char *argv[]) {
     // write header
     col_times << "block_idx,col_idx,comp_time,col_size,codec" << endl;
     col_times.close();
-//    // INFO:
-//    // ----------------------------------------------------------------------
-//    //      Hardcoded query parameters
-//    // ----------------------------------------------------------------------
-//    vector<string> genomic_query_list = {"2:100-150000"};
-//    // And:  query parameters need to be externally provided to this module
-//    // INFO:
-//    // ----------------------------------------------------------------------
-//    //      Hardcoded query parameters
-//    // ----------------------------------------------------------------------
-    auto pvalue_bins = vector<string>{"0.5", "0.1", "1e-8"};
-    string pvalue_query = "<= 0.4";
 
     // clear contents of output file and close
     query_output_stream.close();
@@ -321,6 +309,19 @@ int main(int argc, char *argv[]) {
     auto query_genomic_index_end = chrono::high_resolution_clock::now();
 
     // TODO: generalize to other custom index types
+    //    // INFO:
+    //    // ----------------------------------------------------------------------
+    //    //      Hardcoded query parameters
+    //    // ----------------------------------------------------------------------
+    //    vector<string> genomic_query_list = {"2:100-150000"};
+    //    // And:  query parameters need to be externally provided to this module
+    //    // INFO:
+    //    // ----------------------------------------------------------------------
+    //    //      Hardcoded query parameters
+    //    // ----------------------------------------------------------------------
+    auto pvalue_bins = vector<string>{"0.5", "0.1", "1e-8"};
+    string pvalue_query = "<= 0.4";
+
     // if there are no genomic blocks, return early. nothing found.
     if (genom_blocks.empty()) {
         cout << endl << "No blocks found for given query." << endl;
