@@ -279,6 +279,8 @@ int main(int argc, char *argv[]) {
     cout << "Opening genomic index file..." << endl;
     cout << "\t..." << genomic_index_path << endl;
 
+    auto total_blocks_to_decompress = vector<int>();
+
     // time reading genomic index
     auto read_genomic_index_start = chrono::high_resolution_clock::now();
     ifstream genomic_index_file(
@@ -301,7 +303,6 @@ int main(int argc, char *argv[]) {
     // time query genomic index
     auto query_genomic_index_start = chrono::high_resolution_clock::now();
 
-    auto total_blocks_to_decompress = vector<int>();
     // get genomic blocks
     auto genom_blocks = query_genomic_idx(
             genomic_query_list,
@@ -338,8 +339,6 @@ int main(int argc, char *argv[]) {
                                      pvalue_bins,
                                      pvalue_query,
                                      block_line_map);
-
-        auto total_blocks_to_decompress = vector<int>();
 
         auto query_pval_index_end = chrono::high_resolution_clock::now();
 
