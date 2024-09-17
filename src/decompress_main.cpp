@@ -59,7 +59,7 @@ unordered_set<int> query_genomic_idx(vector<string> query_list,
 }
 
 unordered_set<int> query_abs_idx(string path,
-                                 auto config_bins,
+                                 vector<string> config_bins,
                                  string config_query,
                                  BlockLineMap block_line_map) {
 
@@ -97,6 +97,8 @@ unordered_set<int> query_abs_idx(string path,
         } catch (const invalid_argument &e) {
             throw invalid_argument("Value must be a float: " + val_exp);
         }
+    } else {
+        throw invalid_argument("Could not parse \"" + config_query + "\". Expected something like \"<= 0.3\".");
     }
 
     auto index = PValIndexer(path, &block_line_map, bins);
@@ -309,12 +311,6 @@ int main(int argc, char *argv[]) {
     auto query_genomic_index_end = chrono::high_resolution_clock::now();
 
     // TODO: generalize to other custom index types
-    //    // INFO:
-    //    // ----------------------------------------------------------------------
-    //    //      Hardcoded query parameters
-    //    // ----------------------------------------------------------------------
-    //    vector<string> genomic_query_list = {"2:100-150000"};
-    //    // And:  query parameters need to be externally provided to this module
     //    // INFO:
     //    // ----------------------------------------------------------------------
     //    //      Hardcoded query parameters
