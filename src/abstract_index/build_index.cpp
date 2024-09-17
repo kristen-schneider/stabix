@@ -20,7 +20,7 @@ void Indexer::build_index(std::string inPath, int queryColumn) {
         throw std::runtime_error("Missing header line");
     }
 
-    std::unordered_map<float, std::vector<int>> index;
+    std::unordered_map<float, std::unordered_set<int>> index;
 
     // 1. Bin the distribution of data
 
@@ -31,7 +31,7 @@ void Indexer::build_index(std::string inPath, int queryColumn) {
         std::string query_val = row_vals[queryColumn];
         float bin = value_to_bin(query_val);
         int block_id = this->blockLineMap->line_to_block(line_id);
-        index[bin].push_back(block_id);
+        index[bin].insert(block_id);
         line_id++;
     }
 
@@ -42,12 +42,17 @@ void Indexer::build_index(std::string inPath, int queryColumn) {
 
     for (auto &entry : index) {
         binPositions[entry.first] = indexFile.tellp();
+        auto set = entry.second;
 
-        for (int i = 0; i < entry.second.size() - 1; i++) {
-            indexFile << entry.second[i] << " ";
+        string lineQueue = "";
+
+        for (auto &block_id : set) {
+            indexFile << lineQueue;
+            indexFile << block_id;
+            lineQueue = " ";
         }
 
-        indexFile << entry.second[entry.second.size() - 1] << std::endl;
+        indexFile << std::endl;
     }
 
     // 3. Write the footer (map keys)
