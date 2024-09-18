@@ -10,12 +10,12 @@ out_name:
 query:
   genomic:
     /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.bed
-  pval:
-    8,>= 1e-1
-  other:
-    None
-  uncertainty:
-    None
+  col_idx:
+    8
+  bins:
+    5e-1, 5e-5, 5.1e-8
+  threshold:
+    <= 5e-8
 
 extra_indices:
   pval
