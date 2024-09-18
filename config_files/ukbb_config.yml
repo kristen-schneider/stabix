@@ -5,25 +5,25 @@ block_size:
   10000
 
 out_name:
-  bz2
+  zstd
 
 query:
   genomic:
     /Users/krsc0813/CLionProjects/gwas_local/gwas_files/ukbb.bed
   pval:
-    NA
+    1e-8
   other:
     None
   uncertainty:
     None
 
 extra_indices:
-  None
+  pval
 
 codecs:
   int:
-    bz2
+    zstd
   float:
-    bz2
+    zstd
   string:
-    bz2
+    zstd
