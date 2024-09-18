@@ -107,6 +107,8 @@ unordered_set<int> query_abs_idx(string path,
 
 int main(int argc, char *argv[]) {
     // DECOMPRESSION STEPS
+    // set bins
+    auto pvalue_bins = vector<string>{"1e-1", "1e-3", "4e-8"};
 
     // 0. read config options
     // open file, exit
@@ -311,14 +313,6 @@ int main(int argc, char *argv[]) {
 
     auto query_genomic_index_end = chrono::high_resolution_clock::now();
 
-    // TODO: generalize to other custom index types
-    //    // INFO:
-    //    // ----------------------------------------------------------------------
-    //    //      Hardcoded query parameters
-    //    // ----------------------------------------------------------------------
-    auto pvalue_bins = vector<string>{"0.5", "0.1", "1e-8"};
-    string pvalue_query = "<= 0.4";
-
     // if there are no genomic blocks, return early. nothing found.
     if (genom_blocks.empty()) {
         cout << endl << "No blocks found for given query." << endl;
@@ -333,12 +327,22 @@ int main(int argc, char *argv[]) {
         // get blocks from pvalue query
     }else{
 
-        // time query p-value index
+        // get pvalue threshold (query) from config file
+        string pval_config_options = config_options["pval"];
+        vector<string> pval_config_list = split_string(pval_config_options, ',');
+        string pvalue_query = pval_config_list[1];
+
         auto query_pval_index_start = chrono::high_resolution_clock::now();
         auto pval_blocks = query_abs_idx(pval_index_path,
                                      pvalue_bins,
                                      pvalue_query,
                                      block_line_map);
+
+        // TODO: delete this after debug
+        cout << "Pval blocks: " << pval_blocks.size() << endl;
+        for (int block : pval_blocks) {
+            cout << block << endl;
+        }
 
         auto query_pval_index_end = chrono::high_resolution_clock::now();
 
