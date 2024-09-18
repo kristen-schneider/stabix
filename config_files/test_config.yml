@@ -2,7 +2,7 @@ gwas_file:
   /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.tsv
 
 block_size:
-  5
+  map_files/test.map
 
 out_name:
   xz
