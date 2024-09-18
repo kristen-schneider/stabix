@@ -407,7 +407,25 @@ map<int, vector<uint32_t>> read_cm_map_file(
     while (getline(map_stream, line)) {
         // split line by white space
         vector<string> vec = split_string(line, ' ');
-        int chrm = stoi(vec[0]);
+        int chrm;
+        try{
+            chrm = stoi(vec[0]);
+        } catch (const std::invalid_argument& e){
+            if (vec[0] == "X"){
+                chrm = 23;
+            }
+            else if (vec[0] == "Y"){
+                chrm = 24;
+            }
+            else if (vec[0] == "M"){
+                chrm = 25;
+            }
+            else{
+                cout << "Invalid chromosome: " << vec[0] << endl;
+                // skip this line
+                continue;
+            }
+        }
         // new chromosome, reset block count
         if (chrm != prev_chrm) {
             chrm_block_bp_ends[chrm] = {};

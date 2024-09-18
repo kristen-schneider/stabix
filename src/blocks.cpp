@@ -246,7 +246,7 @@ vector<vector<vector<string>>> make_blocks_map(
         string column_value;
         vector<string> line_vector = split_string(line, '\t');
 
-        int curr_chrm;
+        int curr_chrm=-1;
         try{
             curr_chrm = stoi(line_vector[chrm_idx]);
         }
