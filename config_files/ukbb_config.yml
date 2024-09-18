@@ -9,7 +9,7 @@ out_name:
 
 query:
   genomic:
-    /Users/krsc0813/CLionProjects/gwas_local/gwas_files/ukbb.bed
+    /Users/krsc0813/CLionProjects/gwas_local/gwas_files/hg19.protein_coding.bed
   pval:
     7,<= 5e-8
   other:
