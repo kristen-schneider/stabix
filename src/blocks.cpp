@@ -69,21 +69,40 @@ vector<vector<vector<string>>> make_blocks(
         // to block remove newline character from line
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
 
-        // if chrm == X; skip line
-        if (line.find("X") != string::npos) {
-            continue;
-        }
-
         if (line_count < block_size) {
             istringstream line_stream(line);
             string column_value;
             int column_idx = 0;
             // split line by delimiter and add to curr_block
             vector<string> line_vector = split_string(line, '\t');
+
+            int curr_chrm;
+            try{
+                curr_chrm = stoi(line_vector[chrm_idx]);
+            }
+                // catch stoi exceptions for X and Y chromosomes
+                // X --> 23, Y --> 24, M --> 25
+            catch (const std::invalid_argument& e){
+                if (line_vector[chrm_idx] == "X"){
+                    curr_chrm = 23;
+                }
+                else if (line_vector[chrm_idx] == "Y"){
+                    curr_chrm = 24;
+                }
+                else if (line_vector[chrm_idx] == "M"){
+                    curr_chrm = 25;
+                }
+                else{
+                    cout << "Invalid chromosome: " << line_vector[chrm_idx] << endl;
+                    // skip this line
+                    continue;
+                }
+            }
+
             // if this is the first line in the block, store the genomic index
             // starting chrm, starting bp, and line number
             if (line_count == 0){
-                block_genomic_index[0] = stoi(line_vector[chrm_idx]);
+                block_genomic_index[0] = curr_chrm;
                 block_genomic_index[1] = stoi(line_vector[bp_idx]);
                 block_genomic_index[2] = 1 + block_count * block_size;
                 genomic_index.push_back(block_genomic_index);
@@ -111,6 +130,29 @@ vector<vector<vector<string>>> make_blocks(
             int column_idx = 0;
             vector<string> line_vector = split_string(line, '\t');
 
+            int curr_chrm;
+            try{
+                curr_chrm = stoi(line_vector[chrm_idx]);
+            }
+                // catch stoi exceptions for X and Y chromosomes
+                // X --> 23, Y --> 24
+            catch (const std::invalid_argument& e){
+                if (line_vector[chrm_idx] == "X"){
+                    curr_chrm = 23;
+                }
+                else if (line_vector[chrm_idx] == "Y"){
+                    curr_chrm = 24;
+                }
+                else if (line_vector[chrm_idx] == "M"){
+                    curr_chrm = 25;
+                }
+                else{
+                    cout << "Invalid chromosome: " << line_vector[chrm_idx] << endl;
+                    // skip this line
+                    continue;
+                }
+            }
+
             while (getline(line_stream, column_value, delim)) {
                 curr_block[column_idx].push_back(column_value);
                 column_idx++;
@@ -119,12 +161,11 @@ vector<vector<vector<string>>> make_blocks(
             line_count = 1;
             block_count++;
 
-
             // store the genomic index
             // starting chrm, starting bp, and line number
             // try and convert chrm and bp to ints
             try{
-                block_genomic_index[0] = stoi(line_vector[chrm_idx]);
+                block_genomic_index[0] = curr_chrm;
                 block_genomic_index[1] = stoi(line_vector[bp_idx]);
                 block_genomic_index[2] = 1 + block_count * block_size;
                 genomic_index.push_back(block_genomic_index);
@@ -196,11 +237,6 @@ vector<vector<vector<string>>> make_blocks_map(
     // read in lines
     while (getline(gwas, line)) {
 
-        // if chrm == X; skip line
-        if (line.find("X") != string::npos) {
-            continue;
-        }
-
         line_count++;
         total_line_count++;
         // to block remove newline character from line
@@ -210,7 +246,29 @@ vector<vector<vector<string>>> make_blocks_map(
         string column_value;
         vector<string> line_vector = split_string(line, '\t');
 
-        int curr_chrm = stoi(line_vector[chrm_idx]);
+        int curr_chrm;
+        try{
+            curr_chrm = stoi(line_vector[chrm_idx]);
+        }
+        // catch stoi exceptions for X and Y chromosomes
+        // X --> 23, Y --> 24
+        catch (const std::invalid_argument& e){
+            if (line_vector[chrm_idx] == "X"){
+                curr_chrm = 23;
+            }
+            else if (line_vector[chrm_idx] == "Y"){
+                curr_chrm = 24;
+            }
+            else if (line_vector[chrm_idx] == "M"){
+                curr_chrm = 25;
+            }
+            else{
+                cout << "Invalid chromosome: " << line_vector[chrm_idx] << endl;
+                // skip this line
+                continue;
+            }
+        }
+
         curr_bp = stoul(line_vector[bp_idx]);
 
         // if new chromosome and not first chromosome
@@ -246,6 +304,28 @@ vector<vector<vector<string>>> make_blocks_map(
 
             // split line by delimiter and add to curr_block
             vector<string> line_vector = split_string(line, '\t');
+
+            try{
+                curr_chrm = stoi(line_vector[chrm_idx]);
+            }
+                // catch stoi exceptions for X and Y chromosomes
+                // X --> 23, Y --> 24
+            catch (const std::invalid_argument& e){
+                if (line_vector[chrm_idx] == "X"){
+                    curr_chrm = 23;
+                }
+                else if (line_vector[chrm_idx] == "Y"){
+                    curr_chrm = 24;
+                }
+                else if (line_vector[chrm_idx] == "M"){
+                    curr_chrm = 25;
+                }
+                else{
+                    cout << "Invalid chromosome: " << line_vector[chrm_idx] << endl;
+                    // skip this line
+                    continue;
+                }
+            }
             for (auto const &column_value : line_vector) {
                 curr_block[column_idx].push_back(column_value);
                 column_idx++;

@@ -151,7 +151,29 @@ vector<tuple<int, int>> get_start_end_block_idx(
     vector<tuple<int, int>> all_query_info;
     for (int q_idx = 0; q_idx < query_list.size(); q_idx++) {
         // get information about the query
-        int q_chrm = stoi(split_string(query_list[q_idx], ':')[0]);
+        int q_chrm;
+        try{
+            q_chrm = stoi(split_string(query_list[q_idx], ':')[0]);
+        }
+        // if the chromosome is not an integer
+        // X --> 23; Y --> 24; M --> 25
+        catch (invalid_argument &e){
+            if (split_string(query_list[q_idx], ':')[0] == "X"){
+                q_chrm = 23;
+            }
+            else if (split_string(query_list[q_idx], ':')[0] == "Y"){
+                q_chrm = 24;
+            }
+            else if (split_string(query_list[q_idx], ':')[0] == "M"){
+                q_chrm = 25;
+            }
+            else{
+                cout << "Invalid query chromosome:" << query_list[q_idx] << endl;
+                // skip this query
+                continue;
+            }
+        }
+
         int q_bp_start = stoi(split_string(query_list[q_idx], ':')[1]);
         int q_bp_end =
             stoi(split_string(split_string(query_list[q_idx], ':')[1], '-')[1]);
