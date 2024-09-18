@@ -14,6 +14,9 @@ namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) {
 
+    // set bins for pval
+    auto bins = std::vector<float>{1e-1, 1e-3, 4e-8};
+
     // 0. read config options
     // open file, exit
     if (argc != 2) {
@@ -40,6 +43,19 @@ int main(int argc, char *argv[]) {
         vector<string> extra_indices_list = split_string(extra_indices, ',');
         index_types.insert(index_types.end(), extra_indices_list.begin(),
                            extra_indices_list.end());
+
+        // if pvalue is in extra indices, add bins
+        if (find(extra_indices_list.begin(), extra_indices_list.end(), "pval") != extra_indices_list.end()) {
+            // get pval col idx from config
+            string pval_config_options = config_options["pval"];
+            vector<string> pval_config_list = split_string(pval_config_options, ',');
+            int pval_col_idx = stoi(pval_config_list[0]);
+        }
+    }
+    else {
+        // return error
+        cout << "No extra indices provided." << endl;
+        return -1;
     }
 
     int block_size;
@@ -129,9 +145,8 @@ int main(int argc, char *argv[]) {
     // ----------------------------------------------------------------------
     string pValIndexPath = indexPaths[1];
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
-    auto bins = std::vector<float>{1e-1, 1e-3, 1e-8};
     auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, bins);
-    pValIndexer.build_index(gwas_file, 7);
+    pValIndexer.build_index(gwas_file, 8);
     cout << "Done." << endl;
     // ----------------------------------------------------------------------
 
