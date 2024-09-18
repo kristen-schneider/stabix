@@ -360,8 +360,8 @@ int main(int argc, char *argv[]) {
             }
         }
 
-//        // sort blocks
-//        sort(total_blocks_to_decompress.begin(), total_blocks_to_decompress.end());
+        // sort blocks
+        sort(total_blocks_to_decompress.begin(), total_blocks_to_decompress.end());
     }
 
     // 5. decompress all blocks for each query
