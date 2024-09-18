@@ -31,8 +31,16 @@ bool badFloatSemaphore = false;
 float PValIndexer::value_to_bin(std::string line) {
     char *end;
     errno = 0;
+    // handle NA values by putting them in top bin
+    if (line == "NA") {
+        // return Inf
+        return HUGE_VALF;
+    }
     float value = std::strtof(line.c_str(), &end);
 
+    // TODO: remove this check??
+    // putting NA values in -INF bin lumps them in with anything below the lowest bin;
+    // which is likely to be of interest to the user
     if (end == line.c_str()) {
         //        throw std::runtime_error("Invalid float format.");
         // skip NA values

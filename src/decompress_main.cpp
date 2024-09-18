@@ -107,8 +107,9 @@ unordered_set<int> query_abs_idx(string path,
 
 int main(int argc, char *argv[]) {
     // DECOMPRESSION STEPS
+
     // set bins
-    auto pvalue_bins = vector<string>{"1e-1", "1e-3", "4e-8"};
+    auto pvalue_bins = vector<string>{"5e-1", "5e-5", "5.1e-8"};
 
     // 0. read config options
     // open file, exit

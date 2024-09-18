@@ -11,7 +11,7 @@ query:
   genomic:
     /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.bed
   pval:
-    8,<= 5e-8
+    8,>= 1e-1
   other:
     None
   uncertainty:
