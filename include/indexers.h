@@ -40,3 +40,7 @@ class PValIndexer : public Indexer {
     std::unordered_set<int> compare_query(float threshold,
                                           ComparisonType compType);
 };
+
+bool compare_values(
+        string config_query,
+        float value_to_compare);

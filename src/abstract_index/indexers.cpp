@@ -1,5 +1,6 @@
 #include "indexers.h"
 #include <algorithm>
+#include <regex>
 #include <iomanip>
 #include <sstream>
 
@@ -86,4 +87,63 @@ std::string precise_to_string(double value, int precision = 7) {
 
 std::string PValIndexer::bin_to_value(float bin) {
     return precise_to_string(bin);
+}
+
+
+/*
+ * compare to values
+ */
+bool compare_values(
+        string config_query,
+        float value_to_compare){
+    bool compare_result;
+    float query_val;
+    ComparisonType op;
+
+    regex re("(>|<)(=?)\\s*(\\d*\\.?.*)");
+    smatch matches;
+
+    // parse the query
+    if (regex_search(config_query, matches, re)) {
+        if (matches[1].str() == "<") {
+            op = matches[2].str() == "=" ? ComparisonType::LessThanOrEqual
+                                         : ComparisonType::LessThan;
+        } else {
+            op = matches[2].str() == "=" ? ComparisonType::GreaterThanOrEqual
+                                         : ComparisonType::GreaterThan;
+        }
+
+        string val_exp = matches[3].str();
+
+        try {
+            query_val = stof(val_exp);
+        } catch (const invalid_argument &e) {
+            throw invalid_argument("Value must be a float: " + val_exp);
+        }
+    } else {
+        throw invalid_argument("Could not parse \"" + config_query + "\". Expected something like \"<= 0.3\".");
+    }
+
+    // compare the values
+    switch (op) {
+        case ComparisonType::LessThan:
+            compare_result = value_to_compare < query_val;
+            break;
+        case ComparisonType::LessThanOrEqual:
+            compare_result = value_to_compare <= query_val;
+            break;
+        case ComparisonType::Equal:
+            compare_result = value_to_compare == query_val;
+            break;
+        case ComparisonType::GreaterThan:
+            compare_result = value_to_compare > query_val;
+            break;
+        case ComparisonType::GreaterThanOrEqual:
+            compare_result = value_to_compare >= query_val;
+            break;
+        default:
+            throw invalid_argument("Invalid comparison operator.");
+    }
+
+    return compare_result;
 }

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -123,29 +124,6 @@ vector<uint32_t> fastpfor_vb_decompress(vector<uint32_t> in_data,
 
     return decompressed;
 }
-
-// vector<uint32_t> fastpfor_vb_delta_decompress(const std::vector<uint32_t>&
-// encoded_deltas) {
-//     FastPForLib::VariableByte vb;
-//
-//     // Decode deltas using FastPFor's variable byte decoding
-//     vector<uint32_t> decoded_deltas(encoded_deltas.size() * 2);
-//     size_t decoded_size;
-//     vb.decodeArray(encoded_deltas.data(), encoded_deltas.size(),
-//     decoded_deltas.data(), decoded_size);
-//     decoded_deltas.resize(decoded_size);
-//
-//     // Reconstruct original sequence by adding deltas to previous values
-//     vector<uint32_t> original_sequence;
-//     original_sequence.reserve(decoded_deltas.size() + 1);
-//     uint32_t prev_value = 0; // Assuming the first value is 0, adjust if
-//     needed for (const auto& delta : decoded_deltas) {
-//         prev_value += delta;
-//         original_sequence.push_back(prev_value);
-//     }
-//
-//     return original_sequence;
-// }
 
 string bxzstr_decompress(string comp, bxz::Compression codec) {
     std::stringstream in;

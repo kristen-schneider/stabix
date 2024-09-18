@@ -142,6 +142,9 @@ int main(int argc, char *argv[]) {
         vector<string> extra_indices_list = split_string(extra_indices, ',');
         index_types.insert(index_types.end(), extra_indices_list.begin(),
                            extra_indices_list.end());
+
+        // get second index col idx from config
+        second_index_col_idx = stoi(config_options["col_idx"]);
         // get bins for second index
         string second_index_bins_string = config_options["bins"];
         vector<string> bin_string = split_string(second_index_bins_string, ',');
@@ -195,10 +198,6 @@ int main(int argc, char *argv[]) {
                                           "_" + config_options["out_name"] +
                                           ".grlz");
     }
-
-//    string output_dir = config_options["out_directory"];
-//    auto gwas_path = fs::path(config_options["gwas_file"]);
-//    auto out_dir_path = gwas_path.parent_path() / output_dir;
 
     ofstream query_output_stream;
     string query_output_file_name =
@@ -340,12 +339,6 @@ int main(int argc, char *argv[]) {
         sort(total_blocks_to_decompress.begin(), total_blocks_to_decompress.end());
         // get blocks from pvalue query
     }else{
-
-        // get pvalue threshold (query) from config file
-//        string pval_config_options = config_options["pval"];
-//        vector<string> pval_config_list = split_string(pval_config_options, ',');
-//        string pvalue_query = pval_config_list[1];
-
         auto query_pval_index_start = chrono::high_resolution_clock::now();
         auto pval_blocks = query_abs_idx(pval_index_path,
                                      second_index_bins,
@@ -353,7 +346,7 @@ int main(int argc, char *argv[]) {
                                      block_line_map);
 
         // TODO: delete this after debug
-        cout << "Pval blocks: " << pval_blocks.size() << endl;
+        cout << "pval blocks: " << pval_blocks.size() << endl;
         for (int block : pval_blocks) {
             cout << block << endl;
         }
@@ -366,8 +359,9 @@ int main(int argc, char *argv[]) {
                 total_blocks_to_decompress.push_back(block);
             }
         }
-        // sort blocks
-        sort(total_blocks_to_decompress.begin(), total_blocks_to_decompress.end());
+
+//        // sort blocks
+//        sort(total_blocks_to_decompress.begin(), total_blocks_to_decompress.end());
     }
 
     // 5. decompress all blocks for each query
@@ -411,8 +405,6 @@ int main(int argc, char *argv[]) {
         cout << "\t...decompressing block " << block_idx
              << ", size: " << block_size << endl;
 
-//        query_output_stream << "Block: " << block_idx << endl;
-
         file.seekg(start_byte, ios::beg);
         char block_header_bytes[block_header_length];
         file.read(block_header_bytes, block_header_length);
@@ -452,7 +444,6 @@ int main(int argc, char *argv[]) {
                     compressed_size,
                     block_size);
             auto col_decompress_end = chrono::high_resolution_clock::now();
-//            col_times.open(col_times_file, ios::app);
             col_times << block_idx << "," << col_idx << ","
                       << chrono::duration_cast<chrono::microseconds>(
                              col_decompress_end - col_decompress_start)
@@ -473,18 +464,66 @@ int main(int argc, char *argv[]) {
         // write decompressed block to output file
         cout << "Writing block " << block_idx << " to output file..." << endl;
         int column_count = stoi(num_columns);
+
+
+        // TODO: filter the block based on the query
+        // only return rows that match the query
+        vector<int> hits = {};
+        bool compare_result = false;
+        string query_col = decompressed_block[second_index_col_idx];
+        vector<string> split_query_col_string = split_string(query_col, ',');
+        vector<float> split_query_col_float = {};
+        for (string val : split_query_col_string) {
+            try{
+                split_query_col_float.push_back(stof(val));
+            }
+            catch (const invalid_argument &e) {
+                // push infinity if value is not a float
+                split_query_col_float.push_back(INFINITY);
+            }
+        }
+
+        for (int i = 0; i < split_query_col_float.size(); i++) {
+            compare_result = compare_values(second_index_threshold,
+                                            split_query_col_float[i]);
+            if (compare_result) {
+                hits.push_back(i);
+            }
+        }
+
+        // split columns of block into vectors
         vector<string> split_columns[column_count];
         for (int i = 0; i < column_count; i++) {
             split_columns[i] = split_string(decompressed_block[i], ',');
         }
-        for (int record_i = 0; record_i <= block_size - 1; record_i++) {
+        // allocate new space for filtered block
+        // fill in filtered block with only the row indexes that match the query
+        vector<string> filtered_block[column_count];
+        for (int i = 0; i < column_count; i++) {
+            for (int hit : hits) {
+                filtered_block[i].push_back(split_columns[i][hit]);
+            }
+        }
+
+        // write filtered block to output file
+
+        for (int record_i = 0; record_i <= hits.size() - 1; record_i++) {
             for (int col_i = 0; col_i <= column_count - 1; col_i++) {
-                auto block_list = split_columns[col_i];
+                auto block_list = filtered_block[col_i];
                 string record = block_list[record_i];
                 query_output_stream << record << ',';
             }
             query_output_stream << endl;
         }
+
+//        for (int record_i = 0; record_i <= block_size - 1; record_i++) {
+//            for (int col_i = 0; col_i <= column_count - 1; col_i++) {
+//                auto block_list = split_columns[col_i];
+//                string record = block_list[record_i];
+//                query_output_stream << record << ',';
+//            }
+//            query_output_stream << endl;
+//        }
 
         auto write_block_end = chrono::high_resolution_clock::now();
     }
