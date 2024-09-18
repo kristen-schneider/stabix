@@ -316,8 +316,8 @@ int main(int argc, char *argv[]) {
     //    // ----------------------------------------------------------------------
     //    //      Hardcoded query parameters
     //    // ----------------------------------------------------------------------
-    auto pvalue_bins = vector<string>{"0.5", "0.1", "1e-8"};
-    string pvalue_query = "<= 0.4";
+    auto pvalue_bins = vector<string>{"1e-1", "1e-3", "5e-8"};
+    string pvalue_query = "<= 5e-8";
 
     // if there are no genomic blocks, return early. nothing found.
     if (genom_blocks.empty()) {
