@@ -108,8 +108,8 @@ unordered_set<int> query_abs_idx(string path,
 int main(int argc, char *argv[]) {
     // DECOMPRESSION STEPS
 
-    // set bins
-    auto pvalue_bins = vector<string>{"5e-1", "5e-5", "5.1e-8"};
+//    // set bins
+//    auto pvalue_bins = vector<string>{"5e-1", "5e-5", "5.1e-8"};
 
     // 0. read config options
     // open file, exit
@@ -130,13 +130,26 @@ int main(int argc, char *argv[]) {
     vector<string> index_types = {"genomic"};
     string query_genomic = config_options["genomic"];
     vector<string> genomic_query_list = read_bed_file(query_genomic);
+
+
     // TODO: get query types for other optional queries
     string extra_indices = config_options["extra_indices"];
+    int second_index_col_idx;
+    auto second_index_bins = std::vector<string> {};
+    string second_index_threshold = "";
     // add extra indices to index_types
     if (extra_indices != "None") {
         vector<string> extra_indices_list = split_string(extra_indices, ',');
         index_types.insert(index_types.end(), extra_indices_list.begin(),
                            extra_indices_list.end());
+        // get bins for second index
+        string second_index_bins_string = config_options["bins"];
+        vector<string> bin_string = split_string(second_index_bins_string, ',');
+        for (auto &bin : bin_string) {
+            second_index_bins.push_back(bin);
+        }
+        // get threshold for second index
+        second_index_threshold = config_options["threshold"];
     }
 
     int block_size = -1;
@@ -329,14 +342,14 @@ int main(int argc, char *argv[]) {
     }else{
 
         // get pvalue threshold (query) from config file
-        string pval_config_options = config_options["pval"];
-        vector<string> pval_config_list = split_string(pval_config_options, ',');
-        string pvalue_query = pval_config_list[1];
+//        string pval_config_options = config_options["pval"];
+//        vector<string> pval_config_list = split_string(pval_config_options, ',');
+//        string pvalue_query = pval_config_list[1];
 
         auto query_pval_index_start = chrono::high_resolution_clock::now();
         auto pval_blocks = query_abs_idx(pval_index_path,
-                                     pvalue_bins,
-                                     pvalue_query,
+                                     second_index_bins,
+                                     second_index_threshold,
                                      block_line_map);
 
         // TODO: delete this after debug

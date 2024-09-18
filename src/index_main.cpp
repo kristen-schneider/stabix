@@ -14,9 +14,9 @@ namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) {
 
-    // set bins for pval
-    auto bins = std::vector<float>{5e-1, 5e-5, 5.1e-8};
-    int pval_col_idx = -1;
+//    // set bins for pval
+//    auto bins = std::vector<float>{5e-1, 5e-5, 5.1e-8};
+//    int pval_col_idx = -1;
 
     // 0. read config options
     // open file, exit
@@ -32,25 +32,30 @@ int main(int argc, char *argv[]) {
 
     // - input gwas file
     string gwas_file = config_options["gwas_file"];
-
     // - queries
+    // genomic
     vector<string> index_types = {"genomic"};
     string query_genomic = config_options["genomic"];
     vector<string> genomic_query_list = read_bed_file(query_genomic);
-    // TODO: get query types for other optional queries
+
+    // other
     string extra_indices = config_options["extra_indices"];
-    // add extra indices to index_types
+    int second_index_col_idx;
+    auto second_index_bins = std::vector<float> {};
+    string second_index_threshold = "";
+
     if (extra_indices != "None") {
         vector<string> extra_indices_list = split_string(extra_indices, ',');
         index_types.insert(index_types.end(), extra_indices_list.begin(),
                            extra_indices_list.end());
 
-        // if pvalue is in extra indices, add bins
-        if (find(extra_indices_list.begin(), extra_indices_list.end(), "pval") != extra_indices_list.end()) {
-            // get pval col idx from config
-            string pval_config_options = config_options["pval"];
-            vector<string> pval_config_list = split_string(pval_config_options, ',');
-            pval_col_idx = stoi(pval_config_list[0]);
+        // get second index col idx from config
+        second_index_col_idx = stoi(config_options["col_idx"]);
+        // get bins for second index
+        string second_index_bins_string = config_options["bins"];
+        vector<string> bin_string = split_string(second_index_bins_string, ',');
+        for (auto &bin : bin_string) {
+            second_index_bins.push_back(stof(bin));
         }
     }
     else {
@@ -146,8 +151,8 @@ int main(int argc, char *argv[]) {
     // ----------------------------------------------------------------------
     string pValIndexPath = indexPaths[1];
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
-    auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, bins);
-    pValIndexer.build_index(gwas_file, pval_col_idx);
+    auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, second_index_bins);
+    pValIndexer.build_index(gwas_file, second_index_col_idx);
     cout << "Done." << endl;
     // ----------------------------------------------------------------------
 
