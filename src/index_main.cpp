@@ -15,7 +15,8 @@ namespace fs = std::filesystem;
 int main(int argc, char *argv[]) {
 
     // set bins for pval
-    auto bins = std::vector<float>{1e-1, 1e-3, 4e-8};
+    auto bins = std::vector<float>{5e-1, 5e-5, 5.1e-8};
+    int pval_col_idx = -1;
 
     // 0. read config options
     // open file, exit
@@ -49,7 +50,7 @@ int main(int argc, char *argv[]) {
             // get pval col idx from config
             string pval_config_options = config_options["pval"];
             vector<string> pval_config_list = split_string(pval_config_options, ',');
-            int pval_col_idx = stoi(pval_config_list[0]);
+            pval_col_idx = stoi(pval_config_list[0]);
         }
     }
     else {
@@ -146,7 +147,7 @@ int main(int argc, char *argv[]) {
     string pValIndexPath = indexPaths[1];
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, bins);
-    pValIndexer.build_index(gwas_file, 8);
+    pValIndexer.build_index(gwas_file, pval_col_idx);
     cout << "Done." << endl;
     // ----------------------------------------------------------------------
 
