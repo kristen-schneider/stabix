@@ -238,7 +238,7 @@ vector<vector<vector<string>>> make_blocks_map(
     while (getline(gwas, line)) {
 
         line_count++;
-        total_line_count++;
+//        total_line_count++;
         // to block remove newline character from line
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
         // read line and get chrm and bp
@@ -268,13 +268,13 @@ vector<vector<vector<string>>> make_blocks_map(
                 continue;
             }
         }
-
         curr_bp = stoul(line_vector[bp_idx]);
 
-        // if new chromosome and not first chromosome
+        // if new chromosome, current block ends
+        // add block to all_blocks and start a new block
         if (curr_chrm != block_chrm) {
             // add block to all_blocks
-            if (!curr_block[0].empty()) {
+            if (!curr_block.empty()) {
                 all_blocks.push_back(curr_block);
                 block_count++;
             }
@@ -285,54 +285,49 @@ vector<vector<vector<string>>> make_blocks_map(
                 curr_block.push_back(column);
             }
 
+            // store the genomic index
+            // starting chrm, starting bp, and line number
+            block_genomic_index[0] = curr_chrm;
+            block_genomic_index[1] = curr_bp;
+            block_genomic_index[2] = 1 + total_line_count;
+            genomic_index.push_back(block_genomic_index);
+
+            // add line to curr_block
+            for (int col_idx = 0; col_idx < num_columns; col_idx++) {
+                curr_block[col_idx].push_back(line_vector[col_idx]);
+            }
+
+            // update
             block_chrm = curr_chrm;
             curr_block_idx = 0;
-            curr_bp_end = chrm_block_bp_ends[curr_chrm][curr_block_idx];
+            curr_bp_end = chrm_block_bp_ends[block_chrm][curr_block_idx];
             line_count = 1;
+            total_line_count++;
         }
         // keep adding to current block until bp is greater than bp_end
-        if (curr_bp <= curr_bp_end) {
-            int column_idx = 0;
-            if (line_count == 1) {
-                // store the genomic index
-                // starting chrm, starting bp, and line number
+        else if (curr_bp <= curr_bp_end) {
+
+            // if beginning of block, store the genomic index
+            if (line_count == 1){
                 block_genomic_index[0] = curr_chrm;
                 block_genomic_index[1] = curr_bp;
                 block_genomic_index[2] = 1 + total_line_count;
                 genomic_index.push_back(block_genomic_index);
             }
 
-            // split line by delimiter and add to curr_block
-            vector<string> line_vector = split_string(line, '\t');
+            // add line to curr_block
+            for (int col_idx = 0; col_idx < num_columns; col_idx++) {
+                curr_block[col_idx].push_back(line_vector[col_idx]);
+            }
+            total_line_count++;
 
-            try{
-                curr_chrm = stoi(line_vector[chrm_idx]);
-            }
-                // catch stoi exceptions for X and Y chromosomes
-                // X --> 23, Y --> 24
-            catch (const std::invalid_argument& e){
-                if (line_vector[chrm_idx] == "X"){
-                    curr_chrm = 23;
-                }
-                else if (line_vector[chrm_idx] == "Y"){
-                    curr_chrm = 24;
-                }
-                else if (line_vector[chrm_idx] == "M"){
-                    curr_chrm = 25;
-                }
-                else{
-                    cout << "Invalid chromosome: " << line_vector[chrm_idx] << endl;
-                    // skip this line
-                    continue;
-                }
-            }
-            for (auto const &column_value : line_vector) {
-                curr_block[column_idx].push_back(column_value);
-                column_idx++;
-            }
-        } else {
-            if (!curr_block[0].empty()) {
+        }
+        else {
+            // current bp >= bp_end, add block to all_blocks and start a new block
+            // add block to all_blocks
+            if (!curr_block.empty()) {
                 all_blocks.push_back(curr_block);
+                block_count++;
             }
             curr_block.clear();
             // make curr_block a vector of empty strings
@@ -340,13 +335,10 @@ vector<vector<vector<string>>> make_blocks_map(
                 vector<string> column;
                 curr_block.push_back(column);
             }
+
             // add line to curr_block
-            istringstream line_stream(line);
-            string column_value;
-            int column_idx = 0;
-            while (getline(line_stream, column_value, delim)) {
-                curr_block[column_idx].push_back(column_value);
-                column_idx++;
+            for (int col_idx = 0; col_idx < num_columns; col_idx++) {
+                curr_block[col_idx].push_back(line_vector[col_idx]);
             }
 
             line_count = 1;
@@ -359,6 +351,7 @@ vector<vector<vector<string>>> make_blocks_map(
 
             block_count++;
             curr_block_idx++;
+            total_line_count++;
 
             curr_bp_end = chrm_block_bp_ends[curr_chrm][curr_block_idx];
         }
@@ -368,6 +361,7 @@ vector<vector<vector<string>>> make_blocks_map(
         all_blocks.push_back(curr_block);
         block_count++;
     }
+    // close gwas file
     gwas.close();
 
     return all_blocks;
