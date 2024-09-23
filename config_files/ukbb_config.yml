@@ -5,7 +5,7 @@ block_size:
   10000
 
 out_name:
-  xz
+  zstd
 
 query:
   genomic:
@@ -22,8 +22,8 @@ extra_indices:
 
 codecs:
   int:
-    xz
+    zstd
   float:
-    xz
+    zstd
   string:
-    xz
+    zstd
