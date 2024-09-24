@@ -39,7 +39,7 @@ unordered_set<int> query_genomic_idx(vector<string> query_list,
 
         // if start and end block indexes are -1, query not found in index
         if (start_block_idx == -1 && end_block_idx == -1) {
-            cout << "Query " << q_idx << " NOT found in genomic index." << endl;
+//            cout << "Query " << q_idx << " NOT found in genomic index." << endl;
             continue;
         }
         else{
@@ -48,7 +48,6 @@ unordered_set<int> query_genomic_idx(vector<string> query_list,
             if (start_block_idx == -1) {
                 start_block_idx = 0;
             }
-            // TODO: should this be (doubly) inclusive as implemented?
             for (int block_idx = start_block_idx; block_idx <= end_block_idx; block_idx++) {
                 blocks.insert(block_idx);
             }
@@ -56,6 +55,61 @@ unordered_set<int> query_genomic_idx(vector<string> query_list,
     }
 
     return blocks;
+}
+
+/*
+ * make a map whose key is a block idx and whose value is a list of genes in that block
+ *
+ */
+map<int, vector<string>> make_block_to_gene_map(string bed_file,
+                                                map<int, vector<int>> genomic_index_info_by_block,
+                                                map<int, map<int, vector<int>>> genomic_index_info_by_location) {
+
+    map<int, vector<string>> block_to_gene_map;
+
+    // check if file exists
+    ifstream bed_stream(bed_file);
+    if (!bed_stream.good()) {
+        cout << "ERROR: Bed file does not exist: " << bed_file << endl;
+        exit(1);
+    }
+    // read bed file, splitting by delimiter
+    // store as "chrm:bp_start-bp_end"
+    string line;
+    unordered_set<int> single_gene_blocks;
+    while (getline(bed_stream, line)) {
+        // skip empty lines
+        if (line.empty()) {
+            continue;
+        }
+        // split line by tab
+        vector<string> single_gene;
+
+        istringstream iss(line);
+        string token;
+        vector<string> tokens;
+        while (std::getline(iss, token, ' '))
+            tokens.push_back(token);
+        string chrm = tokens[0];
+        string bp_start = tokens[1];
+        string bp_end = tokens[2];
+        string gene = tokens[3];
+        single_gene.push_back(chrm + ":" + bp_start + "-" + bp_end);
+        single_gene_blocks = query_genomic_idx(single_gene,
+                                               genomic_index_info_by_location,
+                                               genomic_index_info_by_block);
+        // assign gene to each block
+        // for each block in single_gene_blocks
+        // add block to block_to_gene_map and add gene to block_to_gene_map[block]
+
+        for (int block : single_gene_blocks) {
+            block_to_gene_map[block].push_back(gene);
+        }
+
+        // clear single_gene_blocks
+        single_gene_blocks.clear();
+    }
+    return block_to_gene_map;
 }
 
 unordered_set<int> query_abs_idx(string path,
@@ -314,6 +368,7 @@ int main(int argc, char *argv[]) {
     cout << "Done." << endl << endl;
     auto read_genomic_index_end = chrono::high_resolution_clock::now();
 
+    cout << "Getting genomic blocks..." << endl;
     // 4. get and aggregate blocks associated with each query
     // time query genomic index
     auto query_genomic_index_start = chrono::high_resolution_clock::now();
@@ -324,7 +379,13 @@ int main(int argc, char *argv[]) {
             genomic_index_info_by_location,
             genomic_index_info_by_block);
 
+//    // TODO: get gene associated with each block idx
+//    map<int, vector<string>> block_to_gene_map = make_block_to_gene_map(query_genomic,
+//                                                                        genomic_index_info_by_block,
+//                                                                        genomic_index_info_by_location);
+
     auto query_genomic_index_end = chrono::high_resolution_clock::now();
+    cout << "Done." << endl;
 
     // if there are no genomic blocks, return early. nothing found.
     if (genom_blocks.empty()) {
@@ -339,19 +400,22 @@ int main(int argc, char *argv[]) {
         sort(total_blocks_to_decompress.begin(), total_blocks_to_decompress.end());
         // get blocks from pvalue query
     }else{
+        cout << "Getting p-value blocks..." << endl;
         auto query_pval_index_start = chrono::high_resolution_clock::now();
         auto pval_blocks = query_abs_idx(pval_index_path,
                                      second_index_bins,
                                      second_index_threshold,
                                      block_line_map);
 
-        // TODO: delete this after debug
-        cout << "pval blocks: " << pval_blocks.size() << endl;
-        for (int block : pval_blocks) {
-            cout << block << endl;
-        }
-
         auto query_pval_index_end = chrono::high_resolution_clock::now();
+        cout << "Done." << endl;
+
+        // TODO: delete this after debug
+        cout << "genome blocks: " << genom_blocks.size() << endl;
+        cout << "pval blocks: " << pval_blocks.size() << endl;
+//        for (int block : pval_blocks) {
+//            cout << block << endl;
+//        }
 
         // get blocks that are in both genomic and p-value queries
         for (int block : genom_blocks) {
@@ -534,7 +598,7 @@ int main(int argc, char *argv[]) {
     ofstream decompression_times_stream;
     decompression_times_stream.open(compression_times_file, ios::trunc);
 
-    decompression_times_stream << gwas_file << endl;
+    decompression_times_stream << "GWAS file: " << gwas_file << endl;
     decompression_times_stream << "genomic_index_read,"
                                << chrono::duration_cast<chrono::microseconds>(
                                       read_genomic_index_end - read_genomic_index_start)

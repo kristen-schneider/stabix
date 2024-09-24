@@ -43,7 +43,8 @@ git submodule update
 
 ### Build all
 ```angular2html
-nix develop --extra-experimental-features flakes --extra-experimental-features nix-commandmkdir build
+nix develop --extra-experimental-features flakes --extra-experimental-features nix-command
+mkdir build
 cd build
 cmake ..
 make

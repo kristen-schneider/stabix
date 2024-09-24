@@ -26,8 +26,8 @@ vector<uint32_t> fastpfor_vb_decompress(vector<uint32_t> in_data,
                                         size_t compressedSize,
                                         size_t block_size);
 
-vector<uint32_t>
-fastpfor_vb_delta_decompress(const std::vector<uint32_t> &encoded_deltas);
+vector<uint32_t> fastpfor_vb_delta_decompress(
+        const std::vector<uint32_t> &encoded_deltas);
 
 string deflate_decompress(string inputData);
 
