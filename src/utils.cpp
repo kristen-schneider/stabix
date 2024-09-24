@@ -417,7 +417,7 @@ map<int, vector<uint32_t>> read_cm_map_file(
             else if (vec[0] == "Y"){
                 chrm = 24;
             }
-            else if (vec[0] == "M"){
+            else if (vec[0] == "MT"){
                 chrm = 25;
             }
             else{

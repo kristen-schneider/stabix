@@ -89,7 +89,7 @@ vector<vector<vector<string>>> make_blocks(
                 else if (line_vector[chrm_idx] == "Y"){
                     curr_chrm = 24;
                 }
-                else if (line_vector[chrm_idx] == "M"){
+                else if (line_vector[chrm_idx] == "MT"){
                     curr_chrm = 25;
                 }
                 else{
@@ -143,7 +143,7 @@ vector<vector<vector<string>>> make_blocks(
                 else if (line_vector[chrm_idx] == "Y"){
                     curr_chrm = 24;
                 }
-                else if (line_vector[chrm_idx] == "M"){
+                else if (line_vector[chrm_idx] == "MT"){
                     curr_chrm = 25;
                 }
                 else{
@@ -259,7 +259,7 @@ vector<vector<vector<string>>> make_blocks_map(
             else if (line_vector[chrm_idx] == "Y"){
                 curr_chrm = 24;
             }
-            else if (line_vector[chrm_idx] == "M"){
+            else if (line_vector[chrm_idx] == "MT"){
                 curr_chrm = 25;
             }
             else{

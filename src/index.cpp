@@ -164,7 +164,7 @@ vector<tuple<int, int>> get_start_end_block_idx(
             else if (split_string(query_list[q_idx], ':')[0] == "Y"){
                 q_chrm = 24;
             }
-            else if (split_string(query_list[q_idx], ':')[0] == "M"){
+            else if (split_string(query_list[q_idx], ':')[0] == "MT"){
                 q_chrm = 25;
             }
             else{
