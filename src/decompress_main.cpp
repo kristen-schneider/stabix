@@ -542,8 +542,8 @@ int main(int argc, char *argv[]) {
                 split_query_col_float.push_back(stof(val));
             }
             catch (const invalid_argument &e) {
-                // push infinity if value is not a float
-                split_query_col_float.push_back(INFINITY);
+                // ignore invalid values
+                split_query_col_float.push_back(-INFINITY);
             }
         }
 

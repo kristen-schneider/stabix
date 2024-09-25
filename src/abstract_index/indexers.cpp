@@ -34,8 +34,9 @@ float PValIndexer::value_to_bin(std::string line) {
     errno = 0;
     // handle NA values by putting them in top bin
     if (line == "NA") {
-        // return Inf
-        return HUGE_VALF;
+//        // return Inf
+//        return HUGE_VALF;
+        throw std::runtime_error("Invalid float format.");
     }
     float value = std::strtof(line.c_str(), &end);
 
@@ -99,6 +100,11 @@ bool compare_values(
     bool compare_result;
     float query_val;
     ComparisonType op;
+
+    // if value_to_compare == -HUGE_VALF or HUGE_VALF, return false ((NA))
+    if (value_to_compare == -HUGE_VALF || value_to_compare == HUGE_VALF) {
+        return false;
+    }
 
     regex re("(>|<)(=?)\\s*(\\d*\\.?.*)");
     smatch matches;
