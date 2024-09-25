@@ -21,7 +21,7 @@ TEST(MakeBlocks, test_tsv){
                                                           block_size,
                                                           delim,
                                                           genomic_index);
-    ASSERT_EQ(blocks_5.size(), 6);
+    ASSERT_EQ(blocks_5.size(), 8);
     ASSERT_EQ(blocks_5[0].size(), num_columns);
     ASSERT_EQ(blocks_5[0][0].size(), block_size);
     ASSERT_EQ(blocks_5[1].size(), num_columns);
@@ -36,7 +36,7 @@ TEST(MakeBlocks, test_tsv){
                                                         block_size,
                                                         delim,
                                                         genomic_index);
-    ASSERT_EQ(blocks_10.size(), 3);
+    ASSERT_EQ(blocks_10.size(), 4);
     ASSERT_EQ(blocks_10[0].size(), num_columns);
     ASSERT_EQ(blocks_10[0][0].size(), block_size);
     ASSERT_EQ(blocks_10[1].size(), num_columns);
@@ -51,7 +51,7 @@ TEST(MakeBlocks, test_tsv){
                                                            block_size,
                                                            delim,
                                                            genomic_index);
-    ASSERT_EQ(blocks_15.size(), 2);
+    ASSERT_EQ(blocks_15.size(), 3);
     ASSERT_EQ(blocks_15[0].size(), num_columns);
     ASSERT_EQ(blocks_15[0][0].size(), block_size);
     ASSERT_EQ(blocks_15[1].size(), num_columns);
@@ -69,7 +69,7 @@ TEST(MakeBlocks, test_tsv){
     ASSERT_EQ(blocks_20[0].size(), num_columns);
     ASSERT_EQ(blocks_20[0][0].size(), block_size);
     ASSERT_EQ(blocks_20[1].size(), num_columns);
-    ASSERT_EQ(blocks_20[1][0].size(), 10);
+    ASSERT_EQ(blocks_20[1][0].size(), 18);
     ASSERT_NE(blocks_20[1][0].size(), block_size);
 }
 
