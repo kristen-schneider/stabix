@@ -2,10 +2,10 @@ gwas_file:
   /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.tsv
 
 block_size:
-  map_files/test.map
+  5
 
 out_name:
-  xz
+  bz2
 
 query:
   genomic:
@@ -22,8 +22,8 @@ extra_indices:
 
 codecs:
   int:
-    xz
+    bz2
   float:
-    xz
+    bz2
   string:
-    xz
+    bz2

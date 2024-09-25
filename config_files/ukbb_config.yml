@@ -1,17 +1,17 @@
 gwas_file:
-  /Users/krsc0813/Desktop/gwas/pan_ukbb/ukbb_22409/continuous-22409-both_sexes-irnt.tsv
+  /Users/krsc0813/CLionProjects/gwas_local/gwas_files/phecode-473-both_sexes.tsv
 
 block_size:
   10000
 
 out_name:
-  zstd
+  xz
 
 query:
   genomic:
-    /Users/krsc0813/CLionProjects/gwas_local/gwas_files/ukbb.bed
+    /Users/krsc0813/CLionProjects/gwas_local/gwas_files/hg19.protein_coding.bed
   col_idx:
-    7
+    19
   bins:
     5e-1, 5e-5, 5.1e-8
   threshold:
@@ -22,8 +22,8 @@ extra_indices:
 
 codecs:
   int:
-    zstd
+    xz
   float:
-    zstd
+    xz
   string:
-    zstd
+    xz
