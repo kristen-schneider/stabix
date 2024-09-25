@@ -2,10 +2,10 @@ gwas_file:
   /Users/krsc0813/CLionProjects/gwas_local/gwas_files/test.tsv
 
 block_size:
-  map_files/test.map
+  5
 
 out_name:
-  xz
+  bz2
 
 query:
   genomic:
@@ -13,17 +13,17 @@ query:
   col_idx:
     8
   bins:
-    5e-1, 5e-5, 5.1e-8
+    0.3, 4.3, 7.29
   threshold:
-    <= 5e-8
+    >= 7.3
 
 extra_indices:
   pval
 
 codecs:
   int:
-    xz
+    bz2
   float:
-    xz
+    bz2
   string:
-    xz
+    bz2
