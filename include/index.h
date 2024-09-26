@@ -21,6 +21,10 @@ int get_block_idx(
         int q_bp,
         map<int, map<int, vector<int>>> index_file_map);
 
+tuple<int, int> get_start_end_block_idx_single(
+        string gene,
+        map<int, map<int, vector<int>>> genomic_index_info_by_location);
+
 vector<tuple<int, int>> get_start_end_block_idx(
         vector<string> query_list,
         map<int, map<int, vector<int>>> genomic_index_info_by_location);
