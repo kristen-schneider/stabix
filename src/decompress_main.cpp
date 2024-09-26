@@ -359,7 +359,7 @@ int main(int argc, char *argv[]) {
         // if there are no genomic blocks, return early. nothing found.
         if (gene_genome_blocks.empty()) {
             cout << endl << "No blocks found for: " << gene << endl;
-            return 0;
+            break;
         } else {
             // get blocks that are in both genomic and p-value queries
             for (int block : gene_genome_blocks) {
