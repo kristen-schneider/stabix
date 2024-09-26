@@ -110,14 +110,25 @@ map<int, vector<int>> read_genomic_index_by_block(
 int get_block_idx(int q_chrm,
                   int q_bp,
                   map<int, map<int, vector<int>>> genomic_index_info_by_location) {
-    int start_block_idx = -1;
+
+    // check if chrm is in index
+    if (genomic_index_info_by_location.find(q_chrm) == genomic_index_info_by_location.end()) {
+        return -1;
+    }
+    // make start block first block of chromosome
+    int start_block_idx;
+    start_block_idx = genomic_index_info_by_location[q_chrm].begin()->second[0];
 
     auto chrm = genomic_index_info_by_location.find(q_chrm);
+
     if (chrm != genomic_index_info_by_location.end()) {
         for (auto const &bp : chrm->second) {
             // this is asking for "give me the biggest bp.first"
             if (q_bp >= bp.first) {
                 start_block_idx = bp.second[0];
+            }
+            else {
+                break;
             }
         }
     }
