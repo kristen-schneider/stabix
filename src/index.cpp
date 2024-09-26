@@ -140,34 +140,10 @@ int get_start_byte(
 /*
  * get start end block index for a single query
  */
-tuple<int, int> get_start_end_block_idx_single(string gene,
+tuple<int, int> get_start_end_block_idx_single(int gene_chrm,
+                                               int gene_bp_start,
+                                               int gene_bp_end,
                                                map<int, map<int, vector<int>>> genomic_index_info_by_location) {
-    // get information about the query
-    int gene_chrm;
-    try{
-        gene_chrm = stoi(split_string(gene, ':')[0]);
-    }
-    // if the chromosome is not an integer
-    // X --> 23; Y --> 24; M --> 25
-    catch (invalid_argument &e){
-        if (split_string(gene, ':')[0] == "X"){
-            gene_chrm = 23;
-        }
-        else if (split_string(gene, ':')[0] == "Y"){
-            gene_chrm = 24;
-        }
-        else if (split_string(gene, ':')[0] == "MT"){
-            gene_chrm = 25;
-        }
-        else{
-            cout << "Invalid query chromosome:" << gene << endl;
-            return make_tuple(-1, -1);
-        }
-    }
-
-    int gene_bp_start = stoi(split_string(gene, ':')[1]);
-    int gene_bp_end = stoi(split_string(split_string(gene, ':')[1], '-')[1]);
-
     // get block idx for query
     int start_block_idx = get_block_idx(gene_chrm, gene_bp_start, genomic_index_info_by_location);
     int end_block_idx = get_block_idx(gene_chrm, gene_bp_end, genomic_index_info_by_location);

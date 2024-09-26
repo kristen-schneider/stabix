@@ -36,7 +36,6 @@ int main(int argc, char *argv[]) {
     // genomic
     vector<string> index_types = {"genomic"};
     string query_genomic = config_options["genomic"];
-    vector<string> genomic_query_list = read_bed_file(query_genomic);
 
     // other
     string extra_indices = config_options["extra_indices"];

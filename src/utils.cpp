@@ -136,8 +136,8 @@ int get_index(
  * @param bed_file
  * @return vector of bed data
  */
-vector<string> read_bed_file(string bed_file) {
-    vector<string> bed_data;
+map<string, vector<string>> read_bed_file(string bed_file) {
+    map<string, vector<string>> bed_data;
     // check if file exists
     ifstream bed_stream(bed_file);
     if (!bed_stream.good()) {
@@ -161,8 +161,9 @@ vector<string> read_bed_file(string bed_file) {
         string chrm = tokens[0];
         string bp_start = tokens[1];
         string bp_end = tokens[2];
-        string bed_line = chrm + ":" + bp_start + "-" + bp_end;
-        bed_data.push_back(bed_line);
+        string gene = tokens[3];
+
+        bed_data[gene] = {chrm, bp_start, bp_end};
     }
 
     return bed_data;

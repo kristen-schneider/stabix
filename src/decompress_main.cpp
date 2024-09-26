@@ -18,13 +18,16 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-unordered_set<int> query_genomic_idx_gene(string gene,
-                                          map<int, map<int, vector<int>>> genomic_index_info_by_location,
-                                          map<int, vector<int>> genomic_index_info_by_block) {
+unordered_set<int> query_genomic_idx_gene(int gene_chrm,
+                                          int gene_bp_start,
+                                          int gene_bp_end,
+                                          map<int, map<int, vector<int>>> genomic_index_info_by_location) {
 
     tuple<int, int> gene_blocks = get_start_end_block_idx_single(
-        gene,
-        genomic_index_info_by_location);
+            gene_chrm,
+            gene_bp_start,
+            gene_bp_end,
+            genomic_index_info_by_location);
 
     unordered_set<int> blocks;
 
@@ -32,45 +35,6 @@ unordered_set<int> query_genomic_idx_gene(string gene,
     for (int block_idx = get<0>(gene_blocks); block_idx <= get<1>(gene_blocks); block_idx++) {
         blocks.insert(block_idx);
     }
-    return blocks;
-}
-
-unordered_set<int> query_genomic_idx(vector<string> query_list,
-                                     map<int, map<int, vector<int>>> genomic_index_info_by_location,
-                                     map<int, vector<int>> genomic_index_info_by_block) {
-
-    vector<tuple<int, int>> all_query_block_indexes = get_start_end_block_idx(
-        query_list,
-        genomic_index_info_by_location);
-    unordered_set<int> blocks;
-
-    for (int q_idx = 0; q_idx < all_query_block_indexes.size(); q_idx++) {
-        // cout << "...decompressing query " << q_idx + 1 << ": "
-        //      << query_list[q_idx] << endl;
-        //
-        // output_file << "Query: " << query_list[q_idx] << endl;
-
-        tuple<int, int> query_start_end_byte = all_query_block_indexes[q_idx];
-        int start_block_idx = get<0>(query_start_end_byte);
-        int end_block_idx = get<1>(query_start_end_byte);
-
-        // if start and end block indexes are -1, query not found in index
-        if (start_block_idx == -1 && end_block_idx == -1) {
-//            cout << "Query " << q_idx << " NOT found in genomic index." << endl;
-            continue;
-        }
-        else{
-            // if start block is -1; it means that the query starts before the first block
-            // make start block idx 0
-            if (start_block_idx == -1) {
-                start_block_idx = 0;
-            }
-            for (int block_idx = start_block_idx; block_idx <= end_block_idx; block_idx++) {
-                blocks.insert(block_idx);
-            }
-        }
-    }
-
     return blocks;
 }
 
@@ -123,7 +87,7 @@ unordered_set<int> query_abs_idx(string path,
 
 int main(int argc, char *argv[]) {
     // DECOMPRESSION STEPS
-
+    auto start_all_time = chrono::high_resolution_clock::now();
     // 0. read config options
     // open file, exit
     if (argc != 2) {
@@ -142,7 +106,7 @@ int main(int argc, char *argv[]) {
     // - queries
     vector<string> index_types = {"genomic"};
     string query_genomic = config_options["genomic"];
-    vector<string> genomic_query_list = read_bed_file(query_genomic);
+    map<string, vector<string>> genomic_query_list = read_bed_file(query_genomic);
 
     // TODO: get query types for other optional queries
     string extra_indices = config_options["extra_indices"];
@@ -219,7 +183,9 @@ int main(int argc, char *argv[]) {
         cout << "Error: could not open output file." << endl;
         return 1;
     }
-    cout << "Done." << endl << endl;
+    query_output_stream << "GWAS file: " << gwas_file << endl;
+    query_output_stream.close();
+    cout << "...Done." << endl;
 
     // outfile for decompression times
     fs::create_directories(out_dir_path.parent_path() / "decompression_times");
@@ -246,19 +212,6 @@ int main(int argc, char *argv[]) {
                           "_" + config_options["block_size"] +
                           "_" + config_options["out_name"] + "_column_decompression.csv");
     }
-
-    // outfile for column decompression times
-
-    ofstream col_times;
-    col_times.open(col_times_file, ios::trunc);
-    // write header
-    col_times << "block_idx,col_idx,comp_time,col_size,codec" << endl;
-    col_times.close();
-
-    // clear contents of output file and close
-    query_output_stream.close();
-    query_output_stream.open(query_output_file_name, ios::trunc);
-    cout << "Done." << endl << endl;
 
     // 1. open compressed file and read header
     cout << "Opening compressed file and reading header..." << endl;
@@ -295,19 +248,17 @@ int main(int argc, char *argv[]) {
     vector<string> block_sizes_list =
         parse_header_list(header_list, "block sizes");
 
+    cout << "...Done." << endl;
+
+
     // 3. opening index file
     vector<string> index_names = {"genomic", "pval"};
     auto index_paths = index_paths_of(out_dir_path, index_names);
     auto genomic_index_path = index_paths[0];
     auto pval_index_path = index_paths[1];
 
-    // read genomic index
-    cout << "Opening genomic index file..." << endl;
-    cout << "\t..." << genomic_index_path << endl;
-
-
-
     // time reading genomic index
+    cout << "Reading genomic index..." << endl;
     auto read_genomic_index_start = chrono::high_resolution_clock::now();
     ifstream genomic_index_file(
         genomic_index_path); // TODO: remove: these next fns
@@ -322,8 +273,10 @@ int main(int argc, char *argv[]) {
 
     auto block_line_map = BlockLineMap(genomic_index_path);
     genomic_index_file.close();
-    cout << "Done." << endl << endl;
+    cout << "...Done." << endl;
     auto read_genomic_index_end = chrono::high_resolution_clock::now();
+    auto read_genomic_index_time = chrono::duration_cast<chrono::microseconds>(
+            read_genomic_index_end - read_genomic_index_start).count();
 
     auto query_statistic_index_time = 0;
 
@@ -347,48 +300,65 @@ int main(int argc, char *argv[]) {
         auto query_statistic_index_end_time = chrono::high_resolution_clock::now();
         query_statistic_index_time = chrono::duration_cast<chrono::microseconds>(
                 query_statistic_index_end_time - query_statistic_index_start_time).count();
-        cout << "Done." << endl;
+        cout << "...Done." << endl;
     }
 
-    // TODO: get gene name associated with the query
-    // for each gene, get genomic blocks
-    for (string gene : genomic_query_list) {
-        int gene_chrm = 0;
-        try{
-            gene_chrm = stoi(split_string(gene, ':')[0]);
-        }
-        catch (const invalid_argument &e) {
-            if  (split_string(gene, ':')[0] == "X") {
+
+    ofstream col_times;
+    col_times.open(col_times_file, ios::trunc);
+    col_times << "GWAS file: " << gwas_file << ",num_cols: " << num_columns << endl;
+    col_times << "block_idx,col_idx,comp_time,col_size,codec" << endl;
+
+    query_output_stream.open(query_output_file_name, ios::app);
+
+    cout << "Querying data by gene..." << endl;
+    auto gene_query_start_time = chrono::high_resolution_clock::now();
+    // for each gene in genomic_query_list get genomic blocks
+    for (const auto& pair: genomic_query_list) {
+        auto query_gene_start_time = chrono::high_resolution_clock::now();
+
+        string gene = pair.first;
+        vector<string> gene_info = pair.second;
+
+        int gene_chrm;
+        int gene_bp_start;
+        int gene_bp_end;
+
+        try {
+            gene_chrm = stoi(gene_info[0]);
+
+        } catch (const invalid_argument &e) {
+            if (gene_info[0] == "X") {
                 gene_chrm = 23;
             }
-            else if (split_string(gene, ':')[0] == "Y") {
+            else if (gene_info[0] == "Y") {
                 gene_chrm = 24;
             }
-            else if (split_string(gene, ':')[0] == "MT") {
+            else if (gene_info[0] == "MT") {
                 gene_chrm = 25;
             }
+            else {
+                // ignore invalid values
+                gene_chrm = -1;
+            }
         }
-
-        string basepairs = split_string(gene, ':')[1];
-        int gene_bp_start = stoi(split_string(basepairs, '-')[0]);
-        int gene_bp_end = stoi(split_string(basepairs, '-')[1]);
+        gene_bp_start = stoi(gene_info[1]);
+        gene_bp_end = stoi(gene_info[2]);
 
         auto gene_blocks_to_decompress = vector<int>();
-        cout << "Getting genomic blocks for gene...: " << gene << endl;
-        auto query_gene_start_time = chrono::high_resolution_clock::now();
 
         // get genomic blocks
         auto gene_genome_blocks = query_genomic_idx_gene(
-                gene,
-                genomic_index_info_by_location,
-                genomic_index_info_by_block);
+                gene_chrm,
+                gene_bp_start,
+                gene_bp_end,
+                genomic_index_info_by_location);
 
         auto query_genomic_index_end_time = chrono::high_resolution_clock::now();
-        cout << "Done." << endl;
 
         // if there are no genomic blocks, return early. nothing found.
         if (gene_genome_blocks.empty()) {
-            cout << endl << "No blocks found for given query." << endl;
+            cout << endl << "No blocks found for: " << gene << endl;
             return 0;
         } else {
             // get blocks that are in both genomic and p-value queries
@@ -398,14 +368,6 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
-
-        // decompress blocks for each gene
-        // filter by statistical query,
-        // filter by genomic query
-        // write to output file
-        col_times.open(col_times_file, ios::app);
-        std::cout << "Decompressing " << gene_blocks_to_decompress.size()
-                  << " blocks for gene " << gene << std::endl;
 
         for (int block_to_decompress : gene_blocks_to_decompress){
             size_t block_size = -1;
@@ -436,8 +398,6 @@ int main(int argc, char *argv[]) {
                                block_header_length;
             }
             int start_byte = get_start_byte(block_to_decompress, genomic_index_info_by_block);
-            cout << "\t...decompressing block " << block_to_decompress
-                 << ", size: " << block_size << endl;
 
             file.seekg(start_byte, ios::beg);
             char block_header_bytes[block_header_length];
@@ -559,8 +519,12 @@ int main(int argc, char *argv[]) {
             auto filter_time = chrono::duration_cast<chrono::microseconds>(
                     filter_end_time - filter_start_time).count();
 
+            auto query_gene_end_time = chrono::high_resolution_clock::now();
+            auto query_gene_time = chrono::duration_cast<chrono::microseconds>(
+                    query_gene_end_time - query_gene_start_time).count();
+
             // write final_decompressed_block to output file
-            query_output_stream << "Gene: " << gene << endl;
+            query_output_stream << "Gene: " << gene << ",time: " << query_gene_time << "μs" << endl;
             for (int row = 0; row < final_decompressed_block[0].size(); row++) {
                 for (int col = 0; col < stoi(num_columns); col++) {
                     query_output_stream << final_decompressed_block[col][row];
@@ -570,20 +534,31 @@ int main(int argc, char *argv[]) {
                 }
                 query_output_stream << endl;
             }
-
         }
     }
+    auto gene_query_end_times = chrono::high_resolution_clock::now();
+    auto gene_query_times = chrono::duration_cast<chrono::microseconds>(
+            gene_query_end_times - gene_query_start_time).count();
+
+    cout << "...Done." << endl;
 
     // close output file
     query_output_stream.close();
     // close column decompression times file
     col_times.close();
 
+    auto end_all_time = chrono::high_resolution_clock::now();
+    auto all_time = chrono::duration_cast<chrono::microseconds>(
+            end_all_time - start_all_time).count();
+
     // write decompression times to file
     ofstream decompression_times;
     decompression_times.open(decompression_times_file, ios::trunc);
     decompression_times << "GWAS file: " << gwas_file << endl;
     decompression_times << "read statistical index: " << query_statistic_index_time << "μs" << endl;
+    decompression_times << "read genomic index: " << read_genomic_index_time << "μs" << endl;
+    decompression_times << "gene queries: " << gene_query_times << "μs" << endl;
+    decompression_times << "full run: " << all_time << "μs" << endl;
     decompression_times.close();
 
     cout << endl << "---Decompression Complete---" << endl;
