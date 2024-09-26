@@ -17,7 +17,7 @@ query:
   threshold:
     >= 7.3
 
-extra_indices:
+extra_index:
   pval
 
 codecs:
