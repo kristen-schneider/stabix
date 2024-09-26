@@ -368,6 +368,8 @@ int main(int argc, char *argv[]) {
     cout << "Done." << endl << endl;
     auto read_genomic_index_end = chrono::high_resolution_clock::now();
 
+
+    //TODO: perform a query by gene, not all blocks and all blocks
     cout << "Getting genomic blocks..." << endl;
     // 4. get and aggregate blocks associated with each query
     // time query genomic index
@@ -378,11 +380,6 @@ int main(int argc, char *argv[]) {
             genomic_query_list,
             genomic_index_info_by_location,
             genomic_index_info_by_block);
-
-//    // TODO: get gene associated with each block idx
-//    map<int, vector<string>> block_to_gene_map = make_block_to_gene_map(query_genomic,
-//                                                                        genomic_index_info_by_block,
-//                                                                        genomic_index_info_by_location);
 
     auto query_genomic_index_end = chrono::high_resolution_clock::now();
     cout << "Done." << endl;
@@ -466,8 +463,8 @@ int main(int argc, char *argv[]) {
                            block_header_length;
         }
         int start_byte = get_start_byte(block_idx, genomic_index_info_by_block);
-        cout << "\t...decompressing block " << block_idx
-             << ", size: " << block_size << endl;
+//        cout << "\t...decompressing block " << block_idx
+//             << ", size: " << block_size << endl;
 
         file.seekg(start_byte, ios::beg);
         char block_header_bytes[block_header_length];
@@ -526,17 +523,27 @@ int main(int argc, char *argv[]) {
         auto write_block_start = chrono::high_resolution_clock::now();
 
         // write decompressed block to output file
-        cout << "Writing block " << block_idx << " to output file..." << endl;
+//        cout << "Writing block " << block_idx << " to output file..." << endl;
         int column_count = stoi(num_columns);
 
 
         // TODO: filter the block based on the query
-        // only return rows that match the query
+        // only return rows that match pval query
+        // only return rows that match genomic query
         vector<int> hits = {};
         bool compare_result = false;
+        string chrm_col = decompressed_block[0];
+        vector<string> split_chrm_col = split_string(chrm_col, ',');
+        vector<int> split_chrm_int = {};
+
+        string bp_col = decompressed_block[1];
+        vector<string> split_bp_col = split_string(bp_col, ',');
+        vector<int> split_bp_int = {};
+
         string query_col = decompressed_block[second_index_col_idx];
         vector<string> split_query_col_string = split_string(query_col, ',');
         vector<float> split_query_col_float = {};
+
         for (string val : split_query_col_string) {
             try{
                 split_query_col_float.push_back(stof(val));
@@ -554,6 +561,11 @@ int main(int argc, char *argv[]) {
                 hits.push_back(i);
             }
         }
+        // if no hits: (in bin, not in threshold): skip block
+        if (hits.empty()) {
+            cout << "No hits for block " << block_idx << endl;
+            continue;
+        }
 
         // split columns of block into vectors
         vector<string> split_columns[column_count];
@@ -570,7 +582,6 @@ int main(int argc, char *argv[]) {
         }
 
         // write filtered block to output file
-
         for (int record_i = 0; record_i <= hits.size() - 1; record_i++) {
             for (int col_i = 0; col_i <= column_count - 1; col_i++) {
                 auto block_list = filtered_block[col_i];
@@ -579,17 +590,8 @@ int main(int argc, char *argv[]) {
             }
             query_output_stream << endl;
         }
-
-//        for (int record_i = 0; record_i <= block_size - 1; record_i++) {
-//            for (int col_i = 0; col_i <= column_count - 1; col_i++) {
-//                auto block_list = split_columns[col_i];
-//                string record = block_list[record_i];
-//                query_output_stream << record << ',';
-//            }
-//            query_output_stream << endl;
-//        }
-
         auto write_block_end = chrono::high_resolution_clock::now();
+
     }
     query_output_stream.close();
     col_times.close();
