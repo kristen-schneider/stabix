@@ -393,22 +393,6 @@ int main(int argc, char *argv[]) {
                              sorted_statistic_blocks.begin(), sorted_statistic_blocks.end(),
                              back_inserter(gene_statistic_intersection_blocks));
 
-
-//            auto it = find(gene_statistic_intersection_blocks.begin(),
-//                           gene_statistic_intersection_blocks.end(), 13);
-//            if (it != gene_statistic_intersection_blocks.end()) {
-//                cout << "13 is in the intersection" << endl;
-//            }
-//            else {
-//                cout << "13 is not in the intersection" << endl;
-//            }
-
-
-//            for (int block : curr_genome_blocks) {
-//                if (statistic_blocks.find(block) != statistic_blocks.end()) {
-//                    gene_statistic_intersection_blocks.push_back(block);
-//                }
-//            }
             // if there are no blocks to decompress, get time and go to next geneLocation
             if (gene_statistic_intersection_blocks.empty()) {
                 auto single_gene_end_time = chrono::high_resolution_clock::now();
@@ -523,7 +507,7 @@ int main(int argc, char *argv[]) {
                     auto single_gene_end_time = chrono::high_resolution_clock::now();
                     auto single_gene_time = chrono::duration_cast<chrono::microseconds>(
                             single_gene_end_time - single_gene_start_time).count();
-                    query_output_stream << "Gene: " << geneName << ",time: " << single_gene_time << endl;
+//                    query_output_stream << "Gene: " << geneName << ",time: " << single_gene_time << endl;
                     continue;
                 }
                 // filter block based on genomic query
@@ -563,7 +547,7 @@ int main(int argc, char *argv[]) {
                     auto single_gene_end_time = chrono::high_resolution_clock::now();
                     auto single_gene_time = chrono::duration_cast<chrono::microseconds>(
                             single_gene_end_time - single_gene_start_time).count();
-                    query_output_stream << "Gene: " << geneName << ",time: " << single_gene_time << endl;
+//                    query_output_stream << "Gene: " << geneName << ",time: " << single_gene_time << endl;
                     continue;
                 }
                 // get final block to write to output

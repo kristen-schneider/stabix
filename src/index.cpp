@@ -121,23 +121,27 @@ int get_block_idx(int q_chrm,
 
     auto chrm = genomic_index_info_by_location.find(q_chrm);
 
-    // search through the bp in the chromosome
+    // Use std::lower_bound to find the first element greater than q_bp
+    // This will give us the first bp in the chromosome that is greater than q_bp
     if (chrm != genomic_index_info_by_location.end()) {
-        for (auto const &bp : chrm->second) {
-            // this is asking for "give me the biggest bp.first"
-            if (q_bp >= bp.first) {
-                start_block_idx = bp.second[0];
-            }
-            else {
-                break;
+        auto bp = chrm->second.lower_bound(q_bp);
+        // If the bp is the first bp in the chromosome, then return the last block in the previous chromosome
+        if (bp == chrm->second.begin()) {
+            // if chromsome is not 1, then return the last block in the previous chromosome
+            if (q_chrm != 1) {
+                auto prev_chrm = genomic_index_info_by_location.find(q_chrm - 1);
+                start_block_idx = prev_chrm->second.rbegin()->second[0];
+                return start_block_idx;
+            }else{
+                // if chromosome is 1, then return the first block in the chromosome
+                start_block_idx = chrm->second.begin()->second[0];
+                return start_block_idx;
             }
         }
+        // Otherwise, we need to decrement the iterator to get the previous bp
+        bp--;
+        start_block_idx = bp->second[0];
     }
-    // if start block is -1, make start block the block before the first block of the chromosome
-    if (start_block_idx == -1) {
-        start_block_idx = genomic_index_info_by_location[q_chrm].begin()->second[0] - 1;
-    }
-
     return start_block_idx;
 }
 
