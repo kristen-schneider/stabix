@@ -44,7 +44,7 @@ vector<string> get_data_types(
 vector<string> get_codecs_by_data_type(vector<string> data_types,
                                        map<string, string> codec_types);
 
-map<string, vector<string>> read_bed_file(string bed_file);
+map<string, vector<vector<string>>>  read_bed_file(string bed_file);
 
 char get_delimiter(
         string line);

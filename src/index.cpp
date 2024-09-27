@@ -115,12 +115,13 @@ int get_block_idx(int q_chrm,
     if (genomic_index_info_by_location.find(q_chrm) == genomic_index_info_by_location.end()) {
         return -1;
     }
-    // make start block first block of chromosome
+    // make start block -1
     int start_block_idx;
-    start_block_idx = genomic_index_info_by_location[q_chrm].begin()->second[0];
+    start_block_idx = -1;
 
     auto chrm = genomic_index_info_by_location.find(q_chrm);
 
+    // search through the bp in the chromosome
     if (chrm != genomic_index_info_by_location.end()) {
         for (auto const &bp : chrm->second) {
             // this is asking for "give me the biggest bp.first"
@@ -131,6 +132,10 @@ int get_block_idx(int q_chrm,
                 break;
             }
         }
+    }
+    // if start block is -1, make start block the block before the first block of the chromosome
+    if (start_block_idx == -1) {
+        start_block_idx = genomic_index_info_by_location[q_chrm].begin()->second[0] - 1;
     }
 
     return start_block_idx;
