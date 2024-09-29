@@ -1,11 +1,11 @@
 gwas_file:
-  /Users/krsc0813/CLionProjects/gwas_local/gwas_files/continuous-103220-both_sexes.tsv
+  /Users/krsc0813/CLionProjects/gwas_local/gwas_files/continuous-30130-both_sexes-irnt.tsv
 
 block_size:
-  10000
+  2000
 
 out_name:
-  xz
+  zlib
 
 query:
   genomic:
@@ -22,8 +22,8 @@ extra_index:
 
 codecs:
   int:
-    xz
+    zlib
   float:
-    xz
+    zlib
   string:
-    xz
+    zlib

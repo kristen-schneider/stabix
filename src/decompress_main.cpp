@@ -336,6 +336,7 @@ int main(int argc, char *argv[]) {
     for (const auto& gene : genomic_query_list){
         // get gene
         string geneName = gene.first;
+        int geneStatHits = 0;
 //        cout << "Querying gene: " << geneName << endl;
         const auto& geneLocations = gene.second;
         // iterate through each gene location
@@ -379,16 +380,15 @@ int main(int argc, char *argv[]) {
                 auto single_gene_end_time = chrono::high_resolution_clock::now();
                 auto single_gene_time = chrono::duration_cast<chrono::microseconds>(
                         single_gene_end_time - single_gene_start_time).count();
-                query_output_stream << "Gene: " << geneName << ",time: " << single_gene_time << endl;
+                query_output_stream << "Gene: " << geneName <<
+                                    ",time: " << single_gene_time <<
+                                    ",stat_hits: " << geneStatHits << endl;
                 continue;
             }
 
             // get intersection of genomic blocks and statistic blocks
             auto gene_statistic_intersection_blocks = vector<int>();
 
-            // debug
-//            curr_genome_blocks = {13, 14};
-//            statistic_blocks = {1, 13, 14, 15};
             set_intersection(curr_genome_blocks.begin(), curr_genome_blocks.end(),
                              sorted_statistic_blocks.begin(), sorted_statistic_blocks.end(),
                              back_inserter(gene_statistic_intersection_blocks));
@@ -398,9 +398,12 @@ int main(int argc, char *argv[]) {
                 auto single_gene_end_time = chrono::high_resolution_clock::now();
                 auto single_gene_time = chrono::duration_cast<chrono::microseconds>(
                         single_gene_end_time - single_gene_start_time).count();
-                query_output_stream << "Gene: " << geneName << ",time: " << single_gene_time << endl;
+                query_output_stream << "Gene: " << geneName <<
+                                    ",time: " << single_gene_time <<
+                                    ",stat_hits: " << geneStatHits << endl;
                 continue;
             }
+
             // decompress blocks
             for (int block_to_decompress : gene_statistic_intersection_blocks) {
                 size_t block_size_decomp = -1;
@@ -475,16 +478,23 @@ int main(int argc, char *argv[]) {
                     col_times << block_to_decompress << "," << col_idx << ","
                               << chrono::duration_cast<chrono::microseconds>(
                                       col_decompress_end - col_decompress_start)
-                                      .count()
+                                      .count() << ","
                               << col_bytes << "," << col_codec << endl;
                     decompressed_block.push_back(col_decompressed);
                 }
+
                 // filter block based on statistical query
                 vector<int> statistical_hits = {};
                 bool statistical_compare = false;
                 string statistic_col = decompressed_block[second_index_col_idx];
                 vector<string> split_statistic_col = split_string(statistic_col, ',');
                 vector<float> split_statistic_float = {};
+
+                string chrm_col = decompressed_block[0];
+                string bp_col = decompressed_block[1];
+                vector<string> split_chrm_col = split_string(chrm_col, ',');
+                vector<string> split_bp_col = split_string(bp_col, ',');
+
                 for (string val : split_statistic_col) {
                     try{
                         split_statistic_float.push_back(stof(val));
@@ -499,9 +509,41 @@ int main(int argc, char *argv[]) {
                 for (int v = 0; v < split_statistic_float.size(); v++) {
                     if (compare_values(second_index_threshold,
                                        split_statistic_float[v])) {
-                        statistical_hits.push_back(v);
+                        //
+                        // debug
+                        // print the number of statistical hits
+                        // cout << "Gene: " << geneName << endl;
+                        // cout << "num statistical hits: " << statistical_hits.size() << endl;
+                        geneStatHits += 1;
+                        //
+                        // if statistical hit is correct, check chrm and bp
+                        int hit_chrm;
+                        try{
+                            hit_chrm = stoi(split_chrm_col[v]);
+                        }
+                        catch (const invalid_argument &e) {
+                            if (split_chrm_col[v] == "X") {
+                                hit_chrm = 23;
+                            }
+                            else if (split_chrm_col[v] == "Y") {
+                                hit_chrm = 24;
+                            }
+                            else if (split_chrm_col[v] == "MT") {
+                                hit_chrm = 25;
+                            }
+                            else {
+                                // ignore invalid values
+                                hit_chrm = -1;
+                            }
+                        }
+                        int hit_bp = stoi(split_bp_col[v]);
+                        if (hit_chrm == gene_chrm && hit_bp >= gene_bp_start && hit_bp <= gene_bp_end) {
+                            statistical_hits.push_back(v);
+                        }
                     }
                 }
+
+
                 // if there are no statistical hits, skip to next gene
                 if (statistical_hits.empty()) {
                     auto single_gene_end_time = chrono::high_resolution_clock::now();
@@ -510,40 +552,40 @@ int main(int argc, char *argv[]) {
 //                    query_output_stream << "Gene: " << geneName << ",time: " << single_gene_time << endl;
                     continue;
                 }
-                // filter block based on genomic query
-                vector<int> final_hits = {};
-                // TODO: include chrm and bp col in config
-                string chrm_col = decompressed_block[0];
-                string bp_col = decompressed_block[1];
-                vector<string> split_chrm_col = split_string(chrm_col, ',');
-                vector<string> split_bp_col = split_string(bp_col, ',');
-                for (int hit : statistical_hits) {
-                    int hit_chrm;
-                    try{
-                        hit_chrm = stoi(split_chrm_col[hit]);
-                    }
-                    catch (const invalid_argument &e) {
-                        if (split_chrm_col[hit] == "X") {
-                            hit_chrm = 23;
-                        }
-                        else if (split_chrm_col[hit] == "Y") {
-                            hit_chrm = 24;
-                        }
-                        else if (split_chrm_col[hit] == "MT") {
-                            hit_chrm = 25;
-                        }
-                        else {
-                            // ignore invalid values
-                            hit_chrm = -1;
-                        }
-                    }
-                    int hit_bp = stoi(split_bp_col[hit]);
-                    if (hit_chrm == gene_chrm && hit_bp >= gene_bp_start && hit_bp <= gene_bp_end) {
-                        final_hits.push_back(hit);
-                    }
-                }
+//                // filter block based on genomic query
+//                vector<int> final_hits = {};
+//                // TODO: include chrm and bp col in config
+//                string chrm_col = decompressed_block[0];
+//                string bp_col = decompressed_block[1];
+//                vector<string> split_chrm_col = split_string(chrm_col, ',');
+//                vector<string> split_bp_col = split_string(bp_col, ',');
+//                for (int hit : statistical_hits) {
+//                    int hit_chrm;
+//                    try{
+//                        hit_chrm = stoi(split_chrm_col[hit]);
+//                    }
+//                    catch (const invalid_argument &e) {
+//                        if (split_chrm_col[hit] == "X") {
+//                            hit_chrm = 23;
+//                        }
+//                        else if (split_chrm_col[hit] == "Y") {
+//                            hit_chrm = 24;
+//                        }
+//                        else if (split_chrm_col[hit] == "MT") {
+//                            hit_chrm = 25;
+//                        }
+//                        else {
+//                            // ignore invalid values
+//                            hit_chrm = -1;
+//                        }
+//                    }
+//                    int hit_bp = stoi(split_bp_col[hit]);
+//                    if (hit_chrm == gene_chrm && hit_bp >= gene_bp_start && hit_bp <= gene_bp_end) {
+//                        final_hits.push_back(hit);
+//                    }
+//                }
                 // if there are no hits, skip to next gene
-                if (final_hits.empty()) {
+                if (statistical_hits.empty()) {
                     auto single_gene_end_time = chrono::high_resolution_clock::now();
                     auto single_gene_time = chrono::duration_cast<chrono::microseconds>(
                             single_gene_end_time - single_gene_start_time).count();
@@ -555,7 +597,7 @@ int main(int argc, char *argv[]) {
                 for (int col_idx = 0; col_idx < stoi(num_columns); col_idx++) {
                     string col = decompressed_block[col_idx];
                     vector<string> split_col = split_string(col, ',');
-                    for (int hit : final_hits) {
+                    for (int hit : statistical_hits) {
                         final_decompressed_block[col_idx].push_back(split_col[hit]);
                     }
                 }
@@ -573,7 +615,9 @@ int main(int argc, char *argv[]) {
             auto single_gene_end_time = chrono::high_resolution_clock::now();
             auto single_gene_time = chrono::duration_cast<chrono::microseconds>(
                     single_gene_end_time - single_gene_start_time).count();
-            query_output_stream << "Gene: " << geneName << ",time: " << single_gene_time << endl;
+            query_output_stream << "Gene: " << geneName <<
+                                ",time: " << single_gene_time <<
+                                ",stat_hits: " << geneStatHits << endl;
         }
     }
     auto all_query_end_time = chrono::high_resolution_clock::now();

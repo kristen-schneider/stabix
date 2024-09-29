@@ -151,8 +151,9 @@ int main(int argc, char *argv[]) {
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, second_index_bins);
     pValIndexer.build_index(gwas_file, second_index_col_idx);
-    cout << endl << "---Indexing Complete---" << endl;
     cout << "Done." << endl;
+    cout << endl << "---Indexing Complete---" << endl;
+
     // ----------------------------------------------------------------------
 
     delete blockLineMap;
