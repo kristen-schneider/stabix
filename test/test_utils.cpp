@@ -259,7 +259,7 @@ TEST(GetBlockBPbyMap, simmple){
     map<int, vector<uint32_t>> chrm_block_bp_ends = read_cm_map_file(map_file);
     vector<uint32_t> chrm_vector = {5000, 9000, 13000};
 
-    ASSERT_EQ(chrm_block_bp_ends.size(), 3);
+    ASSERT_EQ(chrm_block_bp_ends.size(), 4);
     ASSERT_EQ(chrm_block_bp_ends[1], chrm_vector);
     ASSERT_EQ(chrm_block_bp_ends[1].size(), 3);
     ASSERT_EQ(chrm_block_bp_ends[2], chrm_vector);

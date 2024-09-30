@@ -1,5 +1,5 @@
 gwas_file:
-  /Users/krsc0813/CLionProjects/gwas_local/gwas_files/continuous-30130-both_sexes-irnt.tsv
+  /Users/krsc0813/CLionProjects/gwas_local/gwas_files/phecode-473-both_sexes.tsv
 
 block_size:
   2000
@@ -11,7 +11,7 @@ query:
   genomic:
     /Users/krsc0813/CLionProjects/gwas_local/gwas_files/hg19.protein_coding.bed
   col_idx:
-    7
+    19
   bins:
     0.3, 4.3, 7.29
   threshold:
