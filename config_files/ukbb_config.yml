@@ -5,7 +5,7 @@ block_size:
   2000
 
 out_name:
-  zlib
+  bz2
 
 query:
   genomic:
@@ -22,8 +22,8 @@ extra_index:
 
 codecs:
   int:
-    zlib
+    bz2
   float:
-    zlib
+    bz2
   string:
-    zlib
+    bz2
