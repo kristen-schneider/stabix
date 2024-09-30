@@ -136,8 +136,9 @@ int get_index(
  * @param bed_file
  * @return vector of bed data
  */
-vector<string> read_bed_file(string bed_file) {
-    vector<string> bed_data;
+map<string, vector<vector<string>>> read_bed_file(string bed_file) {
+    // gene -> {{chrm, bp_start, bp_end}, {chrm, bp_start, bp_end}, ...}
+    map<string, vector<vector<string>>>  bed_data;
     // check if file exists
     ifstream bed_stream(bed_file);
     if (!bed_stream.good()) {
@@ -145,7 +146,6 @@ vector<string> read_bed_file(string bed_file) {
         exit(1);
     }
     // read bed file, splitting by delimiter
-    // store as "chrm:bp_start-bp_end"
     string line;
     while (getline(bed_stream, line)) {
         // skip empty lines
@@ -161,8 +161,17 @@ vector<string> read_bed_file(string bed_file) {
         string chrm = tokens[0];
         string bp_start = tokens[1];
         string bp_end = tokens[2];
-        string bed_line = chrm + ":" + bp_start + "-" + bp_end;
-        bed_data.push_back(bed_line);
+        string gene = tokens[3];
+
+        vector<string> gene_data = {chrm, bp_start, bp_end};
+        // add gene data to bed_data if gene is already in bed_data
+        try {
+            bed_data[gene].push_back(gene_data);
+        }
+        // add gene data to bed_data if gene is not in bed_data
+        catch (const out_of_range &e) {
+            bed_data[gene] = {gene_data};
+        }
     }
 
     return bed_data;

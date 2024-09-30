@@ -13,11 +13,11 @@ query:
   col_idx:
     8
   bins:
-    5e-1, 5e-5, 5.1e-8
+    0.3, 4.3, 7.29
   threshold:
-    <= 5e-8
+    >= 7.3
 
-extra_indices:
+extra_index:
   pval
 
 codecs:

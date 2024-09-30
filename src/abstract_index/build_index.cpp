@@ -29,10 +29,19 @@ void Indexer::build_index(std::string inPath, int queryColumn) {
     while (std::getline(file, lineStr)) {
         auto row_vals = split_string(lineStr, '\t');
         std::string query_val = row_vals[queryColumn];
-        float bin = value_to_bin(query_val);
-        int block_id = this->blockLineMap->line_to_block(line_id);
-        index[bin].insert(block_id);
-        line_id++;
+        try {
+            float bin = value_to_bin(query_val);
+            int block_id = this->blockLineMap->line_to_block(line_id);
+            index[bin].insert(block_id);
+            line_id++;
+            if (bin == -HUGE_VALF) {
+                continue;
+            }
+        } catch (std::runtime_error &e) {
+            line_id++;
+            continue;
+        }
+//        line_id++;
     }
 
     // 2. Serialize the index map

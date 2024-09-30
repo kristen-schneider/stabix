@@ -36,16 +36,15 @@ int main(int argc, char *argv[]) {
     // genomic
     vector<string> index_types = {"genomic"};
     string query_genomic = config_options["genomic"];
-    vector<string> genomic_query_list = read_bed_file(query_genomic);
 
     // other
-    string extra_indices = config_options["extra_indices"];
+    string extra_index = config_options["extra_index"];
     int second_index_col_idx;
     auto second_index_bins = std::vector<float> {};
     string second_index_threshold = "";
 
-    if (extra_indices != "None") {
-        vector<string> extra_indices_list = split_string(extra_indices, ',');
+    if (extra_index != "None") {
+        vector<string> extra_indices_list = split_string(extra_index, ',');
         index_types.insert(index_types.end(), extra_indices_list.begin(),
                            extra_indices_list.end());
 
@@ -140,20 +139,21 @@ int main(int argc, char *argv[]) {
 
 
     // get paths for index files
-    vector<string> indexNames = {"genomic", "pval"};
+    vector<string> indexNames = {"genomic"};
+    if (extra_index != "None") {
+        indexNames.push_back(extra_index);
+    }
     auto indexPaths = index_paths_of(out_dir_path, indexNames);
     string genomicIndexPath = indexPaths[0];
     BlockLineMap *blockLineMap = new BlockLineMap(genomicIndexPath);
 
-    // INFO:
-    // ----------------------------------------------------------------------
-    //      Hardcoded query parameters
-    // ----------------------------------------------------------------------
     string pValIndexPath = indexPaths[1];
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, second_index_bins);
     pValIndexer.build_index(gwas_file, second_index_col_idx);
     cout << "Done." << endl;
+    cout << endl << "---Indexing Complete---" << endl;
+
     // ----------------------------------------------------------------------
 
     delete blockLineMap;

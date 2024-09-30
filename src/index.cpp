@@ -110,18 +110,56 @@ map<int, vector<int>> read_genomic_index_by_block(
 int get_block_idx(int q_chrm,
                   int q_bp,
                   map<int, map<int, vector<int>>> genomic_index_info_by_location) {
-    int start_block_idx = -1;
+
+//    cout << "Chromosome: " << q_chrm << " BP: " << q_bp << endl;
+
+    // time this function
+//    auto start = chrono::high_resolution_clock::now();
+
+    // check if chrm is in index
+    if (genomic_index_info_by_location.find(q_chrm) == genomic_index_info_by_location.end()) {
+        return -1;
+    }
+    // make start block -1
+    int start_block_idx;
+    start_block_idx = -1;
 
     auto chrm = genomic_index_info_by_location.find(q_chrm);
+
+    // Use std::lower_bound to find the first element greater than q_bp
+    // This will give us the first bp in the chromosome that is greater than q_bp
     if (chrm != genomic_index_info_by_location.end()) {
-        for (auto const &bp : chrm->second) {
-            // this is asking for "give me the biggest bp.first"
-            if (q_bp >= bp.first) {
-                start_block_idx = bp.second[0];
+        auto bp = chrm->second.lower_bound(q_bp);
+        // print the bp
+        // If the bp is the first bp in the chromosome, then return the last block in the previous chromosome
+        if (bp == chrm->second.begin()) {
+            // if chromsome is not 1, then return the last block in the previous chromosome
+            if (q_chrm != 1) {
+                auto prev_chrm = genomic_index_info_by_location.find(q_chrm - 1);
+                start_block_idx = prev_chrm->second.rbegin()->second[0];
+//                auto end = chrono::high_resolution_clock::now();
+//                auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start);
+//                cout << "Time end early: "
+//                     << duration.count() << " nanoseconds" << endl;
+                return start_block_idx;
+            }else{
+                // if chromosome is 1, then return the first block in the chromosome
+                start_block_idx = chrm->second.begin()->second[0];
+//                auto end = chrono::high_resolution_clock::now();
+//                auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start);
+//                cout << "Time end early: "
+//                     << duration.count() << " nanoseconds" << endl;
+                return start_block_idx;
             }
         }
+        // Otherwise, we need to decrement the iterator to get the previous bp
+        bp--;
+        start_block_idx = bp->second[0];
     }
-
+//    auto end = chrono::high_resolution_clock::now();
+//    auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start);
+//    cout << "Time taken by function: "
+//         << duration.count() << " nanoseconds" << endl;
     return start_block_idx;
 }
 
@@ -138,7 +176,20 @@ int get_start_byte(
 }
 
 /*
- * Get start and end block index for query
+ * get start end block index for a single query
+ */
+tuple<int, int> get_start_end_block_idx_single(int gene_chrm,
+                                               int gene_bp_start,
+                                               int gene_bp_end,
+                                               map<int, map<int, vector<int>>> genomic_index_info_by_location) {
+    // get block idx for query
+    int start_block_idx = get_block_idx(gene_chrm, gene_bp_start, genomic_index_info_by_location);
+    int end_block_idx = get_block_idx(gene_chrm, gene_bp_end, genomic_index_info_by_location);
+    return make_tuple(start_block_idx, end_block_idx);
+}
+
+/*
+ * Get start and end block index for a list of queries
  * @param query_list: vector<string> of queries
  * @param index_file_map: map<int, map<int, tuple<int, int>>> index file map
  * @param index_block_map: map<int, int> index block map
