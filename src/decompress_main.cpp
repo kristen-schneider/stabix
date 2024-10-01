@@ -218,6 +218,7 @@ int main(int argc, char *argv[]) {
                           "_" + config_options["out_name"] + "_column_decompression.csv");
     }
 
+
     // 1. open compressed file and read header
     cout << "Opening compressed file and reading header..." << endl;
     // TODO: There needs to be a system to vet quality inputs (such as config)
@@ -227,6 +228,14 @@ int main(int argc, char *argv[]) {
     file.seekg(0, ios::beg);
     char header_length_bytes[4];
     file.read(header_length_bytes, 4);
+        
+    // debug
+    cout << "DEBUG" << endl;
+    cout << "header length bytes: " << header_length_bytes << endl; 
+    cout << "compressed file: " << compressed_file << endl;
+    cout << "END DEBUG" << endl;
+    //
+
     // convert 4 bytes to int
     int header_length = bytes_to_int(header_length_bytes);
 
