@@ -3,9 +3,11 @@
 
 #endif // GWAS_COMPRESS_CPP_UTILS_H
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 

@@ -3,10 +3,12 @@
 
 #endif // GWAS_COMPRESS_CPP_COMPRESS_H
 
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <stdint.h>
 #include <vector>
 #include <zlib.h>
 

@@ -3,6 +3,7 @@
 #endif // GWAS_COMPRESS_CPP_HEADER_H
 
 #include "compression_types.hpp"
+#include <memory>
 #include <string>
 #include <vector>
 

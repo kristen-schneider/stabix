@@ -1,6 +1,7 @@
 #include "indexers.h"
 #include <fstream>
 #include <iostream>
+#include <cmath>
 #include <set>
 #include <string>
 #include <strings.h>

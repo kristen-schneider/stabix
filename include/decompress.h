@@ -10,6 +10,12 @@
 #include <string>
 #include <vector>
 #include <zlib.h>
+#include <regex>
+#include <stdexcept>
+
+#include "bxzstr.hpp"
+#include "compression_types.hpp"
+#include "variablebyte.h"
 
 
 using namespace std;

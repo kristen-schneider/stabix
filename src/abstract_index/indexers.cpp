@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <regex>
 #include <iomanip>
+#include <cmath>
 #include <sstream>
 
 float PValIndexer::nearest_bin(float value) {

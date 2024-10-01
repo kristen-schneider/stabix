@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <functional>
+#include <cmath> 
 #include <string>
 #include <unordered_set>
 #include <vector>
