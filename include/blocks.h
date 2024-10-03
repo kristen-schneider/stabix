@@ -38,7 +38,7 @@ void get_byte_start_of_blocks(
 vector<string> get_block_header(
         vector<string> compressed_block);
 
-int get_block_length(
+unsigned int get_block_length(
         vector<string> compressed_block);
 
 vector<string> compress_block(

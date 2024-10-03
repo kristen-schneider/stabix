@@ -336,6 +336,14 @@ int main(int argc, char *argv[]) {
     for (const auto& gene : genomic_query_list){
         // get gene
         string geneName = gene.first;
+
+        // debug
+        cout << geneName << ", ";
+        if (geneName == "ACO2") {
+            int bug;
+        }
+        // debug
+
         int geneStatHits = 0;
 //        cout << "Querying gene: " << geneName << endl;
         const auto& geneLocations = gene.second;
@@ -435,6 +443,8 @@ int main(int argc, char *argv[]) {
                 }
                 int start_byte = get_start_byte(block_to_decompress,
                                                 genomic_index_info_by_block);
+
+                cout << start_byte << endl;
 
                 file.seekg(start_byte, ios::beg);
                 char block_header_bytes[block_header_length];
@@ -542,7 +552,6 @@ int main(int argc, char *argv[]) {
                         }
                     }
                 }
-
 
                 // if there are no statistical hits, skip to next gene
                 if (statistical_hits.empty()) {

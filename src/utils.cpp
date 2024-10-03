@@ -387,7 +387,25 @@ vector<uint32_t> convert_vector_string_to_vector_int(
         vector<string> vec) {
     vector<uint32_t> vec_int;
     for (int i = 0; i < vec.size(); i++) {
-        vec_int.push_back(stoi(vec[i]));
+        try{
+            vec_int.push_back(stoi(vec[i]));
+        } // catch cannot convert string to int (X, Y, MT chromosomes)
+        catch (const std::invalid_argument& e){
+            if (vec[i] == "X"){
+                vec_int.push_back(23);
+            }
+            else if (vec[i] == "Y"){
+                vec_int.push_back(24);
+            }
+            else if (vec[i] == "MT"){
+                vec_int.push_back(25);
+            }
+            else{
+                cout << "Invalid chromosome: " << vec[i] << endl;
+                continue;
+            }
+        }
+
     }
     return vec_int;
 }
@@ -506,13 +524,16 @@ vector<string> index_paths_of(
         string output_dir,
         vector<string> gwasColumns) {
     auto gwasPath = fs::path(output_dir);
+    auto part1 = gwasPath.parent_path();
+    auto part2 = gwasPath.string();
     auto outDir = gwasPath.parent_path() / (gwasPath.stem().string());
     //    fs::create_directories(outDir);
     auto outPaths = vector<string>();
 
     for (int i = 0; i < gwasColumns.size(); i++) {
         string columnName = gwasColumns[i];
-        auto outPath = outDir / (columnName + ".idx");
+        auto outPath = gwasPath / (columnName + ".idx");
+//        outPaths.push_back(gwasPath.string());
         outPaths.push_back(outPath.string());
     }
 

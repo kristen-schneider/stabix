@@ -92,6 +92,7 @@ map<int, vector<int>> read_genomic_index_by_block(
             int line_start = stoi(line_list[3]);
             int byte_offset = stoi(line_list[4]);
 
+
             genomic_index_info_by_block[block_idx] = {line_start, byte_offset};
         }
         line_count++;

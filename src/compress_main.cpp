@@ -297,14 +297,15 @@ int main(int argc, char *argv[]) {
     // get ending index of each compressed block header and compressed block
     vector<string> block_header_end_bytes;
     vector<string> block_end_bytes;
-    int curr_byte_idx = 0;
+    unsigned int curr_byte_idx = 0;
     for (int curr_block_idx = 0; curr_block_idx < num_blocks;
          curr_block_idx++) {
-        int curr_block_header_length =
+
+        unsigned int curr_block_header_length =
             compressed_block_headers[curr_block_idx].length();
         curr_byte_idx += curr_block_header_length;
         block_header_end_bytes.push_back(to_string(curr_byte_idx));
-        int curr_block_length =
+        unsigned int curr_block_length =
             get_block_length(compressed_blocks[curr_block_idx]);
         curr_byte_idx += curr_block_length;
         block_end_bytes.push_back(to_string(curr_byte_idx));

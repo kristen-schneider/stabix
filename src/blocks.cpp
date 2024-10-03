@@ -416,8 +416,8 @@ vector<string> get_block_header(
  * @param compressed_block: vector<string> of compressed columns
  * @return block_length_bytes: int of block length in bytes
  */
-int get_block_length(vector<string> compressed_block) {
-    int block_length_bytes = 0;
+unsigned int get_block_length(vector<string> compressed_block) {
+    unsigned int block_length_bytes = 0;
     for (auto const &column : compressed_block) {
         block_length_bytes += column.length();
     }

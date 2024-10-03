@@ -13,7 +13,7 @@
 
 
 using namespace std;
-namespace fs = std::filesystem;
+//namespace fs = std::filesystem;
 
 string decompress_column(string compressed_column,
                          string codec,
