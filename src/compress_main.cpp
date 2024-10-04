@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
     // setting up variables for blocks
     vector<vector<vector<string>>> all_blocks;
     vector<vector<string>> compressed_blocks;
-    vector<vector<int>> genomic_index;
+    vector<vector<unsigned int>> genomic_index;
     int num_blocks;
 
     // 2. create blocks
@@ -406,7 +406,7 @@ int main(int argc, char *argv[]) {
 
     // write genomic index to file
     for (int block_idx = 0; block_idx < genomic_index.size(); block_idx++) {
-        vector<int> chrm_bp_byte = genomic_index[block_idx];
+        vector<unsigned int> chrm_bp_byte = genomic_index[block_idx];
         genomicIndexFile << block_idx << ","
                             << genomic_index[block_idx][0] << ","
                             << genomic_index[block_idx][1] << ","

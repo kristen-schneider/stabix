@@ -37,7 +37,7 @@ vector<vector<vector<string>>> make_blocks(
         int num_columns,
         int block_size,
         char delim,
-        vector<vector<int>> &genomic_index){
+        vector<vector<unsigned int>> &genomic_index){
 
     // to return (stores all blocks)
     vector<vector<vector<string>>> all_blocks;
@@ -61,7 +61,7 @@ vector<vector<vector<string>>> make_blocks(
 
     // create an empty block index
     // chrm, bp, line_number, byte_offset
-    vector<int> block_genomic_index = {-1, -1, -1, -1};
+    vector<unsigned int> block_genomic_index = {0, 0, 0, 0};
 
     // read in lines
     while (getline(gwas, line)) {
@@ -205,7 +205,7 @@ vector<vector<vector<string>>> make_blocks_map(
         int num_columns,
         map<int, vector<uint32_t>> chrm_block_bp_ends,
         char delim,
-        vector<vector<int>> &genomic_index) {
+        vector<vector<unsigned int>> &genomic_index) {
 
     // read in gwas file and make a new block every block_size lines
     // return a vector of blocks
@@ -232,7 +232,7 @@ vector<vector<vector<string>>> make_blocks_map(
 
     // create an empty block index
     // chrm, bp, byte_offset,
-    vector<int> block_genomic_index = {-1, -1, -1, -1};
+    vector<unsigned int> block_genomic_index = {0, 0, 0, 0};
 
     // read in lines
     while (getline(gwas, line)) {
@@ -377,7 +377,7 @@ vector<vector<vector<string>>> make_blocks_map(
 void get_byte_start_of_blocks(
         int compressed_header_size,
         vector<string> block_end_bytes,
-        vector<vector<int>> &genomic_index){
+        vector<vector<unsigned int>> &genomic_index){
 
     // for each block, start byte =
     // header bytes + compressed header size + end of last block
@@ -387,7 +387,7 @@ void get_byte_start_of_blocks(
             genomic_index[block_idx][3] = 4 + compressed_header_size;
         }
         else{
-            genomic_index[block_idx][3] = 4 + compressed_header_size + stoi(block_end_bytes[block_idx - 1]);
+            genomic_index[block_idx][3] = 4 + compressed_header_size + stoul(block_end_bytes[block_idx - 1]);
         }
     }
 }

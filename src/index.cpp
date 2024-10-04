@@ -17,11 +17,11 @@ using namespace std;
  * @param genomic_index_file: string of genomic index file
  * @return map<int, map<int, vector<int>>> genomic_index_info_by_location
  */
-map<int, map<int, vector<int>>> read_genomic_index_by_location(
+map<int, map<int, vector<unsigned int>>> read_genomic_index_by_location(
         string genomic_index_file) {
 
     // chrm -> bp -> block_idx, line_start, byte_offset
-    map<int, map<int, vector<int>>> genomic_index_info_by_location;
+    map<int, map<int, vector<unsigned int>>> genomic_index_info_by_location;
 
     ifstream file(genomic_index_file);
     string line;
@@ -36,12 +36,12 @@ map<int, map<int, vector<int>>> read_genomic_index_by_location(
         } else {
             vector<string> line_list = split_string(line, ',');
 
-            map<int, vector<int>> bp_line_byte;
-            int block_idx = stoi(line_list[0]);
+            map<int, vector<unsigned int>> bp_line_byte;
+            unsigned int block_idx = stoul(line_list[0]);
             int chrm = stoi(line_list[1]);
             int bp_start = stoi(line_list[2]);
-            int line_start = stoi(line_list[3]);
-            int byte_offset = stoi(line_list[4]);
+            unsigned int line_start = stoul(line_list[3]);
+            unsigned int byte_offset = stoul(line_list[4]);
 
             bp_line_byte[bp_start] = {block_idx, line_start, byte_offset};
             // if chromosome not in index_map, add it
@@ -65,12 +65,12 @@ map<int, map<int, vector<int>>> read_genomic_index_by_location(
  * @param genomic_index_file: string of genomic index file
  * @return map<int, vector<int>> genomic_index_info_by_block
  */
-map<int, vector<int>> read_genomic_index_by_block(
+map<int, vector<unsigned int>> read_genomic_index_by_block(
         string genomic_index_file)
  {
 
     // block_idx -> line_start, byte_offset
-    map<int, vector<int>> genomic_index_info_by_block;
+    map<int, vector<unsigned int>> genomic_index_info_by_block;
 
     ifstream file(genomic_index_file);
     string line;
@@ -85,13 +85,12 @@ map<int, vector<int>> read_genomic_index_by_block(
         } else {
             vector<string> line_list = split_string(line, ',');
 
-            map<int, vector<int>> bp_line_byte;
+            map<int, vector<unsigned int>> bp_line_byte;
             int block_idx = stoi(line_list[0]);
             int chrm = stoi(line_list[1]);
             int bp_start = stoi(line_list[2]);
-            int line_start = stoi(line_list[3]);
-            int byte_offset = stoi(line_list[4]);
-
+            unsigned int line_start = stoul(line_list[3]);
+            unsigned int byte_offset = stoul(line_list[4]);
 
             genomic_index_info_by_block[block_idx] = {line_start, byte_offset};
         }
@@ -110,7 +109,7 @@ map<int, vector<int>> read_genomic_index_by_block(
  */
 int get_block_idx(int q_chrm,
                   int q_bp,
-                  map<int, map<int, vector<int>>> genomic_index_info_by_location) {
+                  map<int, map<int, vector<unsigned int>>> genomic_index_info_by_location) {
 
 //    cout << "Chromosome: " << q_chrm << " BP: " << q_bp << endl;
 
@@ -170,9 +169,9 @@ int get_block_idx(int q_chrm,
  * @param index_block_map: map<int, int> index block map
  * @return int start_byte
  */
-int get_start_byte(
+unsigned int get_start_byte(
         int block_idx,
-        map<int, vector<int>> index_block_map) {
+        map<int, vector<unsigned int>> index_block_map) {
     return index_block_map[block_idx][1];
 }
 
@@ -182,7 +181,7 @@ int get_start_byte(
 tuple<int, int> get_start_end_block_idx_single(int gene_chrm,
                                                int gene_bp_start,
                                                int gene_bp_end,
-                                               map<int, map<int, vector<int>>> genomic_index_info_by_location) {
+                                               map<int, map<int, vector<unsigned int>>> genomic_index_info_by_location) {
     // get block idx for query
     int start_block_idx = get_block_idx(gene_chrm, gene_bp_start, genomic_index_info_by_location);
     int end_block_idx = get_block_idx(gene_chrm, gene_bp_end, genomic_index_info_by_location);
@@ -198,7 +197,7 @@ tuple<int, int> get_start_end_block_idx_single(int gene_chrm,
  */
 vector<tuple<int, int>> get_start_end_block_idx(
         vector<string> query_list,
-        map<int, map<int, vector<int>>> genomic_index_info_by_location) {
+        map<int, map<int, vector<unsigned int>>> genomic_index_info_by_location) {
 
     vector<tuple<int, int>> all_query_info;
     for (int q_idx = 0; q_idx < query_list.size(); q_idx++) {

@@ -21,9 +21,9 @@ namespace fs = std::filesystem;
 vector<int> query_genomic_idx_gene(int gene_chrm,
                                           int gene_bp_start,
                                           int gene_bp_end,
-                                          map<int, map<int, vector<int>>> genomic_index_info_by_location) {
+                                          map<int, map<int, vector<unsigned int>>> genomic_index_info_by_location) {
 
-    tuple<int, int> gene_blocks = get_start_end_block_idx_single(
+    tuple<int, unsigned int> gene_blocks = get_start_end_block_idx_single(
             gene_chrm,
             gene_bp_start,
             gene_bp_end,
@@ -271,11 +271,11 @@ int main(int argc, char *argv[]) {
     ifstream genomic_index_file(
         genomic_index_path); // TODO: remove: these next fns
                              // should take path, not stream
-    map<int, map<int, vector<int>>> genomic_index_info_by_location =
+    map<int, map<int, vector<unsigned int>>> genomic_index_info_by_location =
             read_genomic_index_by_location(
                     genomic_index_path);
 
-    map<int, vector<int>> genomic_index_info_by_block =
+    map<int, vector<unsigned int>> genomic_index_info_by_block =
             read_genomic_index_by_block(
                     genomic_index_path);
 
@@ -337,11 +337,11 @@ int main(int argc, char *argv[]) {
         // get gene
         string geneName = gene.first;
 
-        // debug
-        cout << geneName << ", ";
-        if (geneName == "ACO2") {
-            int bug;
-        }
+//        // debug
+//        cout << geneName << ", ";
+//        if (geneName == "ACO2") {
+//            int bug;
+//        }
         // debug
 
         int geneStatHits = 0;
@@ -428,23 +428,21 @@ int main(int argc, char *argv[]) {
                     block_size_decomp = stoi(block_sizes_list[block_to_decompress]);
                 }
                 vector<string> decompressed_block;
-                int block_header_length;
-                int block_length;
+                unsigned int block_header_length;
+                unsigned int block_length;
                 if (block_to_decompress == 0) {
                     block_header_length = stoi(block_header_end_bytes_list[block_to_decompress]);
                     block_length =
                             stoi(block_end_bytes_list[block_to_decompress]) - block_header_length;
                 } else {
-                    block_header_length = stoi(block_header_end_bytes_list[block_to_decompress]) -
-                                          stoi(block_end_bytes_list[block_to_decompress - 1]);
-                    block_length = stoi(block_end_bytes_list[block_to_decompress]) -
-                                   stoi(block_end_bytes_list[block_to_decompress - 1]) -
+                    block_header_length = stoul(block_header_end_bytes_list[block_to_decompress]) -
+                                          stoul(block_end_bytes_list[block_to_decompress - 1]);
+                    block_length = stoul(block_end_bytes_list[block_to_decompress]) -
+                                   stoul(block_end_bytes_list[block_to_decompress - 1]) -
                                    block_header_length;
                 }
-                int start_byte = get_start_byte(block_to_decompress,
+                unsigned int start_byte = get_start_byte(block_to_decompress,
                                                 genomic_index_info_by_block);
-
-                cout << start_byte << endl;
 
                 file.seekg(start_byte, ios::beg);
                 char block_header_bytes[block_header_length];

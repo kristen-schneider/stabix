@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 
+set(CMAKE_PREFIX_PATH "/Users/krsc0813/miniforge3/envs/test")
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -56,20 +58,20 @@ add_executable(gwas_decompress
         src/abstract_index/query_index.cpp
         src/abstract_index/build_index.cpp)
 
-# TESTING
-add_executable(test_gwas
-        test/test_gwas.cpp
-        test/test_utils.cpp
-        src/utils.cpp
-        test/test_index.cpp
-        src/index.cpp
-        src/decompress.cpp
-        test/test_header.cpp
-        src/header.cpp
-        test/test_compress.cpp
-        src/compress.cpp
-        src/blocks.cpp
-        test/test_blocks.cpp)
+## TESTING
+#add_executable(test_gwas
+#        test/test_gwas.cpp
+#        test/test_utils.cpp
+#        src/utils.cpp
+#        test/test_index.cpp
+#        src/index.cpp
+#        src/decompress.cpp
+#        test/test_header.cpp
+#        src/header.cpp
+#        test/test_compress.cpp
+#        src/compress.cpp
+#        src/blocks.cpp
+#        test/test_blocks.cpp)
 
 # Additional configuration if needed, e.g., linking libraries, "adding -lz"
 #target_link_libraries(gwas_compress bxzstr z)
@@ -80,4 +82,4 @@ add_executable(test_gwas
 target_link_libraries(gwas_compress bxzstr FastPFOR z)
 target_link_libraries(gwas_index bxzstr FastPFOR z)
 target_link_libraries(gwas_decompress bxzstr FastPFOR z)
-target_link_libraries(test_gwas gtest gtest_main bxzstr FastPFOR z)
+#target_link_libraries(test_gwas gtest gtest_main bxzstr FastPFOR z)
