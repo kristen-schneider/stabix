@@ -31,6 +31,7 @@ vector<string> parse_header_list(
     switch_case["block end bytes"] = 5;
     switch_case["block sizes"] = 6;
 
+    
     int num_blocks = stoi(header_list[1]);
     int already_processed = 0;
 
@@ -74,7 +75,7 @@ vector<string> parse_header_list(
     case 6: // block sizes
         already_processed = 2 + 2 * stoi(header_list[0]) + 2 * stoi(header_list[1]);
         for (int i = already_processed;
-             i < already_processed + num_blocks;
+             i < header_list.size();
              i++) {
             if (header_list[i] != "") {
                 header_query_list.push_back(header_list[i]);
@@ -87,7 +88,6 @@ vector<string> parse_header_list(
         cout << "Error: header_query not found." << endl;
         exit(1);
     }
-
     return header_query_list;
 }
 

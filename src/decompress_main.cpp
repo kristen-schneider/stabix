@@ -229,13 +229,6 @@ int main(int argc, char *argv[]) {
     char header_length_bytes[4];
     file.read(header_length_bytes, 4);
         
-    // debug
-    cout << "DEBUG" << endl;
-    cout << "header length bytes: " << header_length_bytes << endl; 
-    cout << "compressed file: " << compressed_file << endl;
-    cout << "END DEBUG" << endl;
-    //
-
     // convert 4 bytes to int
     int header_length = bytes_to_int(header_length_bytes);
 
@@ -346,7 +339,6 @@ int main(int argc, char *argv[]) {
         // get gene
         string geneName = gene.first;
         int geneStatHits = 0;
-//        cout << "Querying gene: " << geneName << endl;
         const auto& geneLocations = gene.second;
         // iterate through each gene location
         for (const auto& geneLocation : geneLocations){
@@ -374,16 +366,17 @@ int main(int argc, char *argv[]) {
                     gene_chrm = -1;
                 }
             }
+            
             gene_bp_start = stoi(geneLocation[1]);
             gene_bp_end = stoi(geneLocation[2]);
+            
             // get genomic blocks
             vector<int> curr_genome_blocks = query_genomic_idx_gene(
                     gene_chrm,
                     gene_bp_start,
                     gene_bp_end,
                     genomic_index_info_by_location);
-
-
+ 
             // if there are no genomic blocks to decompress, get time and go to next geneLocation
             if (curr_genome_blocks.empty()) {
                 auto single_gene_end_time = chrono::high_resolution_clock::now();
@@ -401,6 +394,7 @@ int main(int argc, char *argv[]) {
             set_intersection(curr_genome_blocks.begin(), curr_genome_blocks.end(),
                              sorted_statistic_blocks.begin(), sorted_statistic_blocks.end(),
                              back_inserter(gene_statistic_intersection_blocks));
+
 
             // if there are no blocks to decompress, get time and go to next geneLocation
             if (gene_statistic_intersection_blocks.empty()) {

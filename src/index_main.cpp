@@ -118,6 +118,7 @@ int main(int argc, char *argv[]) {
     file.seekg(0, ios::beg);
     char header_length_bytes[4];
     file.read(header_length_bytes, 4);
+    
     // convert 4 bytes to int
     int header_length = bytes_to_int(header_length_bytes);
 
@@ -127,16 +128,20 @@ int main(int argc, char *argv[]) {
     file.read(header_bytes, header_length);
     // convert header bytes to string
     string header_string = string(header_bytes, header_length);
+    
     // decompress header
     string header = zlib_decompress(header_string);
+    //debug
+    cout << "header decompressed: " << endl;
     vector<string> header_list = split_string(header, ',');
+    cout << "header split: ";
+    cout << header_list[0] << endl;
 
     // parse header
     string num_columns = parse_header_list(header_list, "num columns")[0];
     string num_blocks = parse_header_list(header_list, "num blocks")[0];
     vector<string> block_sizes_list =
             parse_header_list(header_list, "block sizes");
-
 
     // get paths for index files
     vector<string> indexNames = {"genomic"};
@@ -145,6 +150,11 @@ int main(int argc, char *argv[]) {
     }
     auto indexPaths = index_paths_of(out_dir_path, indexNames);
     string genomicIndexPath = indexPaths[0];
+
+    //debug
+    cout << "paths: " << endl;
+    cout << genomicIndexPath << endl;
+
     BlockLineMap *blockLineMap = new BlockLineMap(genomicIndexPath);
 
     string pValIndexPath = indexPaths[1];
