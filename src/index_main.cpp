@@ -131,11 +131,7 @@ int main(int argc, char *argv[]) {
     
     // decompress header
     string header = zlib_decompress(header_string);
-    //debug
-    cout << "header decompressed: " << endl;
     vector<string> header_list = split_string(header, ',');
-    cout << "header split: ";
-    cout << header_list[0] << endl;
 
     // parse header
     string num_columns = parse_header_list(header_list, "num columns")[0];
@@ -150,14 +146,12 @@ int main(int argc, char *argv[]) {
     }
     auto indexPaths = index_paths_of(out_dir_path, indexNames);
     string genomicIndexPath = indexPaths[0];
-
-    //debug
-    cout << "paths: " << endl;
-    cout << genomicIndexPath << endl;
-
+    
     BlockLineMap *blockLineMap = new BlockLineMap(genomicIndexPath);
 
     string pValIndexPath = indexPaths[1];
+    cout << pValIndexPath << endl;
+    cout << gwas_file << endl;
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, second_index_bins);
     pValIndexer.build_index(gwas_file, second_index_col_idx);

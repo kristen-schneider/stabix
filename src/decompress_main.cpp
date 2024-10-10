@@ -195,27 +195,30 @@ int main(int argc, char *argv[]) {
     // outfile for decompression times
     fs::create_directories(out_dir_path.parent_path() / "decompression_times");
     fs::path decompression_times_file;
-    fs::path col_times_file;
+    //fs::path col_times_file;
     if (block_size == -1) {
         decompression_times_file = out_dir_path.parent_path() / "decompression_times" /
                                  (gwas_path.stem().string() +
                                  "_map" +
                                  "_" + config_options["out_name"] + "_decompression.csv");
-
+        /*
         col_times_file = out_dir_path.parent_path() / "decompression_times" /
                             (gwas_path.stem().string() +
                             "_map" +
                             "_" + config_options["out_name"] + "_column_decompression.csv");
+        */
     } else {
         decompression_times_file = out_dir_path.parent_path() / "decompression_times" /
                                  (gwas_path.stem().string() +
                                  "_" + config_options["block_size"] +
                                  "_" + config_options["out_name"] + "_decompression.csv");
 
+        /*
         col_times_file = out_dir_path.parent_path() / "decompression_times" /
                          (gwas_path.stem().string() +
                           "_" + config_options["block_size"] +
                           "_" + config_options["out_name"] + "_column_decompression.csv");
+        */
     }
 
 
@@ -323,12 +326,12 @@ int main(int argc, char *argv[]) {
         cout << "No blocks found for statistic query." << endl;
         return 0;
     }
-
+    /*
     ofstream col_times;
     col_times.open(col_times_file, ios::trunc);
     col_times << "GWAS file: " << gwas_file << ",num_cols: " << num_columns << endl;
     col_times << "block_idx,col_idx,comp_time(μs),col_size,codec" << endl;
-
+    */
     query_output_stream.open(query_output_file_name, ios::app);
 
     cout << "Querying data by gene..." << endl;
@@ -479,18 +482,20 @@ int main(int argc, char *argv[]) {
                     size_t compressed_size = col_bitstring.size();
 
                     // time decompressing column
-                    auto col_decompress_start = chrono::high_resolution_clock::now();
+                    //auto col_decompress_start = chrono::high_resolution_clock::now();
                     string col_decompressed = decompress_column(
                             col_bitstring,
                             col_codec,
                             compressed_size,
                             block_size_decomp);
+                    /*
                     auto col_decompress_end = chrono::high_resolution_clock::now();
                     col_times << block_to_decompress << "," << col_idx << ","
                               << chrono::duration_cast<chrono::microseconds>(
                                       col_decompress_end - col_decompress_start)
                                       .count() << ","
                               << col_bytes << "," << col_codec << endl;
+                    */
                     decompressed_block.push_back(col_decompressed);
                 }
 
@@ -639,7 +644,7 @@ int main(int argc, char *argv[]) {
     // close output file
     query_output_stream.close();
     // close column decompression times file
-    col_times.close();
+    //col_times.close();
 
     auto end_all_time = chrono::high_resolution_clock::now();
     auto all_time = chrono::duration_cast<chrono::microseconds>(
