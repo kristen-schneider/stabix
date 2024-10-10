@@ -72,6 +72,9 @@ int main(int argc, char *argv[]) {
                              "_" + config_options["out_name"]);
     }
 
+    // remove .tsv from gwas file name
+    string no_tsv = gwas_path.filename().string();
+
 //    auto out_dir_path = gwas_path.parent_path() / output_dir /
 //            (gwas_path.stem().string() + "_" + config_options["block_size"] + "_");
     fs::create_directories(out_dir_path);
