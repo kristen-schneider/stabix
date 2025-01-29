@@ -10,3 +10,11 @@
 [submodule "lib/bxzstr"]
 	path = lib/bxzstr
 	url = https://github.com/tmaklin/bxzstr.git
+[submodule "submodules/pybind11"]
+	path = submodules/pybind11
+	url = https://github.com/pybind/pybind11.git
+	branch = stable
+[submodule "lib/pybind11"]
+	path = lib/pybind11
+	url = https://github.com/pybind/pybind11.git
+	branch = stable
