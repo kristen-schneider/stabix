@@ -1,0 +1,12 @@
+[project]
+name = "stabix"
+version = "1.0.0"
+authors = [ "Kristen Schneider", "Simon Walker" ]
+keywords = ["genomics", "indexing", "compression", "decompression", "bioinformatics", "tabix"]
+description = "S(tatistical)tabix"
+maintainers = [ "Simon Walker" ]
+
+[project.urls]
+repository = "https://github.com/kristen-schneider/stabix"
+# TODO: update to bioinformatics journal after publication
+paper = "https://www.biorxiv.org/content/10.1101/2024.11.15.623812v1"

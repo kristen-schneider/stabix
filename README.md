@@ -58,3 +58,29 @@ cd ..
 [Example configuration file.](https://github.com/kristen-schneider/gwas-cpp/blob/config_files/test_config.yml)<br>
 
 ### See [STABIX analysis repository](https://github.com/kristen-schneider/stabix-analysis) for more analysis and runnign scripts.
+
+---
+
+### Generating python bindings
+
+```bash
+mkdir build && cd build
+cmake .. && make stabixpy
+# generates build/stabix.so
+```
+
+Import with
+```py
+import stabix
+```
+
+Note that this triggers compilation for a specific version 
+of python that must be specified in the [CMakeLists.txt]() file.
+Both version & python executable path must be specified.
+
+Defaults in the [CMakeLists.txt]() file,
+
+```cmake
+SET(PYBIND11_PYTHON_VERSION 3.11.7)
+set(PYTHON_EXECUTABLE "/opt/homebrew/bin/python3")
+```
