@@ -16,19 +16,10 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-int main(int argc, char *argv[]) {
-
+int compress_main(string config_path) {
     // COMPRESSION STEPS
-    // 0. Read Config Options
-    // open file, exit
-    if (argc != 2) {
-        // prevent seg faults
-        cout << "1 argument required: config_path" << endl;
-        return -1;
-    }
-    string config_file = argv[1];
-    cout << "Reading config options from: " << config_file << endl;
-    map<string, string> config_options = read_config_file(config_file);
+    cout << "Reading config options from: " << config_path << endl;
+    map<string, string> config_options = read_config_file(config_path);
     add_default_config_options(config_options);
 
     // - input gwas file

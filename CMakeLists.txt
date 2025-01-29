@@ -31,7 +31,8 @@ add_executable(gwas_compress
         src/blocks.cpp
         src/compress.cpp
         src/header.cpp
-        src/utils.cpp)
+        src/utils.cpp
+        src/cli/compress_cli.cpp)
 
 # INDEXING
 add_executable(gwas_index
@@ -43,7 +44,8 @@ add_executable(gwas_index
         src/utils.cpp
         src/abstract_index/indexers.cpp
         src/abstract_index/build_index.cpp
-        src/abstract_index/query_index.cpp)
+        src/abstract_index/query_index.cpp
+        src/cli/index_cli.cpp)
 
 # DECOMPRESSION
 add_executable(gwas_decompress
@@ -54,7 +56,8 @@ add_executable(gwas_decompress
         src/utils.cpp
         src/abstract_index/indexers.cpp
         src/abstract_index/query_index.cpp
-        src/abstract_index/build_index.cpp)
+        src/abstract_index/build_index.cpp
+        src/cli/decompress_cli.cpp)
 
 ## TESTING
 #add_executable(test_gwas
@@ -88,7 +91,7 @@ set(PYBIND11_FINDPYTHON ON)
 add_subdirectory(lib/pybind11)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE ENTRYPOINT_SOURCES "src/*_main.cpp")
+file(GLOB_RECURSE ENTRYPOINT_SOURCES "src/cli/*.cpp")
 list(REMOVE_ITEM SOURCES ${ENTRYPOINT_SOURCES})
 
 pybind11_add_module(stabix MODULE ${SOURCES})
