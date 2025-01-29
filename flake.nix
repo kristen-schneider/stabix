@@ -5,6 +5,7 @@
 
   outputs = { self, nixpkgs }:
     let
+      # TODO: generalize flake
       system = "aarch64-darwin";
       pkgs = nixpkgs.legacyPackages.${system};
     in
@@ -12,11 +13,9 @@
     {
       devShells.${system}.default = mkShell {
         buildInputs = [
-          # Add your desired packages here
           gcc
           cmake
           simde
-
           libzip # TODO: necessary?
           zlib
           bzip2
