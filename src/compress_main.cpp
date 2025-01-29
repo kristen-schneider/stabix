@@ -420,31 +420,7 @@ int main(int argc, char *argv[]) {
     genomicIndexFile.close();
     file.close();
 
-    // TIME WRITING GENOMIC INDEX
-    auto write_genomic_index_end = chrono::high_resolution_clock::now();
-
-    // write all times out to file
-    // TODO: TAKE OUT; for plotting purposes only
-    // write big compression times file
-    // make directory one level up
-    ofstream compression_times_out;
-    compression_times_out.open(compression_times_file);
-    // clear file contents
-
-    // write gwas file name and block size
-    compression_times_out << gwas_basename << "," << block_size << endl;
-    compression_times_out << "Making blocks:" <<
-        chrono::duration_cast<chrono::microseconds>(make_blocks_end - make_blocks_start).count() << "μs" << endl;
-    compression_times_out << "Compressing blocks:" <<
-        chrono::duration_cast<chrono::microseconds>(compress_blocks_end - compress_blocks_start).count() << "μs" << endl;
-    compression_times_out << "Writing compressed file:" <<
-        chrono::duration_cast<chrono::microseconds>(write_compressed_file_end - write_compressed_file_start).count() << "μs" << endl;
-    compression_times_out << "Writing genomic index:" <<
-        chrono::duration_cast<chrono::microseconds>(write_genomic_index_end - write_genomic_index_start).count() << "μs" << endl;
-
-    cout << "Writing compression times to: " << compression_times_file << endl;
     cout << "Writing block sizes to: " << block_sizes_file << endl;
-
     cout << endl << "---Compression Complete---" << endl;
 
     return 0;
