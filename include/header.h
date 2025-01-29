@@ -1,6 +1,4 @@
-#ifndef GWAS_COMPRESS_CPP_HEADER_H
-#define GWAS_COMPRESS_CPP_HEADER_H
-#endif // GWAS_COMPRESS_CPP_HEADER_H
+#pragma once
 
 #include "compression_types.hpp"
 #include <string>

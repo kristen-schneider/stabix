@@ -1,7 +1,4 @@
-#ifndef GWAS_LOCAL_DECOMPRESS_H
-#define GWAS_LOCAL_DECOMPRESS_H
-
-#endif // GWAS_LOCAL_DECOMPRESS_H
+#pragma once
 
 #include <fstream>
 #include <iostream>

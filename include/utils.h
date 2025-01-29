@@ -1,7 +1,4 @@
-#ifndef GWAS_COMPRESS_CPP_UTILS_H
-#define GWAS_COMPRESS_CPP_UTILS_H
-
-#endif // GWAS_COMPRESS_CPP_UTILS_H
+#pragma once
 
 #include <fstream>
 #include <iostream>
