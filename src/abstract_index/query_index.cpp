@@ -6,6 +6,7 @@
 #include <strings.h>
 #include <unordered_set>
 #include <vector>
+#include "stabix_except.h"
 
 /*
  * Find block IDs to decompress, relevant for query based
@@ -19,7 +20,7 @@ Indexer::query_index(std::function<bool(float)> predicate) {
     if (!indexFile.is_open()) {
         // TODO: throwing generic exceptions is not an ideal error handling
         // system
-        throw std::stabix_except("Cannot open index file.");
+        throw StabixExcept("Cannot open index file.");
     }
 
     // 1. Get length of footer
@@ -27,7 +28,7 @@ Indexer::query_index(std::function<bool(float)> predicate) {
     char item;
     do {
         if (indexFile.tellg() < 2) { // Check before seeking
-            throw std::stabix_except(
+            throw StabixExcept(
                 "Footer is misformatted. Missing footer size.");
         }
 

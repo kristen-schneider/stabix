@@ -98,7 +98,7 @@ string zlib_decompress(string in_data) {
         std::ostringstream oss;
         oss << "Exception during zlib decompression: (" << ret << ") "
             << zs.msg;
-        throw(std::StabixExcept(oss.str()));
+        throw(StabixExcept(oss.str()));
     }
 
     return outstring;

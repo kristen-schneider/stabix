@@ -6,18 +6,19 @@
 #include <strings.h>
 #include <unordered_map>
 #include <vector>
+#include "stabix_except.h"
 
 void Indexer::build_index(std::string inPath, int queryColumn) {
     auto outPath = this->indexPath;
     std::ifstream file(inPath);
 
     if (!file.is_open()) {
-        throw std::stabix_except("Error opening file");
+        throw StabixExcept("Error opening file");
     }
 
     std::string lineStr;
     if (!std::getline(file, lineStr)) {
-        throw std::stabix_except("Missing header line");
+        throw StabixExcept("Missing header line");
     }
 
     std::unordered_map<float, std::unordered_set<int>> index;
@@ -37,7 +38,7 @@ void Indexer::build_index(std::string inPath, int queryColumn) {
             if (bin == -HUGE_VALF) {
                 continue;
             }
-        } catch (std::stabix_except &e) {
+        } catch (StabixExcept &e) {
             line_id++;
             continue;
         }

@@ -3,6 +3,7 @@
 #include <regex>
 #include <iomanip>
 #include <sstream>
+#include "stabix_except.h"
 
 float PValIndexer::nearest_bin(float value) {
     // TODO: at query time, these bins should be provided from the index file
@@ -36,7 +37,7 @@ float PValIndexer::value_to_bin(std::string line) {
     if (line == "NA") {
 //        // return Inf
 //        return HUGE_VALF;
-        throw std::stabix_except("Invalid float format.");
+        throw StabixExcept("Invalid float format.");
     }
     float value = std::strtof(line.c_str(), &end);
 
@@ -44,7 +45,7 @@ float PValIndexer::value_to_bin(std::string line) {
     // putting NA values in -INF bin lumps them in with anything below the lowest bin;
     // which is likely to be of interest to the user
     if (end == line.c_str()) {
-        //        throw std::stabix_except("Invalid float format.");
+        //        throw StabixExcept("Invalid float format.");
         // skip NA values
         return -HUGE_VALF;
     }
@@ -76,7 +77,7 @@ unordered_set<int> PValIndexer::compare_query(float threshold,
     }
 
     // unreachable
-    throw std::stabix_except("Invalid comparison type.");
+    throw StabixExcept("Invalid comparison type.");
 }
 
 std::string precise_to_string(double value, int precision = 7) {
