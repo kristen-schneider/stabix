@@ -21,12 +21,8 @@ Indexer::Indexer(std::string indexPath, BlockLineMap *map) {
     this->blockLineMap = map;
 }
 
-PValIndexer::PValIndexer(std::string index_path, BlockLineMap *map,
-                         vector<float> bins)
+PValIndexer::PValIndexer(std::string index_path, BlockLineMap *map)
     : Indexer(index_path, map) {
-    // sort bins in descending order
-    std::sort(bins.begin(), bins.end(), std::greater<float>());
-    this->bins = bins;
 }
 
 bool badFloatSemaphore = false;
@@ -61,19 +57,19 @@ float PValIndexer::value_to_bin(std::string line) {
 }
 
 unordered_set<int> PValIndexer::compare_query(float threshold,
-                                              ComparisonType compType) {
+                                              ComparisonType comp_type) {
 
-    float pivotBin = this->nearest_bin(threshold);
+    float pivot_bin = this->nearest_bin(threshold);
 
-    switch (compType) {
+    switch (comp_type) {
     case ComparisonType::LessThan:
     case ComparisonType::LessThanOrEqual:
-        return query_index([pivotBin](float val) { return val <= pivotBin; });
+        return query_index([pivot_bin](float val) { return val <= pivot_bin; });
     case ComparisonType::Equal:
-        return query_index([pivotBin](float val) { return val == pivotBin; });
+        return query_index([pivot_bin](float val) { return val == pivot_bin; });
     case ComparisonType::GreaterThan:
     case ComparisonType::GreaterThanOrEqual:
-        return query_index([pivotBin](float val) { return val >= pivotBin; });
+        return query_index([pivot_bin](float val) { return val >= pivot_bin; });
     }
 
     // unreachable

@@ -48,18 +48,6 @@ unordered_set<int> query_abs_idx(string path,
                                  vector<string> config_bins,
                                  string config_query,
                                  BlockLineMap block_line_map) {
-
-    // parse config_bins
-    vector<float> bins;
-
-    for (string bin : config_bins) {
-        try {
-            bins.push_back(stof(bin));
-        } catch (const invalid_argument &e) {
-            throw invalid_argument("Bin must be a float: " + bin);
-        }
-    }
-
     // parse config_query
     float val;
     ComparisonType op;
@@ -87,7 +75,8 @@ unordered_set<int> query_abs_idx(string path,
         throw invalid_argument("Could not parse \"" + config_query + "\". Expected something like \"<= 0.3\".");
     }
 
-    auto index = PValIndexer(path, &block_line_map, bins);
+    auto index = PValIndexer(path, &block_line_map);
+    index.read_index();
     return index.compare_query(val, op);
 }
 

@@ -141,8 +141,8 @@ int index_main(string config_path) {
 
     string pValIndexPath = indexPaths[1];
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
-    auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap, second_index_bins);
-    pValIndexer.build_index(gwas_file, second_index_col_idx);
+    auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap);
+    pValIndexer.build_index(gwas_file, second_index_col_idx, second_index_bins);
     cout << "Done." << endl;
     cout << endl << "---Indexing Complete---" << endl;
 

@@ -31,6 +31,12 @@ set(COMMON_SOURCES
         src/utils.cpp
         src/stabix_except.cpp)
 
+set(ABSTRACT_INDEX
+        src/abstract_index/query_index.cpp
+        src/abstract_index/build_index.cpp
+        src/abstract_index/indexers.cpp
+        src/abstract_index/parse_footer.cpp)
+
 ### Add the executables
 # COMPRESSION
 add_executable(gwas_compress
@@ -43,24 +49,19 @@ add_executable(gwas_compress
 # INDEXING
 add_executable(gwas_index
         ${COMMON_SOURCES}
+        ${ABSTRACT_INDEX}
         src/index_main.cpp
-        src/abstract_index/indexers.cpp
         src/decompress.cpp
         src/index.cpp
-        src/abstract_index/indexers.cpp
-        src/abstract_index/build_index.cpp
-        src/abstract_index/query_index.cpp
         src/cli/index_cli.cpp)
 
 # DECOMPRESSION
 add_executable(gwas_decompress
         ${COMMON_SOURCES}
+        ${ABSTRACT_INDEX}
         src/decompress_main.cpp
         src/decompress.cpp
         src/index.cpp
-        src/abstract_index/indexers.cpp
-        src/abstract_index/query_index.cpp
-        src/abstract_index/build_index.cpp
         src/cli/decompress_cli.cpp)
 
 ## TESTING

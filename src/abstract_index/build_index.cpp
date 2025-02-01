@@ -8,7 +8,12 @@
 #include <vector>
 #include "stabix_except.h"
 
-void Indexer::build_index(std::string inPath, int queryColumn) {
+void Indexer::build_index(std::string inPath, int queryColumn,
+                         vector<float> bins) {
+    // sort bins in descending order
+    std::sort(bins.begin(), bins.end(), std::greater<float>());
+    this->bins = bins;
+
     auto outPath = this->indexPath;
     std::ifstream file(inPath);
 
