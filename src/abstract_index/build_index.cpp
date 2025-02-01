@@ -12,12 +12,12 @@ void Indexer::build_index(std::string inPath, int queryColumn) {
     std::ifstream file(inPath);
 
     if (!file.is_open()) {
-        throw std::runtime_error("Error opening file");
+        throw std::stabix_except("Error opening file");
     }
 
     std::string lineStr;
     if (!std::getline(file, lineStr)) {
-        throw std::runtime_error("Missing header line");
+        throw std::stabix_except("Missing header line");
     }
 
     std::unordered_map<float, std::unordered_set<int>> index;
@@ -37,7 +37,7 @@ void Indexer::build_index(std::string inPath, int queryColumn) {
             if (bin == -HUGE_VALF) {
                 continue;
             }
-        } catch (std::runtime_error &e) {
+        } catch (std::stabix_except &e) {
             line_id++;
             continue;
         }

@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-
 #include "compress.h"
+#include "stabix_except.h"
 #include "utils.h"
 
 using namespace std;
@@ -490,9 +490,7 @@ vector<string> compress_block(
                 compressed_arr.data(), compressedSize);
             compressed_block.push_back(compressed_string);
         } else {
-            cout << "ERROR: Codec not recognized: " << codecs_list[col_i]
-                 << endl;
-            exit(1);
+            throw StabixExcept("Invalid codec. " + codecs_list[col_i]);
         }
 
         // time compression

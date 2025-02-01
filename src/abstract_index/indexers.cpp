@@ -36,7 +36,7 @@ float PValIndexer::value_to_bin(std::string line) {
     if (line == "NA") {
 //        // return Inf
 //        return HUGE_VALF;
-        throw std::runtime_error("Invalid float format.");
+        throw std::stabix_except("Invalid float format.");
     }
     float value = std::strtof(line.c_str(), &end);
 
@@ -44,7 +44,7 @@ float PValIndexer::value_to_bin(std::string line) {
     // putting NA values in -INF bin lumps them in with anything below the lowest bin;
     // which is likely to be of interest to the user
     if (end == line.c_str()) {
-        //        throw std::runtime_error("Invalid float format.");
+        //        throw std::stabix_except("Invalid float format.");
         // skip NA values
         return -HUGE_VALF;
     }
@@ -76,7 +76,7 @@ unordered_set<int> PValIndexer::compare_query(float threshold,
     }
 
     // unreachable
-    throw std::runtime_error("Invalid comparison type.");
+    throw std::stabix_except("Invalid comparison type.");
 }
 
 std::string precise_to_string(double value, int precision = 7) {

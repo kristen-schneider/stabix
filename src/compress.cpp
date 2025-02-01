@@ -15,6 +15,7 @@
 #include "decompress.h"
 #include "header.h"
 #include "utils.h"
+#include "stabix_except.h"
 
 using namespace FastPForLib;
 using namespace std;
@@ -33,7 +34,7 @@ string zlib_compress(string in_data) {
     memset(&zs, 0, sizeof(zs));
 
     if (deflateInit(&zs, Z_BEST_COMPRESSION) != Z_OK)
-        throw(std::runtime_error("deflateInit failed while compressing."));
+        throw(StabixExcept("deflateInit failed while compressing."));
 
     zs.next_in = (Bytef *)in_data.data();
     zs.avail_in = in_data.size(); // set the z_stream's input
@@ -60,7 +61,7 @@ string zlib_compress(string in_data) {
     if (ret != Z_STREAM_END) { // an error occurred that was not EOF
         std::ostringstream oss;
         oss << "Exception during zlib compression: (" << ret << ") " << zs.msg;
-        throw(std::runtime_error(oss.str()));
+        throw(StabixExcept(oss.str()));
     }
 
     // remove zlib header

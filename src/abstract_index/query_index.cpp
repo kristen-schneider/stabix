@@ -19,7 +19,7 @@ Indexer::query_index(std::function<bool(float)> predicate) {
     if (!indexFile.is_open()) {
         // TODO: throwing generic exceptions is not an ideal error handling
         // system
-        throw std::runtime_error("Cannot open index file.");
+        throw std::stabix_except("Cannot open index file.");
     }
 
     // 1. Get length of footer
@@ -27,7 +27,7 @@ Indexer::query_index(std::function<bool(float)> predicate) {
     char item;
     do {
         if (indexFile.tellg() < 2) { // Check before seeking
-            throw std::runtime_error(
+            throw std::stabix_except(
                 "Footer is misformatted. Missing footer size.");
         }
 

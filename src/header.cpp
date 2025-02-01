@@ -6,6 +6,7 @@
 #include "compress.h"
 #include "compression_types.hpp"
 #include "header.h"
+#include "stabix_except.h"
 
 using namespace std;
 
@@ -81,8 +82,7 @@ vector<string> parse_header_list(
         }
         break;
     default:
-        cout << "Error: header_query not found." << endl;
-        exit(1);
+        throw StabixExcept("Error: header_query not found.");
     }
 
     return header_query_list;
@@ -135,7 +135,7 @@ string magicNumberOf(
     case bxz::zstd:
         return "\x28\xB5\x2F\xFD";
     }
-    throw std::runtime_error("Unknown compression codec.");
+    throw StabixExcept("Unknown compression codec.");
 }
 
 /*

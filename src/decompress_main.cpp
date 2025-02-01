@@ -14,6 +14,7 @@
 #include "header.h"
 #include "index.h"
 #include "indexers.h"
+#include "stabix_except.h"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -177,8 +178,7 @@ int decompress_main(string config_path) {
             out_dir_path / (gwas_path.stem().string() + ".query");
     query_output_stream.open(query_output_file_name, ios::trunc);
     if (!query_output_stream.is_open()) {
-        cout << "Error: could not open output file." << endl;
-        return 1;
+        throw StabixExcept("Error: could not open output file.");
     }
     query_output_stream << "GWAS file: " << gwas_file << endl;
     query_output_stream.close();

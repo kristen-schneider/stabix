@@ -13,6 +13,7 @@
 #include "decompress.h"
 #include "header.h"
 #include "utils.h"
+#include "stabix_except.h"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -69,7 +70,7 @@ string zlib_decompress(string in_data) {
     memset(&zs, 0, sizeof(zs));
 
     if (inflateInit(&zs) != Z_OK)
-        throw(std::runtime_error("inflateInit failed while decompressing."));
+        throw(StabixExcept("inflateInit failed while decompressing."));
 
     zs.next_in = (Bytef *)in_data.data();
     zs.avail_in = in_data.size(); // set the z_stream's input
@@ -97,7 +98,7 @@ string zlib_decompress(string in_data) {
         std::ostringstream oss;
         oss << "Exception during zlib decompression: (" << ret << ") "
             << zs.msg;
-        throw(std::runtime_error(oss.str()));
+        throw(std::StabixExcept(oss.str()));
     }
 
     return outstring;

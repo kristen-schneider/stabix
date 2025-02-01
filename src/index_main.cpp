@@ -156,7 +156,7 @@ int index_main(string config_path) {
 /*
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        throw runtime_error("1 argument required: config_path");
+        throw StabixExcept("1 argument required: config_path");
     }
 
     string configPath = argv[1];

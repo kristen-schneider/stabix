@@ -10,8 +10,6 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    // 0. Read Config Options
-    // open file, exit
     string config_file = argv[1];
     decompress_main(config_file);
 }

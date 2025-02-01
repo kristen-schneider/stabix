@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "stabix_except.h"
 #include "utils.h"
 
 using namespace std;
@@ -41,8 +42,7 @@ map<string, string> read_config_file(
     // check if file exists
     ifstream config_stream(config_file);
     if (!config_stream.good()) {
-        cout << "ERROR: Config file does not exist: " << config_file << endl;
-        exit(1);
+        throw StabixExcept("Config file does not exist. " + config_file);
     }
     // read and parse config file
     string config_option = "";
@@ -87,8 +87,7 @@ void add_default_config_options(
     }
     if (config_options["genomic"].empty()) {
         // exit program with error message
-        cout << "ERROR: genomic query not specified in config file." << endl;
-        exit(1);
+        throw StabixExcept("Genomic query not specified in config file.");
     }
     // TODO: determine default data type codecs
     if (config_options["int"].empty()) {
@@ -142,8 +141,7 @@ map<string, vector<vector<string>>> read_bed_file(string bed_file) {
     // check if file exists
     ifstream bed_stream(bed_file);
     if (!bed_stream.good()) {
-        cout << "ERROR: Bed file does not exist: " << bed_file << endl;
-        exit(1);
+        throw StabixExcept("Bed file does not exist. " + bed_file);
     }
     // read bed file, splitting by delimiter
     string line;
@@ -228,10 +226,7 @@ char get_delimiter(
     } else if (line.find(' ') != string::npos) {
         delimiter = ' ';
     } else {
-        cout << "Error: delimiter not found.\n"
-                " Please use files with delimiters as tab, comma, or space."
-             << endl;
-        exit(1);
+        throw StabixExcept("Delimiters not found. Please use files with delimiters as tab, comma, or space.");
     }
     return delimiter;
 }
@@ -422,8 +417,7 @@ map<int, vector<uint32_t>> read_cm_map_file(
     // open map file, exit if file does not exist
     ifstream map_stream(map_file);
     if (!map_stream.good()) {
-        cout << "ERROR: Map file does not exist: " << map_file << endl;
-        exit(1);
+        throw StabixExcept("Map file does not exist: " + map_file);
     }
     // read map file
     int block_count = 0;
@@ -508,7 +502,7 @@ vector<string> gwas_column_names(
     string gwasColumnLine;
     ifstream gwasFile(gwasPath);
     if (!gwasFile.is_open() || !getline(gwasFile, gwasColumnLine)) {
-        throw runtime_error("Error opening GWAS file");
+        throw StabixExcept("Unable to open GWAS file.");
     }
 
     auto gwasColumns = split_string(gwasColumnLine, '\t');
@@ -548,8 +542,7 @@ map<int, map<int, tuple<int, int, int>>> read_genomic_index_file(
     // check if file exists
     ifstream index_stream(index_file);
     if (!index_stream.good()) {
-        cout << "ERROR: Index file does not exist: " << index_file << endl;
-        exit(1);
+        throw StabixExcept("Index file does not exist: " + index_file);
     }
 
     // read index file
@@ -590,8 +583,7 @@ map<int, int> make_lineID_blockID_map(
     // check if file exists
     ifstream index_stream(index_file);
     if (!index_stream.good()) {
-        cout << "ERROR: Index file does not exist: " << index_file << endl;
-        exit(1);
+        throw StabixExcept("Index file does not exist: " + index_file);
     }
 
     // read index file
@@ -633,8 +625,7 @@ int BlockLineMap::line_to_block(int line_number) {
         // between the ordered keys
         auto it = lineID_blockID_map.upper_bound(line_number);
         if (it == lineID_blockID_map.begin()) {
-            cout << "ERROR: Line number not found in index file." << endl;
-            exit(1);
+            throw StabixExcept("Line number not found in index file.");
         }
         it--;
         return it->second;
