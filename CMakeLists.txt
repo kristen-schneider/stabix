@@ -25,24 +25,28 @@ include_directories(lib/FastPFor/headers)
 #include_directories(lib/googletest/googletest/include)
 include_directories(lib/pybind11/include/pybind11)
 
+## Sources
+set(COMMON_SOURCES
+        src/header.cpp
+        src/utils.cpp
+        src/stabix_except.cpp)
+
 ### Add the executables
 # COMPRESSION
 add_executable(gwas_compress
+        ${COMMON_SOURCES}
         src/compress_main.cpp
         src/blocks.cpp
         src/compress.cpp
-        src/header.cpp
-        src/utils.cpp
         src/cli/compress_cli.cpp)
 
 # INDEXING
 add_executable(gwas_index
+        ${COMMON_SOURCES}
         src/index_main.cpp
         src/abstract_index/indexers.cpp
         src/decompress.cpp
-        src/header.cpp
         src/index.cpp
-        src/utils.cpp
         src/abstract_index/indexers.cpp
         src/abstract_index/build_index.cpp
         src/abstract_index/query_index.cpp
@@ -50,11 +54,10 @@ add_executable(gwas_index
 
 # DECOMPRESSION
 add_executable(gwas_decompress
+        ${COMMON_SOURCES}
         src/decompress_main.cpp
         src/decompress.cpp
-        src/header.cpp
         src/index.cpp
-        src/utils.cpp
         src/abstract_index/indexers.cpp
         src/abstract_index/query_index.cpp
         src/abstract_index/build_index.cpp
@@ -91,4 +94,5 @@ set(PYTHON_EXECUTABLE "/opt/homebrew/bin/python3")
 
 pybind11_add_module(stabixpy MODULE ${SOURCES})
 target_link_libraries(stabixpy PRIVATE bxzstr FastPFOR z pybind11::module)
-set_target_properties(stabixpy PROPERTIES PREFIX "" OUTPUT_NAME "stabix" SUFFIX ".so")
+set_target_properties(stabixpy PROPERTIES PREFIX "" OUTPUT_NAME "stabixpy" SUFFIX ".so")
+set_target_properties(stabixpy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python_package/src/stabix)
