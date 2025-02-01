@@ -84,7 +84,7 @@ target_link_libraries(gwas_index bxzstr FastPFOR z)
 target_link_libraries(gwas_decompress bxzstr FastPFOR z)
 #target_link_libraries(test_gwas gtest gtest_main bxzstr FastPFOR z)
 
-# Regarding python bindings
+## Regarding python bindings
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE ENTRYPOINT_SOURCES "src/cli/*.cpp")
@@ -97,3 +97,11 @@ pybind11_add_module(stabixpy MODULE ${SOURCES})
 target_link_libraries(stabixpy PRIVATE bxzstr FastPFOR z pybind11::module)
 set_target_properties(stabixpy PROPERTIES PREFIX "" OUTPUT_NAME "stabixpy" SUFFIX ".so")
 set_target_properties(stabixpy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python_package/src/stabix)
+
+# Add post-build commands to clean dist and rebuild package
+add_custom_command(
+        TARGET stabixpy POST_BUILD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/python_package
+        COMMAND ${CMAKE_COMMAND} -E remove_directory ./dist
+        COMMAND ${PYTHON_EXECUTABLE} -m build
+)

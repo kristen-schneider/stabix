@@ -64,15 +64,16 @@ cd ..
 ### Generating python bindings
 
 ```bash
-mkdir build && cd build
-cmake .. && make stabixpy
-# generates build/stabix.so
+mkdir build
+cd build
+cmake ..
+make stabixpy # python bindings
 ```
 
-Import with
-```py
-import stabix
-```
+This does two things:
+1. Generates `python_package/src/stabix/stabixpy.so`  
+Import the .so with `import stabixpy`.
+2. Packages for python distribution, `python_package/dist`.
 
 Note that this triggers compilation for a specific version 
 of python that must be specified in the [CMakeLists.txt]() file.
