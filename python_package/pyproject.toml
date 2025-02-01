@@ -1,0 +1,27 @@
+[project]
+name = "stabix"
+version = "1.0.9"
+requires-python = ">=3.11"
+authors = [
+    { name = "Kristen Schneider" },
+    { name = "Simon Walker" }
+]
+keywords = ["genomics", "indexing", "compression", "decompression", "bioinformatics", "tabix"]
+description = "S(tatistical)tabix"
+maintainers = [ { name = "Simon Walker", email = "simon@simonwalker.tech" } ]
+readme = "README.md"
+
+[project.urls]
+repository = "https://github.com/kristen-schneider/stabix"
+# TODO: update to bioinformatics journal after publication
+paper = "https://www.biorxiv.org/content/10.1101/2024.11.15.623812v1"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tools.setuptools]
+include_package_data = true
+
+[tool.setuptools.package-data]
+stabix = [ "stabixpy.so" ]
