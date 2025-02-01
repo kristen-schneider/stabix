@@ -114,3 +114,5 @@ class BlockLineMap {
         BlockLineMap(map<int, int> map);
         int line_to_block(int line);
 };
+
+std::ifstream try_open_ate(std::string index_path);

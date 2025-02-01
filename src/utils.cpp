@@ -631,3 +631,14 @@ int BlockLineMap::line_to_block(int line_number) {
         return it->second;
     }
 }
+
+std::ifstream try_open_ate(std::string index_path) {
+    std::ifstream index_file(index_path, std::ios::ate);
+
+    if (!index_file.is_open()) {
+        throw StabixExcept("Cannot open index file.");
+    }
+
+    return index_file;
+}
+
