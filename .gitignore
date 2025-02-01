@@ -1,12 +1,24 @@
+# generated local dot files
 *.DS_Store
 .idea/
-cmake-build-debug/
-build/
-gwas_files/
-map_files/
-plots/*.txt
 .direnv
 .cache/
+
+# build files or pulled dependencies
+cmake-build-debug/
+build/
 CMakeFiles/
 _deps/
 lib/
+
+# stabix related
+gwas_files/
+map_files/
+plots/*.txt
+
+# python bindings related
+python_package/venv
+python_package/stabix.egg-info
+python_package/dist
+# this is a build artifact
+python_package/src/stabix/stabixpy.so
