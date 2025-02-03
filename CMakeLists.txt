@@ -95,7 +95,7 @@ set(PYTHON_EXECUTABLE "/opt/homebrew/bin/python3")
 
 pybind11_add_module(stabixpy MODULE ${SOURCES})
 target_link_libraries(stabixpy PRIVATE bxzstr FastPFOR z pybind11::module)
-set_target_properties(stabixpy PROPERTIES PREFIX "" OUTPUT_NAME "stabixpy" SUFFIX ".so")
+set_target_properties(stabixpy PROPERTIES PREFIX "" OUTPUT_NAME "stabixcore" SUFFIX ".so")
 set_target_properties(stabixpy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python_package/src/stabix)
 
 # Add post-build commands to clean dist and rebuild package

@@ -71,7 +71,7 @@ make stabixpy # python bindings
 ```
 
 This does two things:
-1. Generates `python_package/src/stabix/stabixpy.so`  
+1. Generates `python_package/src/stabix/stabixcore.so`  
 Import the .so with `import stabixpy`.
 2. Packages for python distribution, `python_package/dist`.
 
