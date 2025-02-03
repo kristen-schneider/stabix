@@ -407,6 +407,7 @@ int decompress_main_by_map(map<string, string> config_options) {
 
                 // filter block based on statistical query
                 vector<int> statistical_hits = {};
+                // TODO: col_idx for pVal idx should be stored in index
                 string statistic_col = decompressed_block[second_index_col_idx];
                 vector<string> split_statistic_col = split_string(statistic_col, ',');
                 vector<float> split_statistic_float = {};

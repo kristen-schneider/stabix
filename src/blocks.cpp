@@ -431,24 +431,14 @@ unsigned int get_block_length(vector<string> compressed_block) {
  * @return compressed_block: vector<string> - compressed block of data
  */
 vector<string> compress_block(
-        fs::path col_times_file,
         int block_idx,
         vector<vector<string>> block,
         vector<string> codecs_list) {
     // TODO: Somewhere, have a help message of available codecs and,
-    // Confirm codec is installed before attempting compression
+    //   Confirm codec is installed before attempting compression
     vector<string> compressed_block;
 
-    // write all column times out to file
-    // TODO: TAKE OUT; for plotting purposes only
-    // open col_times file in append mode
-    ofstream col_times_out_file;
-    col_times_out_file.open(col_times_file, ios::app);
-
     for (int col_i = 0; col_i < block.size(); col_i++) {
-        // time compression
-        auto start_compress_column = chrono::high_resolution_clock::now();
-
         string codec = codecs_list[col_i];
         // TODO: remove codec "zlib" in favor of "deflate"?
         if (codec == "zlib") {
@@ -492,15 +482,7 @@ vector<string> compress_block(
         } else {
             throw StabixExcept("Invalid codec. " + codecs_list[col_i]);
         }
-
-        // time compression
-        auto end_compress_column = chrono::high_resolution_clock::now();
-        // write compression time to file
-        auto duration_compress_column =
-                chrono::duration_cast<chrono::microseconds>(end_compress_column - start_compress_column);
-        col_times_out_file << block_idx << "," << col_i << "," << duration_compress_column.count() << ","  << codec << endl;
-
     }
-    col_times_out_file.close();
+
     return compressed_block;
 }
