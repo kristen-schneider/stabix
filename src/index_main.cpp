@@ -71,7 +71,6 @@ int index_main_by_map(map<string, string> config_options) {
             {"string", codec_str}};
 
     // -out
-    string output_dir = config_options["out_directory"];
     auto gwas_path = fs::path(config_options["gwas_file"]);
     auto out_dir_path = fs::path();
     string compressed_file;

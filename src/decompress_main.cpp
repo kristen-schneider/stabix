@@ -46,7 +46,6 @@ vector<int> query_genomic_idx_gene(int gene_chrm,
 }
 
 unordered_set<int> query_abs_idx(string path,
-                                 vector<string> config_bins,
                                  string config_query,
                                  BlockLineMap block_line_map) {
     // parse config_query
@@ -103,7 +102,6 @@ int decompress_main_by_map(map<string, string> config_options) {
     // TODO: get query types for other optional queries
     string extra_index = config_options["extra_index"];
     int second_index_col_idx;
-    auto second_index_bins = std::vector<string> {};
     string second_index_threshold = "";
     // add extra indices to index_types
     if (extra_index != "None") {
@@ -113,12 +111,6 @@ int decompress_main_by_map(map<string, string> config_options) {
 
         // get second index col idx from config
         second_index_col_idx = stoi(config_options["col_idx"]);
-        // get bins for second index
-        string second_index_bins_string = config_options["bins"];
-        vector<string> bin_string = split_string(second_index_bins_string, ',');
-        for (auto &bin : bin_string) {
-            second_index_bins.push_back(bin);
-        }
         // get threshold for second index
         second_index_threshold = config_options["threshold"];
     }
@@ -288,7 +280,6 @@ int decompress_main_by_map(map<string, string> config_options) {
         cout << "Getting blocks for " << extra_index << "..." << endl;
         auto query_statistic_index_start_time = chrono::high_resolution_clock::now();
         statistic_blocks = query_abs_idx(extra_index_path,
-                                         second_index_bins,
                                          second_index_threshold,
                                          block_line_map);
 
