@@ -89,8 +89,6 @@ int decompress_main(string config_path) {
 
 int decompress_main_by_map(map<string, string> config_options) {
     // DECOMPRESSION STEPS
-    auto start_all_time = chrono::high_resolution_clock::now();
-
     // - input gwas file
     string gwas_file = config_options["gwas_file"];
 
@@ -133,7 +131,6 @@ int decompress_main_by_map(map<string, string> config_options) {
 
     // -out
     auto gwas_path = fs::path(config_options["gwas_file"]);
-    // out dir naming scheme = "gwasfilename_blocksize_out"
 
     auto out_dir_path = fs::path();
     string compressed_file;
@@ -169,32 +166,6 @@ int decompress_main_by_map(map<string, string> config_options) {
     query_output_stream << "GWAS file: " << gwas_file << endl;
     query_output_stream.close();
     cout << "...Done." << endl;
-
-    // outfile for decompression times
-    fs::create_directories(out_dir_path.parent_path() / "decompression_times");
-    fs::path decompression_times_file;
-    fs::path col_times_file;
-    if (block_size == -1) {
-        decompression_times_file = out_dir_path.parent_path() / "decompression_times" /
-                                 (gwas_path.stem().string() +
-                                 "_map" +
-                                 "_" + config_options["out_name"] + "_decompression.csv");
-
-        col_times_file = out_dir_path.parent_path() / "decompression_times" /
-                            (gwas_path.stem().string() +
-                            "_map" +
-                            "_" + config_options["out_name"] + "_column_decompression.csv");
-    } else {
-        decompression_times_file = out_dir_path.parent_path() / "decompression_times" /
-                                 (gwas_path.stem().string() +
-                                 "_" + config_options["block_size"] +
-                                 "_" + config_options["out_name"] + "_decompression.csv");
-
-        col_times_file = out_dir_path.parent_path() / "decompression_times" /
-                         (gwas_path.stem().string() +
-                          "_" + config_options["block_size"] +
-                          "_" + config_options["out_name"] + "_column_decompression.csv");
-    }
 
     // 1. open compressed file and read header
     cout << "Opening compressed file and reading header..." << endl;
@@ -245,7 +216,6 @@ int decompress_main_by_map(map<string, string> config_options) {
 
     // time reading genomic index
     cout << "Reading genomic index..." << endl;
-    auto read_genomic_index_start = chrono::high_resolution_clock::now();
     ifstream genomic_index_file(
         genomic_index_path); // TODO: remove: these next fns
                              // should take path, not stream
@@ -260,11 +230,6 @@ int decompress_main_by_map(map<string, string> config_options) {
     auto block_line_map = BlockLineMap(genomic_index_path);
     genomic_index_file.close();
     cout << "...Done." << endl;
-    auto read_genomic_index_end = chrono::high_resolution_clock::now();
-    auto read_genomic_index_time = chrono::duration_cast<chrono::microseconds>(
-            read_genomic_index_end - read_genomic_index_start).count();
-
-    auto query_statistic_index_time = 0;
 
     // TODO: perform a query by gene, not all blocks and all blocks
     // 4. get and aggregate blocks associated with each query
@@ -278,7 +243,6 @@ int decompress_main_by_map(map<string, string> config_options) {
     }
     else {
         cout << "Getting blocks for " << extra_index << "..." << endl;
-        auto query_statistic_index_start_time = chrono::high_resolution_clock::now();
         statistic_blocks = query_abs_idx(extra_index_path,
                                          second_index_threshold,
                                          block_line_map);
@@ -286,10 +250,6 @@ int decompress_main_by_map(map<string, string> config_options) {
         // sort statistical blocks for faster intersection
         sorted_statistic_blocks = vector<int>(statistic_blocks.begin(), statistic_blocks.end());
         sort(sorted_statistic_blocks.begin(), sorted_statistic_blocks.end());
-
-        auto query_statistic_index_end_time = chrono::high_resolution_clock::now();
-        query_statistic_index_time = chrono::duration_cast<chrono::microseconds>(
-                query_statistic_index_end_time - query_statistic_index_start_time).count();
         cout << "...Done." << endl;
     }
 
@@ -299,15 +259,9 @@ int decompress_main_by_map(map<string, string> config_options) {
         return 0;
     }
 
-    ofstream col_times;
-    col_times.open(col_times_file, ios::trunc);
-    col_times << "GWAS file: " << gwas_file << ",num_cols: " << num_columns << endl;
-    col_times << "block_idx,col_idx,comp_time(μs),col_size,codec" << endl;
-
     query_output_stream.open(query_output_file_name, ios::app);
 
     cout << "Querying data by gene..." << endl;
-    auto all_query_start_time = chrono::high_resolution_clock::now();
     // for each gene in genomic_query_list get genomic blocks
     // there can be multiple chmr,bp locations
     for (const auto& gene : genomic_query_list){
@@ -322,8 +276,8 @@ int decompress_main_by_map(map<string, string> config_options) {
         // debug
 
         int geneStatHits = 0;
-//        cout << "Querying gene: " << geneName << endl;
         const auto& geneLocations = gene.second;
+
         // iterate through each gene location
         for (const auto& geneLocation : geneLocations){
             // time query for a single gene location
@@ -452,25 +406,16 @@ int decompress_main_by_map(map<string, string> config_options) {
                     curr_block_byte += col_bytes;
                     size_t compressed_size = col_bitstring.size();
 
-                    // time decompressing column
-                    auto col_decompress_start = chrono::high_resolution_clock::now();
                     string col_decompressed = decompress_column(
                             col_bitstring,
                             col_codec,
                             compressed_size,
                             block_size_decomp);
-                    auto col_decompress_end = chrono::high_resolution_clock::now();
-                    col_times << block_to_decompress << "," << col_idx << ","
-                              << chrono::duration_cast<chrono::microseconds>(
-                                      col_decompress_end - col_decompress_start)
-                                      .count() << ","
-                              << col_bytes << "," << col_codec << endl;
                     decompressed_block.push_back(col_decompressed);
                 }
 
                 // filter block based on statistical query
                 vector<int> statistical_hits = {};
-                bool statistical_compare = false;
                 string statistic_col = decompressed_block[second_index_col_idx];
                 vector<string> split_statistic_col = split_string(statistic_col, ',');
                 vector<float> split_statistic_float = {};
@@ -530,10 +475,6 @@ int decompress_main_by_map(map<string, string> config_options) {
 
                 // if there are no statistical hits, skip to next gene
                 if (statistical_hits.empty()) {
-                    auto single_gene_end_time = chrono::high_resolution_clock::now();
-                    auto single_gene_time = chrono::duration_cast<chrono::microseconds>(
-                            single_gene_end_time - single_gene_start_time).count();
-//                    query_output_stream << "Gene: " << geneName << ",time: " << single_gene_time << endl;
                     continue;
                 }
 //                // filter block based on genomic query
@@ -570,10 +511,6 @@ int decompress_main_by_map(map<string, string> config_options) {
 //                }
                 // if there are no hits, skip to next gene
                 if (statistical_hits.empty()) {
-                    auto single_gene_end_time = chrono::high_resolution_clock::now();
-                    auto single_gene_time = chrono::duration_cast<chrono::microseconds>(
-                            single_gene_end_time - single_gene_start_time).count();
-//                    query_output_stream << "Gene: " << geneName << ",time: " << single_gene_time << endl;
                     continue;
                 }
                 // get final block to write to output
@@ -604,31 +541,11 @@ int decompress_main_by_map(map<string, string> config_options) {
                                 ",stat_hits: " << geneStatHits << endl;
         }
     }
-    auto all_query_end_time = chrono::high_resolution_clock::now();
-    auto all_query_time = chrono::duration_cast<chrono::microseconds>(
-            all_query_end_time - all_query_start_time).count();
 
     cout << "...Done." << endl;
 
     // close output file
     query_output_stream.close();
-    // close column decompression times file
-    col_times.close();
-
-    auto end_all_time = chrono::high_resolution_clock::now();
-    auto all_time = chrono::duration_cast<chrono::microseconds>(
-            end_all_time - start_all_time).count();
-
-    // write decompression times to file
-    ofstream decompression_times;
-    decompression_times.open(decompression_times_file, ios::trunc);
-    decompression_times << "GWAS file: " << gwas_file << endl;
-    decompression_times << "read statistical index: " << query_statistic_index_time << endl;
-    decompression_times << "read genomic index: " << read_genomic_index_time  << endl;
-    decompression_times << "gene queries: " << all_query_time << endl;
-    decompression_times << "full run: " << all_time << endl;
-    decompression_times.close();
-
     cout << endl << "---Decompression Complete---" << endl;
 
     return 0;
