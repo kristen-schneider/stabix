@@ -17,8 +17,7 @@ namespace fs = std::filesystem;
  * @param value: int
  * @return bytes: char *
  */
-char *int_to_bytes(
-        int value);
+char *int_to_bytes(int value);
 
 /*
  * Split string by delimiter
@@ -26,17 +25,14 @@ char *int_to_bytes(
  * @param delimiter: char to split by
  * @return vector of strings
  */
-vector<string> split_string(
-        string str,
-        char delimiter);
+vector<string> split_string(string str, char delimiter);
 
 /*
  * Read config file
  * @param config_file
  * @return vector of config options
  */
-map<string, string> read_config_file(
-        string config_file) {
+map<string, string> read_config_file(string config_file) {
     map<string, string> config_options;
 
     // check if file exists
@@ -79,8 +75,7 @@ map<string, string> read_config_file(
  * @param config_options
  * @return void
  */
-void add_default_config_options(
-        map<string, string> &config_options) {
+void add_default_config_options(map<string, string> &config_options) {
     // add default config options if option is empty
     if (config_options["block_size"].empty()) {
         config_options["block_size"] = "20";
@@ -117,9 +112,7 @@ vector<string> get_codecs_by_data_type(vector<string> data_types,
 /*
  *
  */
-int get_index(
-        vector<string> vec,
-        string str) {
+int get_index(vector<string> vec, string str) {
     int idx = -1;
     for (int i = 0; i < vec.size(); i++) {
         if (vec[i] == str) {
@@ -137,7 +130,7 @@ int get_index(
  */
 map<string, vector<vector<string>>> read_bed_file(string bed_file) {
     // gene -> {{chrm, bp_start, bp_end}, {chrm, bp_start, bp_end}, ...}
-    map<string, vector<vector<string>>>  bed_data;
+    map<string, vector<vector<string>>> bed_data;
     // check if file exists
     ifstream bed_stream(bed_file);
     if (!bed_stream.good()) {
@@ -181,9 +174,7 @@ map<string, vector<vector<string>>> read_bed_file(string bed_file) {
  * @param delimiter: char to split by
  * @return column_types_str: string of comma separated data types
  */
-vector<string> get_data_types(
-        string line,
-        char delimiter) {
+vector<string> get_data_types(string line, char delimiter) {
 
     vector<string> column_data_types;
     // split line by delimiter find data type and store in comma separated
@@ -215,8 +206,7 @@ vector<string> get_data_types(
  * @param line: string of first line of file
  * @return delimiter: char to split by
  */
-char get_delimiter(
-        string line) {
+char get_delimiter(string line) {
     char delimiter;
     // determine delimiter
     if (line.find('\t') != string::npos) {
@@ -226,7 +216,8 @@ char get_delimiter(
     } else if (line.find(' ') != string::npos) {
         delimiter = ' ';
     } else {
-        throw StabixExcept("Delimiters not found. Please use files with delimiters as tab, comma, or space.");
+        throw StabixExcept("Delimiters not found. Please use files with "
+                           "delimiters as tab, comma, or space.");
     }
     return delimiter;
 }
@@ -236,8 +227,7 @@ char get_delimiter(
  * @param vec: vector of strings
  * @return str: string of comma separated values
  */
-string convert_vector_str_to_string(
-        vector<string> vec) {
+string convert_vector_str_to_string(vector<string> vec) {
     string str = "";
     for (int i = 0; i < vec.size(); i++) {
         str += vec[i] + ",";
@@ -251,8 +241,7 @@ string convert_vector_str_to_string(
  * @param vec: vector of integers
  * @return str: string of comma separated values
  */
-string convert_vector_int_to_string(
-        vector<int> vec) {
+string convert_vector_int_to_string(vector<int> vec) {
     string str;
     for (int i = 0; i < vec.size(); i++) {
         str += to_string(vec[i]) + ",";
@@ -266,9 +255,8 @@ string convert_vector_int_to_string(
  * @param compressed_size: size of compressed array
  * @return compressed_string: string of comma separated values
  */
-string convert_vector_uint32_to_string(
-        uint32_t *compressed_arr,
-        size_t compressed_size) {
+string convert_vector_uint32_to_string(uint32_t *compressed_arr,
+                                       size_t compressed_size) {
     string compressed_string;
     for (int i = 0; i < compressed_size; i++) {
         compressed_string += to_string(compressed_arr[i]) + ",";
@@ -282,8 +270,7 @@ string convert_vector_uint32_to_string(
  * @param str: string of comma separated values
  * @return vector of strings
  */
-vector<string> convert_string_to_vector_string(
-        string str) {
+vector<string> convert_string_to_vector_string(string str) {
     vector<string> vec;
     istringstream line_stream(str);
     string column_value;
@@ -297,15 +284,12 @@ vector<string> convert_string_to_vector_string(
     return vec;
 }
 
-
 /* Convert string to vector of uint32_t
  * @param in_string: string of comma separated values
  * @param delimiter: char to split by
  * @return compressed_arr: uint32_t array
  */
-uint32_t *convert_string_to_vector_uint32(
-        string in_string,
-        char delimiter) {
+uint32_t *convert_string_to_vector_uint32(string in_string, char delimiter) {
     // split string by comma
     vector<string> vec = split_string(in_string, delimiter);
     // convert string to vector of uint32_t
@@ -316,8 +300,7 @@ uint32_t *convert_string_to_vector_uint32(
     return compressed_arr;
 }
 
-vector<uint32_t> convert_string_to_vector_unsignedlong(
-        string str) {
+vector<uint32_t> convert_string_to_vector_unsignedlong(string str) {
     vector<uint32_t> out_vec;
     istringstream line_stream(str);
     string column_value;
@@ -337,8 +320,7 @@ vector<uint32_t> convert_string_to_vector_unsignedlong(
  * @param line: bytes
  * @return value: int value
  */
-int bytes_to_int(
-        char bytes[4]) {
+int bytes_to_int(char bytes[4]) {
     int value = 0;
     value += (unsigned char)bytes[0];
     value += (unsigned char)bytes[1] << 8;
@@ -347,8 +329,7 @@ int bytes_to_int(
     return value;
 }
 
-char *int_to_bytes(
-        int value) {
+char *int_to_bytes(int value) {
     char *bytes = new char[4];
     bytes[0] = (char)(value & 0xFF);
     bytes[1] = (char)((value >> 8) & 0xFF);
@@ -357,9 +338,7 @@ char *int_to_bytes(
     return bytes;
 }
 
-vector<string> split_string(
-        string str,
-        char delimiter) {
+vector<string> split_string(string str, char delimiter) {
     vector<string> vec;
     istringstream line_stream(str);
     string column_value;
@@ -378,29 +357,24 @@ vector<string> split_string(
  * @param vec: vector of strings
  * @return vector of integers
  */
-vector<uint32_t> convert_vector_string_to_vector_int(
-        vector<string> vec) {
+vector<uint32_t> convert_vector_string_to_vector_int(vector<string> vec) {
     vector<uint32_t> vec_int;
     for (int i = 0; i < vec.size(); i++) {
-        try{
+        try {
             vec_int.push_back(stoi(vec[i]));
         } // catch cannot convert string to int (X, Y, MT chromosomes)
-        catch (const std::invalid_argument& e){
-            if (vec[i] == "X"){
+        catch (const std::invalid_argument &e) {
+            if (vec[i] == "X") {
                 vec_int.push_back(23);
-            }
-            else if (vec[i] == "Y"){
+            } else if (vec[i] == "Y") {
                 vec_int.push_back(24);
-            }
-            else if (vec[i] == "MT"){
+            } else if (vec[i] == "MT") {
                 vec_int.push_back(25);
-            }
-            else{
+            } else {
                 cout << "Invalid chromosome: " << vec[i] << endl;
                 continue;
             }
         }
-
     }
     return vec_int;
 }
@@ -410,8 +384,7 @@ vector<uint32_t> convert_vector_string_to_vector_int(
  * @param map_file: string
  * @return map of chrm: <bp, bp, bp...>
  */
-map<int, vector<uint32_t>> read_cm_map_file(
-        string map_file) {
+map<int, vector<uint32_t>> read_cm_map_file(string map_file) {
     map<int, vector<uint32_t>> chrm_block_bp_ends;
     int BLOCK_CM_SIZE = 1;
     // open map file, exit if file does not exist
@@ -429,19 +402,16 @@ map<int, vector<uint32_t>> read_cm_map_file(
         // split line by white space
         vector<string> vec = split_string(line, ' ');
         int chrm;
-        try{
+        try {
             chrm = stoi(vec[0]);
-        } catch (const std::invalid_argument& e){
-            if (vec[0] == "X"){
+        } catch (const std::invalid_argument &e) {
+            if (vec[0] == "X") {
                 chrm = 23;
-            }
-            else if (vec[0] == "Y"){
+            } else if (vec[0] == "Y") {
                 chrm = 24;
-            }
-            else if (vec[0] == "MT"){
+            } else if (vec[0] == "MT") {
                 chrm = 25;
-            }
-            else{
+            } else {
                 cout << "Invalid chromosome: " << vec[0] << endl;
                 // skip this line
                 continue;
@@ -471,14 +441,12 @@ map<int, vector<uint32_t>> read_cm_map_file(
     return chrm_block_bp_ends;
 }
 
-
 /*
  * Function to get the sizes of blocks when using a map file
  * @param all_blocks: vector of blocks
  * @return vector of block sizes
  */
-vector<int> get_block_sizes(
-        vector<vector<vector<string>>> all_blocks) {
+vector<int> get_block_sizes(vector<vector<vector<string>>> all_blocks) {
     vector<int> block_sizes;
     for (int i = 0; i < all_blocks.size(); i++) {
         block_sizes.push_back(all_blocks[i][0].size());
@@ -491,8 +459,7 @@ vector<int> get_block_sizes(
  * @param gwasPathString: string
  * @return vector of column names
  */
-vector<string> gwas_column_names(
-        string gwasPathString) {
+vector<string> gwas_column_names(string gwasPathString) {
     auto gwasPath = fs::path(gwasPathString);
     // TODO: block_size via map file not implemented
     cout << "...Success" << endl;
@@ -514,9 +481,7 @@ vector<string> gwas_column_names(
  * Get the paths for each index corresponding
  * to a column in a GWAS file.
  * */
-vector<string> index_paths_of(
-        string output_dir,
-        vector<string> gwasColumns) {
+vector<string> index_paths_of(string output_dir, vector<string> gwasColumns) {
     auto gwasPath = fs::path(output_dir);
     auto part1 = gwasPath.parent_path();
     auto part2 = gwasPath.string();
@@ -527,15 +492,15 @@ vector<string> index_paths_of(
     for (int i = 0; i < gwasColumns.size(); i++) {
         string columnName = gwasColumns[i];
         auto outPath = gwasPath / (columnName + ".idx");
-//        outPaths.push_back(gwasPath.string());
+        //        outPaths.push_back(gwasPath.string());
         outPaths.push_back(outPath.string());
     }
 
     return outPaths;
 }
 
-map<int, map<int, tuple<int, int, int>>> read_genomic_index_file(
-        string index_file) {
+map<int, map<int, tuple<int, int, int>>>
+read_genomic_index_file(string index_file) {
 
     map<int, map<int, tuple<int, int, int>>> genomic_index_file_map;
 
@@ -576,8 +541,7 @@ map<int, map<int, tuple<int, int, int>>> read_genomic_index_file(
  *  key: chrm_start
  *      value: tuple(bp_start, line_number, byte_start)
  */
-map<int, int> make_lineID_blockID_map(
-        string index_file) {
+map<int, int> make_lineID_blockID_map(string index_file) {
     map<int, int> lineID_blockID_map;
 
     // check if file exists
@@ -641,4 +605,3 @@ std::ifstream try_open_ate(std::string index_path) {
 
     return index_file;
 }
-
