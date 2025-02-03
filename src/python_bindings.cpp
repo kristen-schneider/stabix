@@ -7,7 +7,7 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(stabixcore, m) {
-    m.def("compress", &compress_main, "Pipeline for compressing GWAS files.");
-    m.def("index", &index_main, "Pipeline for indexing GWAS files.");
-    m.def("decompress", &decompress_main, "Pipeline for decompressing GWAS files.");
+    m.def("compress", &compress_main_by_map, "Pipeline for compressing GWAS files.");
+    m.def("index", &index_main_by_map, "Pipeline for indexing GWAS files.");
+    m.def("decompress", &decompress_main_by_map, "Pipeline for decompressing GWAS files.");
 }

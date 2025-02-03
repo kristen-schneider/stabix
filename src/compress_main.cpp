@@ -4,24 +4,27 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "blocks.h"
 #include "compress.h"
-#include "header.h"
 #include "index.h"
 #include "utils.h"
+
+#include <compress_main.h>
 
 using namespace std;
 namespace fs = std::filesystem;
 
 int compress_main(string config_path) {
-    // COMPRESSION STEPS
     cout << "Reading config options from: " << config_path << endl;
     map<string, string> config_options = read_config_file(config_path);
     add_default_config_options(config_options);
+    return compress_main_by_map(config_options);
+}
 
+int compress_main_by_map(map<string, string> config_options) {
+    // COMPRESSION STEPS
     // - input gwas file
     string gwas_file = config_options["gwas_file"];
 

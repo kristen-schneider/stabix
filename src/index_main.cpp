@@ -1,6 +1,6 @@
 #include "decompress.h"
 #include "header.h"
-#include "index.h"
+#include "index_main.h"
 #include "indexers.h"
 #include <filesystem>
 #include <fstream>
@@ -14,14 +14,13 @@ namespace fs = std::filesystem;
 
 
 int index_main(string config_path) {
-    //    // set bins for pval
-    //    auto bins = std::vector<float>{5e-1, 5e-5, 5.1e-8};
-    //    int pval_col_idx = -1;
-
     cout << "Reading config options from: " << config_path << endl;
     map<string, string> config_options = read_config_file(config_path);
     add_default_config_options(config_options);
+    return index_main_by_map(config_options);
+}
 
+int index_main_by_map(map<string, string> config_options) {
     // - input gwas file
     string gwas_file = config_options["gwas_file"];
     // - queries

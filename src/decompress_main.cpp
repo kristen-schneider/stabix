@@ -15,6 +15,7 @@
 #include "index.h"
 #include "indexers.h"
 #include "stabix_except.h"
+#include "decompress_main.h"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -81,11 +82,15 @@ unordered_set<int> query_abs_idx(string path,
 }
 
 int decompress_main(string config_path) {
-    // DECOMPRESSION STEPS
-    auto start_all_time = chrono::high_resolution_clock::now();
     cout << "Reading config options from: " << config_path << endl;
     map<string, string> config_options = read_config_file(config_path);
     add_default_config_options(config_options);
+    return decompress_main_by_map(config_options);
+}
+
+int decompress_main_by_map(map<string, string> config_options) {
+    // DECOMPRESSION STEPS
+    auto start_all_time = chrono::high_resolution_clock::now();
 
     // - input gwas file
     string gwas_file = config_options["gwas_file"];
