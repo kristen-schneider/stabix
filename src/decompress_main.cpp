@@ -120,15 +120,6 @@ int decompress_main_by_map(map<string, string> config_options) {
         block_size = -1;
     }
 
-    // - codecs (by data type)
-    string codec_int = config_options["int"];
-    string codec_float = config_options["float"];
-    string codec_str = config_options["string"];
-    map<string, string> data_type_codecs = {
-            {"int", codec_int},
-            {"float", codec_float},
-            {"string", codec_str}};
-
     // -out
     auto gwas_path = fs::path(config_options["gwas_file"]);
 
