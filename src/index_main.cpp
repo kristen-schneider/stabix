@@ -24,9 +24,6 @@ int index_main_by_map(map<string, string> config_options) {
     // - input gwas file
     string gwas_file = config_options["gwas_file"];
     // - queries
-    // genomic
-    vector<string> index_types = {"genomic"};
-    string query_genomic = config_options["genomic"];
 
     // other
     string extra_index = config_options["extra_index"];
@@ -36,8 +33,6 @@ int index_main_by_map(map<string, string> config_options) {
 
     if (extra_index != "None") {
         vector<string> extra_indices_list = split_string(extra_index, ',');
-        index_types.insert(index_types.end(), extra_indices_list.begin(),
-                           extra_indices_list.end());
 
         // get second index col idx from config
         second_index_col_idx = stoi(config_options["col_idx"]);
@@ -60,15 +55,6 @@ int index_main_by_map(map<string, string> config_options) {
     } catch (invalid_argument &e) {
         block_size = -1;
     }
-
-    // - codecs (by data type)
-    string codec_int = config_options["int"];
-    string codec_float = config_options["float"];
-    string codec_str = config_options["string"];
-    map<string, string> data_type_codecs = {
-            {"int", codec_int},
-            {"float", codec_float},
-            {"string", codec_str}};
 
     // -out
     auto gwas_path = fs::path(config_options["gwas_file"]);
@@ -126,7 +112,6 @@ int index_main_by_map(map<string, string> config_options) {
     string num_blocks = parse_header_list(header_list, "num blocks")[0];
     vector<string> block_sizes_list =
             parse_header_list(header_list, "block sizes");
-
 
     // get paths for index files
     vector<string> indexNames = {"genomic"};

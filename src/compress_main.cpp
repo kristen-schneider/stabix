@@ -296,27 +296,27 @@ int compress_main_by_map(map<string, string> config_options) {
                              block_end_bytes,
                              genomic_index);
 
-    vector<string> indexNames = {"genomic"};
-    auto indexPaths = index_paths_of(out_dir_path, indexNames);
-    string genomicIndexPath = indexPaths[0];
-    cout << "Writing genomic index file to: " << genomicIndexPath << endl;
-    ofstream genomicIndexFile;
-    genomicIndexFile.open(genomicIndexPath);
+    vector<string> index_names = {"genomic"};
+    auto index_paths = index_paths_of(out_dir_path, index_names);
+    string genomic_index_path = index_paths[0];
+    cout << "Writing genomic index file to: " << genomic_index_path << endl;
+    ofstream genomic_index_file;
+    genomic_index_file.open(genomic_index_path);
 
     // write header
-    genomicIndexFile << "block_idx,chrm_start,bp_start,line_start,byte_start" << endl;
+    genomic_index_file << "block_idx,chrm_start,bp_start,line_start,byte_start" << endl;
 
     // write genomic index to file
     for (int block_idx = 0; block_idx < genomic_index.size(); block_idx++) {
         vector<unsigned int> chrm_bp_byte = genomic_index[block_idx];
-        genomicIndexFile << block_idx << ","
+        genomic_index_file << block_idx << ","
                             << genomic_index[block_idx][0] << ","
                             << genomic_index[block_idx][1] << ","
                             << genomic_index[block_idx][2] << ","
                             << genomic_index[block_idx][3] << endl;
     }
 
-    genomicIndexFile.close();
+    genomic_index_file.close();
     file.close();
 
     cout << endl << "---Compression Complete---" << endl;
