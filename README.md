@@ -54,6 +54,9 @@ cd ..
 ./bin/gwas_decompress config_files/test_config.yml
 ```
 
+### WORKFLOW
+ ![workflow-flow.png](workflow_flow.png)
+
 ### Configuration file
 [Example configuration file.](https://github.com/kristen-schneider/gwas-cpp/blob/config_files/test_config.yml)<br>
 
