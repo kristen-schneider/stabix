@@ -101,4 +101,4 @@ This:
 1. Compresses `test.tsv`.
 2. Indexes column 8 with bins at 0.1 (creating `< 0.1` and `≥ 0.1`).
 3. Queries for variants in `test.bed` regions where column 8 values are `< 0.1`.
-  - The results are saved to a file `exp1.query`).
+   - The results are saved to a file `exp1.query`.
