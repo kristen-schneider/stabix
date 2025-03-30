@@ -1,5 +1,6 @@
 ## STABIX
 
+Stabix enables efficient queries for bed.files with filters (such as on Genome-Wide Association Study data and a p-value threshold); allowing fast access to variants in specific genomic regions.
 ## SETUP
 
 ### Dependencies
@@ -60,7 +61,7 @@ cd ..
 ### Configuration file
 [Example configuration file.](https://github.com/kristen-schneider/gwas-cpp/blob/config_files/test_config.yml)<br>
 
-### See [STABIX analysis repository](https://github.com/kristen-schneider/stabix-analysis) for more analysis and runnign scripts.
+### See [STABIX analysis repository](https://github.com/kristen-schneider/stabix-analysis) for more analysis and running scripts.
 
 ---
 
@@ -74,11 +75,11 @@ make stabixpy # python bindings
 ```
 
 This does two things:
-1. Generates `python_package/src/stabix/stabixcore.so`  
-Import the .so with `import stabixpy`.
+1. Generates `python_package/src/stabix/stabixcore.so`
+Import the .so with `import stabixcore`.
 2. Packages for python distribution, `python_package/dist`.
 
-Note that this triggers compilation for a specific version 
+Note that this triggers compilation for a specific version
 of python that must be specified in the [CMakeLists.txt]() file.
 Both version & python executable path must be specified.
 

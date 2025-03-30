@@ -9,7 +9,8 @@ codecMap = Union[str, Dict[Literal["int", "float", "string"], str]]
 
 class StabixIndex:
     def __init__(self, gwas_file: str, block_size: int, name: str):
-        # NOTE: block_size can be -1
+        # NOTE: block_size can be -1 which indicates map file;
+        # not yet tested via python wrapper
         self.gwas_file = gwas_file
         # block_size is immediately parsed to int again in c++,
         # but needs to be a string to be passed to c++ for type consistency

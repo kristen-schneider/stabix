@@ -1,12 +1,12 @@
 [project]
 name = "stabix"
-version = "1.0.9"
+version = "1.0.0"
 requires-python = ">=3.11"
 authors = [
     { name = "Kristen Schneider" },
     { name = "Simon Walker" }
 ]
-keywords = ["genomics", "indexing", "compression", "decompression", "bioinformatics", "tabix"]
+keywords = ["genomics", "indexing", "compression", "decompression", "bioinformatics", "tabix", "bed", "gwas"]
 description = "S(tatistical)tabix"
 maintainers = [ { name = "Simon Walker", email = "simon@simonwalker.tech" } ]
 readme = "README.md"
