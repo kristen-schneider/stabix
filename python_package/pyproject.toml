@@ -24,4 +24,4 @@ build-backend = "setuptools.build_meta"
 include_package_data = true
 
 [tool.setuptools.package-data]
-stabix = [ "stabixpy.so" ]
+stabix = [ "stabixcore.so" ]
