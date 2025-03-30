@@ -1,11 +1,11 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    { self, nixpkgs }:
     let
-      # TODO: generalize flake
       system = "aarch64-darwin";
       pkgs = nixpkgs.legacyPackages.${system};
     in
@@ -13,14 +13,17 @@
     {
       devShells.${system}.default = mkShell {
         buildInputs = [
+          # Add your desired packages here
           gcc
           cmake
           simde
+
           libzip # TODO: necessary?
           zlib
           bzip2
           xz
           zstd
+          wget
         ];
       };
     };

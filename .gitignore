@@ -20,4 +20,4 @@ python_package/dist
 python_package/src/stabix.egg-info
 python_package/src/venv
 python_package/src/stabix/stabixcore.so
-python_package/src/stabix/__pycache__
+**/__pycache__/
