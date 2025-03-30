@@ -16,10 +16,10 @@ pip install stabix
 Get up and running with Stabix in just a few lines of code:
 
 ```python
-from stabix import StabixIndex
+from stabix import Stabix
 
 # Initialize the index with your GWAS file
-idx = StabixIndex("path/to/your/gwas_file.tsv", block_size=2000, name="my_index")
+idx = Stabix("path/to/your/gwas_file.tsv", block_size=2000, name="my_index")
 
 # Compress the GWAS file
 idx.compress()
@@ -39,10 +39,10 @@ For more advanced features, like filtering by column values, see the [Usage](#us
 
 ## Usage
 
-### `StabixIndex`
+### `Stabix` Index
 
 ```python
-StabixIndex(gwas_file, block_size, name)
+Stabix(gwas_file, block_size, name)
 ```
 
 - **`gwas_file`**: Path to your GWAS file (e.g., a tab-separated `.tsv` file).
@@ -82,10 +82,10 @@ Queries the compressed data using a BED file.
 Here’s a complete workflow to compress, index, and query a GWAS file with a threshold:
 
 ```python
-from stabix import StabixIndex
+from stabix import Stabix
 
 # Initialize the index
-idx = StabixIndex("test.tsv", block_size=2000, name="exp1")
+idx = Stabix("test.tsv", block_size=2000, name="exp1")
 
 # Compress the file
 idx.compress("bz2")

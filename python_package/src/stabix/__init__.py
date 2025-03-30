@@ -7,7 +7,7 @@ import stabix.stabixcore as _core
 codecMap = Union[str, Dict[Literal["int", "float", "string"], str]]
 
 
-class StabixIndex:
+class Stabix:
     def __init__(self, gwas_file: str, block_size: int, name: str):
         # NOTE: block_size can be -1 which indicates map file;
         # not yet tested via python wrapper
