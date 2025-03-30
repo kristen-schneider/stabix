@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -148,7 +147,6 @@ int decompress_main_by_map(map<string, string> config_options) {
     if (!query_output_stream.is_open()) {
         throw StabixExcept("Error: could not open output file.");
     }
-    query_output_stream << "GWAS file: " << gwas_file << endl;
     query_output_stream.close();
 
     // 1. open compressed file and read header
@@ -197,7 +195,7 @@ int decompress_main_by_map(map<string, string> config_options) {
     auto genomic_index_path = index_paths[0];
     auto extra_index_path = index_paths[1];
 
-    // time reading genomic index
+    // reading genomic index
     cout << "Reading genomic index..." << endl;
     ifstream genomic_index_file(
         genomic_index_path); // TODO: remove: these next fns
@@ -214,7 +212,6 @@ int decompress_main_by_map(map<string, string> config_options) {
 
     // TODO: perform a query by gene, not all blocks and all blocks
     // 4. get and aggregate blocks associated with each query
-    // time query genomic index
 
     // get all statistic-based blocks first
     auto statistic_blocks = unordered_set<int>();
@@ -260,9 +257,6 @@ int decompress_main_by_map(map<string, string> config_options) {
 
         // iterate through each gene location
         for (const auto &geneLocation : geneLocations) {
-            // time query for a single gene location
-            auto single_gene_start_time = chrono::high_resolution_clock::now();
-
             int gene_chrm;
             int gene_bp_start;
             int gene_bp_end;
@@ -289,18 +283,9 @@ int decompress_main_by_map(map<string, string> config_options) {
                 query_genomic_idx_gene(gene_chrm, gene_bp_start, gene_bp_end,
                                        genomic_index_info_by_location);
 
-            // if there are no genomic blocks to decompress, get time and go to
+            // if there are no genomic blocks to decompress, go to
             // next geneLocation
             if (curr_genome_blocks.empty()) {
-                auto single_gene_end_time =
-                    chrono::high_resolution_clock::now();
-                auto single_gene_time =
-                    chrono::duration_cast<chrono::microseconds>(
-                        single_gene_end_time - single_gene_start_time)
-                        .count();
-                query_output_stream << "Gene: " << geneName
-                                    << ",time: " << single_gene_time
-                                    << ",stat_hits: " << geneStatHits << endl;
                 continue;
             }
 
@@ -312,18 +297,9 @@ int decompress_main_by_map(map<string, string> config_options) {
                 sorted_statistic_blocks.begin(), sorted_statistic_blocks.end(),
                 back_inserter(gene_statistic_intersection_blocks));
 
-            // if there are no blocks to decompress, get time and go to next
+            // if there are no blocks to decompress, go to next
             // geneLocation
             if (gene_statistic_intersection_blocks.empty()) {
-                auto single_gene_end_time =
-                    chrono::high_resolution_clock::now();
-                auto single_gene_time =
-                    chrono::duration_cast<chrono::microseconds>(
-                        single_gene_end_time - single_gene_start_time)
-                        .count();
-                query_output_stream << "Gene: " << geneName
-                                    << ",time: " << single_gene_time
-                                    << ",stat_hits: " << geneStatHits << endl;
                 continue;
             }
 
@@ -431,12 +407,6 @@ int decompress_main_by_map(map<string, string> config_options) {
                 for (int v = 0; v < split_statistic_float.size(); v++) {
                     if (compare_values(second_index_threshold,
                                        split_statistic_float[v])) {
-                        //
-                        // debug
-                        // print the number of statistical hits
-                        // cout << "Gene: " << geneName << endl;
-                        // cout << "num statistical hits: " <<
-                        // statistical_hits.size() << endl;
                         geneStatHits += 1;
                         //
                         // if statistical hit is correct, check chrm and bp
@@ -467,41 +437,9 @@ int decompress_main_by_map(map<string, string> config_options) {
                 if (statistical_hits.empty()) {
                     continue;
                 }
-                //                // filter block based on genomic query
-                //                vector<int> final_hits = {};
-                //                // TODO: include chrm and bp col in config
-                //                string chrm_col = decompressed_block[0];
-                //                string bp_col = decompressed_block[1];
-                //                vector<string> split_chrm_col =
-                //                split_string(chrm_col, ','); vector<string>
-                //                split_bp_col = split_string(bp_col, ','); for
-                //                (int hit : statistical_hits) {
-                //                    int hit_chrm;
-                //                    try{
-                //                        hit_chrm = stoi(split_chrm_col[hit]);
-                //                    }
-                //                    catch (const invalid_argument &e) {
-                //                        if (split_chrm_col[hit] == "X") {
-                //                            hit_chrm = 23;
-                //                        }
-                //                        else if (split_chrm_col[hit] == "Y") {
-                //                            hit_chrm = 24;
-                //                        }
-                //                        else if (split_chrm_col[hit] == "MT")
-                //                        {
-                //                            hit_chrm = 25;
-                //                        }
-                //                        else {
-                //                            // ignore invalid values
-                //                            hit_chrm = -1;
-                //                        }
-                //                    }
-                //                    int hit_bp = stoi(split_bp_col[hit]);
-                //                    if (hit_chrm == gene_chrm && hit_bp >=
-                //                    gene_bp_start && hit_bp <= gene_bp_end) {
-                //                        final_hits.push_back(hit);
-                //                    }
-                //                }
+
+                // TODO: include chrm and bp col in config
+
                 // if there are no hits, skip to next gene
                 if (statistical_hits.empty()) {
                     continue;
@@ -529,14 +467,6 @@ int decompress_main_by_map(map<string, string> config_options) {
                     query_output_stream << endl;
                 }
             }
-            auto single_gene_end_time = chrono::high_resolution_clock::now();
-            auto single_gene_time =
-                chrono::duration_cast<chrono::microseconds>(
-                    single_gene_end_time - single_gene_start_time)
-                    .count();
-            query_output_stream << "Gene: " << geneName
-                                << ",time: " << single_gene_time
-                                << ",stat_hits: " << geneStatHits << endl;
         }
     }
 

@@ -86,6 +86,7 @@ target_link_libraries(gwas_decompress bxzstr FastPFOR z)
 
 ## Regarding python bindings
 
+# grab *.cpp except cli/*.cpp
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE ENTRYPOINT_SOURCES "src/cli/*.cpp")
 list(REMOVE_ITEM SOURCES ${ENTRYPOINT_SOURCES})
