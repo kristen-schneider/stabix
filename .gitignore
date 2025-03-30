@@ -12,14 +12,12 @@ _deps/
 lib/
 
 # stabix related
-gwas_files/
 map_files/
 plots/*.txt
 
 # python bindings related
-python_package/venv
-python_package/stabix.egg-info
 python_package/dist
-# this is a build artifact
+python_package/src/stabix.egg-info
+python_package/src/venv
 python_package/src/stabix/stabixcore.so
 python_package/src/stabix/__pycache__

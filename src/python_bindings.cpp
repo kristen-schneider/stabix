@@ -1,4 +1,5 @@
 #include <pybind11.h>
+#include <pybind11/stl.h>
 #include "compress_main.h"
 #include "decompress_main.h"
 #include "index_main.h"
