@@ -84,8 +84,6 @@ int decompress_main(string config_path) {
 
 int decompress_main_by_map(map<string, string> config_options) {
     // DECOMPRESSION STEPS
-    // - input gwas file
-    string gwas_file = config_options["gwas_file"];
 
     // - queries
     vector<string> index_types = {"genomic"};
@@ -109,40 +107,12 @@ int decompress_main_by_map(map<string, string> config_options) {
         second_index_threshold = config_options["threshold"];
     }
 
-    int block_size = -1;
-    try {
-        block_size = stoi(config_options["block_size"]);
-    } catch (invalid_argument &e) {
-        block_size = -1;
-    }
-
     // -out
-    auto gwas_path = fs::path(config_options["gwas_file"]);
+    auto out_dir_path = fs::path(config_options["index_dir"]);
+    auto compressed_file = out_dir_path / "rows.grlz";
 
-    auto out_dir_path = fs::path();
-    string compressed_file;
-    if (block_size == -1) {
-        out_dir_path =
-            gwas_path.parent_path() / (gwas_path.stem().string() + "_map" +
-                                       "_" + config_options["out_name"]);
-
-        compressed_file =
-            out_dir_path / (gwas_path.stem().string() + "_map" + "_" +
-                            config_options["out_name"] + ".grlz");
-    } else {
-        out_dir_path =
-            gwas_path.parent_path() /
-            (gwas_path.stem().string() + "_" + config_options["block_size"] +
-             "_" + config_options["out_name"]);
-
-        compressed_file = out_dir_path / (gwas_path.stem().string() + "_" +
-                                          config_options["block_size"] + "_" +
-                                          config_options["out_name"] + ".grlz");
-    }
-
+    string query_output_file_name = fs::path(config_options["out_path"]);
     ofstream query_output_stream;
-    string query_output_file_name =
-        out_dir_path / (gwas_path.stem().string() + ".query");
     query_output_stream.open(query_output_file_name, ios::trunc);
     if (!query_output_stream.is_open()) {
         throw StabixExcept("Error: could not open output file.");

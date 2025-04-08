@@ -23,7 +23,7 @@
           bzip2
           xz
           zstd
-          wget
+          curl.dev
         ];
       };
     };

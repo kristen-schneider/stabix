@@ -1,11 +1,15 @@
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
+#include "blocks.h"
 #include "compress.h"
+#include "curl_stream.h"
 #include "stabix_except.h"
 #include "utils.h"
 
@@ -18,355 +22,246 @@ const int chrm_idx = 0;
 const int bp_idx = 1;
 
 struct IndexEntry {
-    double value; // floating point value to sort by
+    double value;    // floating point value to sort by
     int blockNumber; // Block number in the compressed file
 };
 
-/*
- * Split a file into blocks.
- * --Read in gwas file and make a new block every block_size lines
- * @param gwas_file: string of gwas file
- * @param num_columns: int of number of columns in gwas file
- * @param block_size: int of block size
- * @param delim: char of delimiter
- * @param genomic_index: vector<vector<int>> genomic index: chrm, bp, line_number, byte_offset
- * @return all_blocks: vector<vector<vector<string>>> of blocks in gwas file
- */
-vector<vector<vector<string>>> make_blocks(
-        string gwas_file,
-        int num_columns,
-        int block_size,
-        char delim,
-        vector<vector<unsigned int>> &genomic_index){
+int parse_chromosome(const string &chrom_str) {
+    try {
+        return stoi(chrom_str);
+    } catch (const invalid_argument &) {
+        if (chrom_str == "X")
+            return 23;
+        if (chrom_str == "Y")
+            return 24;
+        if (chrom_str == "MT")
+            return 25;
+        throw invalid_argument("Invalid chromosome: " + chrom_str);
+    }
+}
 
-    // to return (stores all blocks)
+vector<vector<vector<string>>>
+make_blocks(string gwas_file, int num_columns, int block_size, char delim,
+            vector<vector<unsigned int>> &genomic_index) {
+
     vector<vector<vector<string>>> all_blocks;
 
-    // open gwas file
-    ifstream gwas(gwas_file);
+    unique_ptr<istream> gwas_ptr;
+    if (is_url(gwas_file)) {
+        gwas_ptr = make_unique<CurlStream>(gwas_file);
+    } else {
+        gwas_ptr = make_unique<ifstream>(gwas_file);
+        if (!static_cast<ifstream *>(gwas_ptr.get())->is_open()) {
+            throw StabixExcept("Failed to open file: " + gwas_file);
+        }
+    }
 
-    // read in lines
+    istream &gwas = *gwas_ptr;
+
     string line;
     int line_count = 0;
     int block_count = 0;
-    vector<vector<string>> curr_block;
-    // make curr_block a vector of empty strings
-    for (int i = 0; i < num_columns; i++) {
-        vector<string> column;
-        curr_block.push_back(column);
-    }
+    vector<vector<string>> curr_block(num_columns);
 
-    // ignore header
-    getline(gwas, line);
+    getline(gwas, line); // Ignore header
 
-    // create an empty block index
-    // chrm, bp, line_number, byte_offset
-    vector<unsigned int> block_genomic_index = {0, 0, 0, 0};
+    vector<unsigned int> block_genomic_index(4, 0);
 
-    // read in lines
     while (getline(gwas, line)) {
-        // if line_count is less than block_size, split line by column and add
-        // to block remove newline character from line
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
 
         if (line_count < block_size) {
+            vector<string> line_vector = split_string(line, delim);
+            // Process chromosome and update genomic index
             istringstream line_stream(line);
             string column_value;
             int column_idx = 0;
-            // split line by delimiter and add to curr_block
-            vector<string> line_vector = split_string(line, '\t');
 
             int curr_chrm;
-            try{
-                curr_chrm = stoi(line_vector[chrm_idx]);
+            try {
+                curr_chrm = parse_chromosome(line_vector[chrm_idx]);
+            } catch (const exception &e) {
+                cerr << "Skipping invalid line: " << e.what() << endl;
+                continue;
             }
-                // catch stoi exceptions for X and Y chromosomes
-                // X --> 23, Y --> 24, M --> 25
-            catch (const std::invalid_argument& e){
-                if (line_vector[chrm_idx] == "X"){
-                    curr_chrm = 23;
+            // Add to curr_block
+            for (size_t i = 0; i < line_vector.size(); ++i) {
+                if (i >= num_columns) {
+                    throw StabixExcept("Invalid number of columns (" +
+                                       std::to_string(line_vector.size()) +
+                                       ") in line: " + line);
                 }
-                else if (line_vector[chrm_idx] == "Y"){
-                    curr_chrm = 24;
-                }
-                else if (line_vector[chrm_idx] == "MT"){
-                    curr_chrm = 25;
-                }
-                else{
-                    cout << "Invalid chromosome: " << line_vector[chrm_idx] << endl;
-                    // skip this line
-                    continue;
-                }
+                curr_block[i].push_back(line_vector[i]);
             }
-
-            // if this is the first line in the block, store the genomic index
-            // starting chrm, starting bp, and line number
-            if (line_count == 0){
+            // Update genomic index on first line of block
+            if (line_count == 0) {
+                // if this is the first line in the block, store the genomic
+                // index starting chrm, starting bp, and line number
                 block_genomic_index[0] = curr_chrm;
                 block_genomic_index[1] = stoi(line_vector[bp_idx]);
                 block_genomic_index[2] = 1 + block_count * block_size;
                 genomic_index.push_back(block_genomic_index);
             }
-            for (auto const &column_value : line_vector) {
-                curr_block[column_idx].push_back(column_value);
-                column_idx++;
-            }
-
             line_count++;
-        }
-        // if line_count is equal to block_size, add block to all_blocks and
-        // reset line_count and curr_block
-        else {
+        } else {
             all_blocks.push_back(curr_block);
-            curr_block.clear();
-            // make curr_block a vector of empty strings
-            for (int i = 0; i < num_columns; i++) {
-                vector<string> column;
-                curr_block.push_back(column);
-            }
-            // add line to curr_block as first line
-            istringstream line_stream(line);
-            string column_value;
-            int column_idx = 0;
-            vector<string> line_vector = split_string(line, '\t');
-
-            int curr_chrm;
-            try{
-                curr_chrm = stoi(line_vector[chrm_idx]);
-            }
-                // catch stoi exceptions for X and Y chromosomes
-                // X --> 23, Y --> 24
-            catch (const std::invalid_argument& e){
-                if (line_vector[chrm_idx] == "X"){
-                    curr_chrm = 23;
-                }
-                else if (line_vector[chrm_idx] == "Y"){
-                    curr_chrm = 24;
-                }
-                else if (line_vector[chrm_idx] == "MT"){
-                    curr_chrm = 25;
-                }
-                else{
-                    cout << "Invalid chromosome: " << line_vector[chrm_idx] << endl;
-                    // skip this line
-                    continue;
-                }
-            }
-
-            while (getline(line_stream, column_value, delim)) {
-                curr_block[column_idx].push_back(column_value);
-                column_idx++;
-            }
-
-            line_count = 1;
+            curr_block = vector<vector<string>>(num_columns);
+            line_count = 0;
             block_count++;
 
-            // store the genomic index
-            // starting chrm, starting bp, and line number
-            // try and convert chrm and bp to ints
-            try{
+            // Process current line for new block
+
+            vector<string> line_vector = split_string(line, delim);
+            int curr_chrm;
+            try {
+                curr_chrm = parse_chromosome(line_vector[chrm_idx]);
+            } catch (const exception &e) {
+                cerr << "Skipping invalid line: " << e.what() << endl;
+                continue;
+            }
+
+            for (size_t i = 0; i < line_vector.size(); ++i) {
+                if (i >= num_columns) {
+                    throw StabixExcept("Invalid number of columns (" +
+                                       std::to_string(line_vector.size()) +
+                                       ") in line: " + line);
+                }
+                curr_block[i].push_back(line_vector[i]);
+            }
+            line_count = 1;
+            // Update genomic index
+            try {
+                // store the genomic index
+                // starting chrm, starting bp, and line number
+                // try and convert chrm and bp to ints
                 block_genomic_index[0] = curr_chrm;
                 block_genomic_index[1] = stoi(line_vector[bp_idx]);
                 block_genomic_index[2] = 1 + block_count * block_size;
                 genomic_index.push_back(block_genomic_index);
             }
             // catch stoi exceptions for sex chromosomes
-            catch (const std::invalid_argument& e){
+            catch (const std::invalid_argument &e) {
                 // do nothing, just catch
-            }
-            catch (const std::out_of_range& e) {
+            } catch (const std::out_of_range &e) {
                 // do nothing, just catch
             }
         }
     }
-    // add last block to all_blocks if it is not empty
-    if (!curr_block.empty()) {
+
+    if (!curr_block.empty() && !curr_block[0].empty()) {
         all_blocks.push_back(curr_block);
-        block_count++;
     }
-    gwas.close();
 
     return all_blocks;
 }
 
-
-/*
- * Split a file into blocks, using a MAP file.
- * --Read in gwas file and make a new block every 1cM
- * @param gwas_file: string of gwas file
- * @param num_columns: int of number of columns in gwas file
- * @param chrm_block_bp_ends: ending of each 1cM block
- * @param delim: char of delimiter
- * @param genomic_index: vector<vector<int>> genomic index: chrm, bp, line_number, byte_offset
- * @return all_blocks: vector<vector<vector<string>>> of blocks in gwas file
- */
-vector<vector<vector<string>>> make_blocks_map(
-        string gwas_file,
-        int num_columns,
-        map<int, vector<uint32_t>> chrm_block_bp_ends,
-        char delim,
-        vector<vector<unsigned int>> &genomic_index) {
-
-    // read in gwas file and make a new block every block_size lines
-    // return a vector of blocks
+vector<vector<vector<string>>>
+make_blocks_map(string gwas_file, int num_columns,
+                const map<int, vector<uint32_t>> &chromosome_blocks, char delim,
+                vector<vector<unsigned int>> &genomic_index) {
     vector<vector<vector<string>>> all_blocks;
-    ifstream gwas(gwas_file);
-    string line;
-    int line_count = 0;
-    int total_line_count = 0;
-    int block_count = 0;
-    vector<vector<string>> curr_block;
-    // make curr_block a vector of empty strings
-    for (int i = 0; i < num_columns; i++) {
-        vector<string> column;
-        curr_block.push_back(column);
-    }
 
-    // ignore header
+    // Handle URL/file input
+    unique_ptr<istream> gwas_ptr;
+    if (is_url(gwas_file)) {
+        gwas_ptr = make_unique<CurlStream>(gwas_file);
+    } else {
+        gwas_ptr = make_unique<ifstream>(gwas_file);
+        if (!static_cast<ifstream *>(gwas_ptr.get())->is_open()) {
+            throw StabixExcept("Failed to open file: " + gwas_file);
+        }
+    }
+    istream &gwas = *gwas_ptr;
+
+    // Skip header
+    string line;
     getline(gwas, line);
 
-    int block_chrm = 1;
-    uint32_t curr_bp;
-    int curr_block_idx = 0;
-    int curr_bp_end = chrm_block_bp_ends[block_chrm][curr_block_idx];
+    vector<vector<string>> curr_block(num_columns);
+    int current_chromosome = 1;
+    unsigned total_line_count = 0;
+    size_t current_block_idx = 0;
+    uint32_t current_bp_end =
+        chromosome_blocks.at(current_chromosome).at(current_block_idx);
 
-    // create an empty block index
-    // chrm, bp, byte_offset,
-    vector<unsigned int> block_genomic_index = {0, 0, 0, 0};
+    auto commit_block = [&]() {
+        if (!curr_block.empty() && !curr_block[0].empty()) {
+            all_blocks.push_back(curr_block);
+        }
+        curr_block = vector<vector<string>>(num_columns);
+    };
 
-    // read in lines
     while (getline(gwas, line)) {
-
-        line_count++;
-//        total_line_count++;
-        // to block remove newline character from line
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
-        // read line and get chrm and bp
-        istringstream line_stream(line);
-        string column_value;
-        vector<string> line_vector = split_string(line, '\t');
+        vector<string> line_vector = split_string(line, delim);
 
-        int curr_chrm=-1;
-        try{
-            curr_chrm = stoi(line_vector[chrm_idx]);
+        // Validate columns
+        if (line_vector.size() < num_columns) {
+            throw StabixExcept("Insufficient columns in line: " + line);
         }
-        // catch stoi exceptions for X and Y chromosomes
-        // X --> 23, Y --> 24
-        catch (const std::invalid_argument& e){
-            if (line_vector[chrm_idx] == "X"){
-                curr_chrm = 23;
-            }
-            else if (line_vector[chrm_idx] == "Y"){
-                curr_chrm = 24;
-            }
-            else if (line_vector[chrm_idx] == "MT"){
-                curr_chrm = 25;
-            }
-            else{
-                cout << "Invalid chromosome: " << line_vector[chrm_idx] << endl;
-                // skip this line
-                continue;
+
+        // Parse chromosome and BP
+        int chrom;
+        uint32_t bp;
+        try {
+            chrom = parse_chromosome(line_vector[chrm_idx]);
+            bp = stoul(line_vector[bp_idx]);
+        } catch (const exception &e) {
+            cerr << "Skipping invalid line: " << e.what() << endl;
+            continue;
+        }
+
+        // Handle chromosome change
+        if (chrom != current_chromosome) {
+            commit_block();
+            current_chromosome = chrom;
+            current_block_idx = 0;
+            try {
+                current_bp_end = chromosome_blocks.at(current_chromosome)
+                                     .at(current_block_idx);
+            } catch (const out_of_range &) {
+                throw StabixExcept("No blocks defined for chromosome " +
+                                   to_string(current_chromosome));
             }
         }
-        curr_bp = stoul(line_vector[bp_idx]);
 
-        // if new chromosome, current block ends
-        // add block to all_blocks and start a new block
-        if (curr_chrm != block_chrm) {
-            // add block to all_blocks
-            if (!curr_block.empty()) {
-                all_blocks.push_back(curr_block);
-                block_count++;
-            }
-            curr_block.clear();
-            // make curr_block a vector of empty strings
-            for (int i = 0; i < num_columns; i++) {
-                vector<string> column;
-                curr_block.push_back(column);
-            }
-
-            // store the genomic index
-            // starting chrm, starting bp, and line number
-            block_genomic_index[0] = curr_chrm;
-            block_genomic_index[1] = curr_bp;
-            block_genomic_index[2] = 1 + total_line_count;
-            genomic_index.push_back(block_genomic_index);
-
-            // add line to curr_block
-            for (int col_idx = 0; col_idx < num_columns; col_idx++) {
-                curr_block[col_idx].push_back(line_vector[col_idx]);
-            }
-
-            // update
-            block_chrm = curr_chrm;
-            curr_block_idx = 0;
-            curr_bp_end = chrm_block_bp_ends[block_chrm][curr_block_idx];
-            line_count = 1;
-            total_line_count++;
-        }
-        // keep adding to current block until bp is greater than bp_end
-        else if (curr_bp <= curr_bp_end) {
-
-            // if beginning of block, store the genomic index
-            if (line_count == 1){
-                block_genomic_index[0] = curr_chrm;
-                block_genomic_index[1] = curr_bp;
-                block_genomic_index[2] = 1 + total_line_count;
-                genomic_index.push_back(block_genomic_index);
-            }
-
-            // add line to curr_block
-            for (int col_idx = 0; col_idx < num_columns; col_idx++) {
-                curr_block[col_idx].push_back(line_vector[col_idx]);
+        // Add to block while BP <= current_bp_end
+        if (bp <= current_bp_end) {
+            for (int i = 0; i < num_columns; ++i) {
+                curr_block[i].push_back(line_vector[i]);
             }
             total_line_count++;
+        } else {
+            // Finalize current block and start new
+            commit_block();
+            genomic_index.push_back({
+                static_cast<unsigned>(current_chromosome), bp,
+                total_line_count + 1,
+                0 // byte_offset (unsupported in this implementation)
+            });
 
-        }
-        else {
-            // current bp >= bp_end, add block to all_blocks and start a new block
-            // add block to all_blocks
-            if (!curr_block.empty()) {
-                all_blocks.push_back(curr_block);
-                block_count++;
-            }
-            curr_block.clear();
-            // make curr_block a vector of empty strings
-            for (int i = 0; i < num_columns; i++) {
-                vector<string> column;
-                curr_block.push_back(column);
-            }
-
-            // add line to curr_block
-            for (int col_idx = 0; col_idx < num_columns; col_idx++) {
-                curr_block[col_idx].push_back(line_vector[col_idx]);
+            // Advance to next block
+            current_block_idx++;
+            try {
+                current_bp_end = chromosome_blocks.at(current_chromosome)
+                                     .at(current_block_idx);
+            } catch (const out_of_range &) {
+                throw StabixExcept("No more blocks on chromosome " +
+                                   to_string(current_chromosome));
             }
 
-            line_count = 1;
-            // store the genomic index
-            // starting chrm, starting bp, and line number
-            block_genomic_index[0] = curr_chrm;
-            block_genomic_index[1] = curr_bp;
-            block_genomic_index[2] = 1 + total_line_count;
-            genomic_index.push_back(block_genomic_index);
-
-            block_count++;
-            curr_block_idx++;
+            // Add line to new block
+            for (int i = 0; i < num_columns; ++i) {
+                curr_block[i].push_back(line_vector[i]);
+            }
             total_line_count++;
-
-            curr_bp_end = chrm_block_bp_ends[curr_chrm][curr_block_idx];
         }
     }
-    // add last block to all_blocks if it is not empty
-    if (!curr_block.empty()) {
-        all_blocks.push_back(curr_block);
-        block_count++;
-    }
-    // close gwas file
-    gwas.close();
 
+    // Add final block
+    commit_block();
     return all_blocks;
 }
-
 
 /*
  * Add the byte starting of each block to the genomic index
@@ -374,32 +269,30 @@ vector<vector<vector<string>>> make_blocks_map(
  * @param block_end_bytes: vector<string> of block end bytes
  * @param genomic_index: vector<vector<int>> of genomic index
  */
-void get_byte_start_of_blocks(
-        int compressed_header_size,
-        vector<string> block_end_bytes,
-        vector<vector<unsigned int>> &genomic_index){
+void get_byte_start_of_blocks(int compressed_header_size,
+                              vector<string> block_end_bytes,
+                              vector<vector<unsigned int>> &genomic_index) {
 
     // for each block, start byte =
     // header bytes + compressed header size + end of last block
     // 4 + compressed_header_size + block_end_bytes[block_idx - 1]
-    for (int block_idx = 0; block_idx < block_end_bytes.size(); block_idx++){
-        if (block_idx == 0){
+    for (int block_idx = 0; block_idx < block_end_bytes.size(); block_idx++) {
+        if (block_idx == 0) {
             genomic_index[block_idx][3] = 4 + compressed_header_size;
-        }
-        else{
-            genomic_index[block_idx][3] = 4 + compressed_header_size + stoul(block_end_bytes[block_idx - 1]);
+        } else {
+            genomic_index[block_idx][3] = 4 + compressed_header_size +
+                                          stoul(block_end_bytes[block_idx - 1]);
         }
     }
 }
 
-
 /*
  * Return the header of a block
  * @param compressed_block: vector<string> of compressed columns
- * @return block_header_column_end_bytes: vector<string> of block header column end bytes
+ * @return block_header_column_end_bytes: vector<string> of block header column
+ * end bytes
  */
-vector<string> get_block_header(
-        vector<string> compressed_block) {
+vector<string> get_block_header(vector<string> compressed_block) {
     vector<string> block_header_column_end_bytes;
     int curr_byte_idx = 0;
     // iterate over all column bitstrings and store the end byte of each column
@@ -430,10 +323,8 @@ unsigned int get_block_length(vector<string> compressed_block) {
  * @param codecs_list: vector<string> - list of codecs to use for each column
  * @return compressed_block: vector<string> - compressed block of data
  */
-vector<string> compress_block(
-        int block_idx,
-        vector<vector<string>> block,
-        vector<string> codecs_list) {
+vector<string> compress_block(int block_idx, vector<vector<string>> block,
+                              vector<string> codecs_list) {
     // TODO: Somewhere, have a help message of available codecs and,
     //   Confirm codec is installed before attempting compression
     vector<string> compressed_block;

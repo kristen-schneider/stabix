@@ -1,4 +1,6 @@
+#include "curl_stream.h"
 #include "indexers.h"
+#include "stabix_except.h"
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -6,23 +8,29 @@
 #include <strings.h>
 #include <unordered_map>
 #include <vector>
-#include "stabix_except.h"
 
 void Indexer::build_index(std::string inPath, int queryColumn,
-                         vector<float> bins) {
+                          vector<float> bins) {
     // sort bins in descending order
     std::sort(bins.begin(), bins.end(), std::greater<float>());
     this->bins = bins;
+    std::string outPath = this->indexPath;
 
-    auto outPath = this->indexPath;
-    std::ifstream file(inPath);
-
-    if (!file.is_open()) {
-        throw StabixExcept("Error opening file");
+    unique_ptr<istream> in_ptr;
+    if (is_url(inPath)) {
+        in_ptr = make_unique<CurlStream>(inPath);
+    } else {
+        in_ptr = make_unique<ifstream>(inPath);
+        if (!static_cast<ifstream *>(in_ptr.get())->is_open()) {
+            throw StabixExcept("Failed to open file: " + inPath);
+        }
     }
 
+    istream &inStream = *in_ptr;
     std::string lineStr;
-    if (!std::getline(file, lineStr)) {
+    getline(inStream, lineStr);
+
+    if (!std::getline(inStream, lineStr)) {
         throw StabixExcept("Missing header line");
     }
 
@@ -32,7 +40,7 @@ void Indexer::build_index(std::string inPath, int queryColumn,
 
     int line_id = 1;
 
-    while (std::getline(file, lineStr)) {
+    while (std::getline(inStream, lineStr)) {
         auto row_vals = split_string(lineStr, '\t');
         std::string query_val = row_vals[queryColumn];
         try {
@@ -47,7 +55,7 @@ void Indexer::build_index(std::string inPath, int queryColumn,
             line_id++;
             continue;
         }
-//        line_id++;
+        //        line_id++;
     }
 
     // 2. Serialize the index map

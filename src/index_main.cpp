@@ -1,6 +1,6 @@
+#include "index_main.h"
 #include "decompress.h"
 #include "header.h"
-#include "index_main.h"
 #include "indexers.h"
 #include <filesystem>
 #include <fstream>
@@ -12,7 +12,6 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-
 int index_main(string config_path) {
     cout << "Reading config options from: " << config_path << endl;
     map<string, string> config_options = read_config_file(config_path);
@@ -21,14 +20,12 @@ int index_main(string config_path) {
 }
 
 int index_main_by_map(map<string, string> config_options) {
-    // - input gwas file
-    string gwas_file = config_options["gwas_file"];
     // - queries
 
     // other
     string extra_index = config_options["extra_index"];
     int second_index_col_idx;
-    auto second_index_bins = std::vector<float> {};
+    auto second_index_bins = std::vector<float>{};
     string second_index_threshold = "";
 
     if (extra_index != "None") {
@@ -42,47 +39,15 @@ int index_main_by_map(map<string, string> config_options) {
         for (auto &bin : bin_string) {
             second_index_bins.push_back(stof(bin));
         }
-    }
-    else {
+    } else {
         // return error
         cout << "No extra indices provided." << endl;
         return -1;
     }
 
-    int block_size;
-    try {
-        block_size = stoi(config_options["block_size"]);
-    } catch (invalid_argument &e) {
-        block_size = -1;
-    }
-
     // -out
-    auto gwas_path = fs::path(config_options["gwas_file"]);
-    auto out_dir_path = fs::path();
-    string compressed_file;
-    if (block_size == -1) {
-        out_dir_path = gwas_path.parent_path() /
-                       (gwas_path.stem().string() +
-                        "_map" +
-                        "_" + config_options["out_name"]);
-
-        compressed_file = out_dir_path / (gwas_path.stem().string() +
-                                                 "_map" +
-                                                 "_" + config_options["out_name"] +
-                                                 ".grlz");
-    } else {
-        out_dir_path = gwas_path.parent_path() /
-                       (gwas_path.stem().string() +
-                        "_" + to_string(block_size) +
-                        "_" + config_options["out_name"]);
-
-        compressed_file = out_dir_path / (gwas_path.stem().string() +
-                                                 "_" + config_options["block_size"] +
-                                                 "_" + config_options["out_name"] +
-                                                 ".grlz");
-    }
-
-
+    auto out_dir_path = fs::path(config_options["index_dir"]);
+    auto compressed_file = out_dir_path / "rows.grlz"; // grlz?
     cout << "Done." << endl << endl;
 
     // 1. open compressed file and read header
@@ -111,7 +76,7 @@ int index_main_by_map(map<string, string> config_options) {
     string num_columns = parse_header_list(header_list, "num columns")[0];
     string num_blocks = parse_header_list(header_list, "num blocks")[0];
     vector<string> block_sizes_list =
-            parse_header_list(header_list, "block sizes");
+        parse_header_list(header_list, "block sizes");
 
     // get paths for index files
     vector<string> indexNames = {"genomic"};
@@ -125,63 +90,11 @@ int index_main_by_map(map<string, string> config_options) {
     string pValIndexPath = indexPaths[1];
     cout << "Writing p-value index file to: " << pValIndexPath << endl;
     auto pValIndexer = PValIndexer(pValIndexPath, blockLineMap);
+    string gwas_file = config_options["gwas_file"];
     pValIndexer.build_index(gwas_file, second_index_col_idx, second_index_bins);
     cout << "Done." << endl;
     cout << endl << "---Indexing Complete---" << endl;
 
-    // ----------------------------------------------------------------------
-
     delete blockLineMap;
     return 0;
 }
-
-// Simon's old index main
-/*
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        throw StabixExcept("1 argument required: config_path");
-    }
-
-    string configPath = argv[1];
-    cout << "Reading config options from: " << configPath << endl;
-    map<string, string> configOptions = read_config_file(configPath);
-    add_default_config_options(configOptions);
-    // TODO: block_size via map file not implemented
-    int blockSize = stoi(configOptions["block_size"]);
-    auto gwasPath = configOptions["gwas_file"];
-    cout << "...Success." << endl;
-    auto columnNames = column_names(gwasPath);
-    auto indexPaths = index_paths_of(gwasPath, columnNames);
-    cout << "...Successfully read GWAS file columns headers." << endl;
-    cout << "Building indices..." << endl;
-
-    // TODO: need to config indexing algorithms
-    vector<float> bins = {0.0, 0.5, 1.0};
-    Indexer *indexers[] = {
-        NULL, NULL, NULL, NULL, NULL,
-        NULL, NULL, NULL, NULL, new PValIndexer(indexPaths[9], bins)};
-
-    for (int i = 0; i < columnNames.size(); i++) {
-        // TODO: parallelize
-        Indexer *indexer = indexers[i];
-
-        if (indexer == NULL) {
-            cout << "...Skipping column: " << columnNames[i] << endl;
-            continue;
-        }
-
-        string columnName = columnNames[i];
-        cout << "...Building index for column: " << columnName << endl;
-
-        // big operation
-        auto outPath = indexPaths[i];
-        indexer->build_index(gwasPath);
-        cout << "......Success." << endl;
-
-        delete indexer;
-    }
-
-    cout << "Complete." << endl;
-    return 0;
-}
-*/

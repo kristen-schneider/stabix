@@ -25,11 +25,14 @@ include_directories(lib/FastPFor/headers)
 #include_directories(lib/googletest/googletest/include)
 include_directories(lib/pybind11/include/pybind11)
 
+find_package(CURL REQUIRED)
+
 ## Sources
 set(COMMON_SOURCES
         src/header.cpp
         src/utils.cpp
-        src/stabix_except.cpp)
+        src/stabix_except.cpp
+        src/curl_stream.cpp)
 
 set(ABSTRACT_INDEX
         src/abstract_index/query_index.cpp
@@ -38,6 +41,7 @@ set(ABSTRACT_INDEX
         src/abstract_index/parse_footer.cpp)
 
 ### Add the executables
+
 # COMPRESSION
 add_executable(gwas_compress
         ${COMMON_SOURCES}
@@ -79,10 +83,10 @@ add_executable(gwas_decompress
 #        src/blocks.cpp
 #        test/test_blocks.cpp)
 
-target_link_libraries(gwas_compress bxzstr FastPFOR z)
-target_link_libraries(gwas_index bxzstr FastPFOR z)
-target_link_libraries(gwas_decompress bxzstr FastPFOR z)
-#target_link_libraries(test_gwas gtest gtest_main bxzstr FastPFOR z)
+target_link_libraries(gwas_compress PRIVATE bxzstr FastPFOR z CURL::libcurl)
+target_link_libraries(gwas_index PRIVATE bxzstr FastPFOR z CURL::libcurl)
+target_link_libraries(gwas_decompress PRIVATE bxzstr FastPFOR z CURL::libcurl)
+#target_link_libraries(test_gwas PRIVATE gtest gtest_main bxzstr FastPFOR z curl)
 
 ## Regarding python bindings
 

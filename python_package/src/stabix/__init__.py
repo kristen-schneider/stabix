@@ -1,23 +1,40 @@
-# INFO: stabixcore SHOULD NOT BE USED DIRECTLY. Use this interface instead.
+from dataclasses import dataclass
 from typing import Dict, Literal, Union
 
+# INFO: stabixcore SHOULD NOT BE USED DIRECTLY. Use this interface instead.
 import stabix.stabixcore as _core
 
 # Codecs are specified for a column by datatype
 codecMap = Union[str, Dict[Literal["int", "float", "string"], str]]
 
 
+@dataclass
 class Stabix:
-    def __init__(self, gwas_file: str, block_size: int, name: str):
-        # NOTE: block_size can be -1 which indicates map file;
-        # not yet tested via python wrapper
-        self.gwas_file = gwas_file
+    """
+    Stabix class members help make usage more concise.
+    The gwas_file parameter is sometimes required depending
+    on the methods called.
+    """
+
+    index_dir: str
+    gwas_file: str = None
+
+    def compress(
+        self,
+        block_size: int = None,
+        map_file: str = None,
+        codecs: str | codecMap = None,
+    ):
+        if self.gwas_file is None:
+            raise StabixError("gwas_file must be provided")
+
+        if (block_size is None) == (map_file is None):
+            raise StabixError("only one of block_size or map_file should be provided")
+
         # block_size is immediately parsed to int again in c++,
         # but needs to be a string to be passed to c++ for type consistency
-        self.block_size = str(block_size)
-        self.name = name
+        block_size = map_file or str(block_size)
 
-    def compress(self, codecs: str | codecMap = None):
         if not isinstance(codecs, str):
             int_codec = codecs.get("int", "bz2")
             float_codec = codecs.get("float", "bz2")
@@ -30,8 +47,8 @@ class Stabix:
         _core.compress(
             {
                 "gwas_file": self.gwas_file,
-                "block_size": self.block_size,
-                "out_name": self.name,
+                "index_dir": self.index_dir,
+                "block_size": block_size,
                 "int": int_codec,
                 "float": float_codec,
                 "string": string_codec,
@@ -45,35 +62,36 @@ class Stabix:
         """
         # TODO: make the bin specification less confusing
 
+        if self.gwas_file is None:
+            raise StabixError("gwas_file must be provided")
+
         index_name = f"col_{col_idx}"
         _core.index(
             {
                 "gwas_file": self.gwas_file,
-                "block_size": self.block_size,
-                "out_name": self.name,
+                "index_dir": self.index_dir,
                 "col_idx": str(col_idx),
                 "bins": ",".join(map(str, bins)),
                 "extra_index": index_name,
             }
         )
 
-    def query(self, bed_file: str, col_idx: int = None, threshold: str = None):
+    def query(
+        self, bed_file: str, out_path: str, col_idx: int = None, threshold: str = None
+    ):
         """
         Such as .query("file.bed", 8, "<= 0.3")
         """
 
-        # TODO: why is there no query_out path??
-
         if (col_idx is None) != (threshold is None):
             raise StabixError(
-                "either both or neither of col_idx & threshold should be specified."
+                "either both or neither of col_idx & threshold should be specified"
             )
 
         _core.decompress(
             {
-                "gwas_file": self.gwas_file,
-                "block_size": self.block_size,
-                "out_name": self.name,
+                "index_dir": self.index_dir,
+                "out_path": out_path,
                 "genomic": bed_file,
                 "extra_index": f"col_{col_idx}",
                 "col_idx": str(col_idx),

@@ -16,9 +16,8 @@ using namespace std;
  * @param header_query: header columm to query
  * @return header_query_list: vector<string> header from query
  */
-vector<string> parse_header_list(
-        vector<string> header_list,
-        string header_query) {
+vector<string> parse_header_list(vector<string> header_list,
+                                 string header_query) {
     vector<string> header_query_list;
     map<string, int> switch_case;
     switch_case["num columns"] = 0;
@@ -48,31 +47,28 @@ vector<string> parse_header_list(
     case 3: // codecs
         already_processed = 2 + stoi(header_list[0]);
         for (int i = 2 + stoi(header_list[0]);
-        i < already_processed + stoi(header_list[0]);
-        i++) {
+             i < already_processed + stoi(header_list[0]); i++) {
             header_query_list.push_back(header_list[i]);
         }
         break;
     case 4: // block header end bytes
         already_processed = 2 + 2 * stoi(header_list[0]);
         for (int i = already_processed;
-             i < already_processed + stoi(header_list[1]);
-             i++) {
+             i < already_processed + stoi(header_list[1]); i++) {
             header_query_list.push_back(header_list[i]);
         }
         break;
     case 5: // block end bytes
         already_processed = 2 + 2 * stoi(header_list[0]) + stoi(header_list[1]);
         for (int i = already_processed;
-             i < already_processed + stoi(header_list[1]);
-             i++) {
+             i < already_processed + stoi(header_list[1]); i++) {
             header_query_list.push_back(header_list[i]);
         }
         break;
     case 6: // block sizes
-        already_processed = 2 + 2 * stoi(header_list[0]) + 2 * stoi(header_list[1]);
-        for (int i = already_processed;
-             i < already_processed + num_blocks;
+        already_processed =
+            2 + 2 * stoi(header_list[0]) + 2 * stoi(header_list[1]);
+        for (int i = already_processed; i < already_processed + num_blocks;
              i++) {
             if (header_list[i] != "") {
                 header_query_list.push_back(header_list[i]);
@@ -88,7 +84,6 @@ vector<string> parse_header_list(
     return header_query_list;
 }
 
-
 /*
  * Remove the common header from
  * a string compressed with zlib
@@ -96,9 +91,7 @@ vector<string> parse_header_list(
  * @param zlib_header: string zlib header
  * @return zlib_header_removed: string zlib header removed
  */
-string remove_zlib_header(
-        string compressed_string,
-        string zlib_header) {
+string remove_zlib_header(string compressed_string, string zlib_header) {
     string zlib_header_removed = compressed_string.substr(zlib_header.length());
     return zlib_header_removed;
 }
@@ -110,9 +103,7 @@ string remove_zlib_header(
  * @param zlib_header: string zlib header
  * @return zlib_header_added: string zlib header added
  */
-string add_zlib_header(
-        string compressed_string,
-        string zlib_header) {
+string add_zlib_header(string compressed_string, string zlib_header) {
     string zlib_header_added = zlib_header + compressed_string;
     return zlib_header_added;
 }
@@ -122,8 +113,7 @@ string add_zlib_header(
  * @param codec: bxz::Compression codec
  * @return magicNumberOf: string magic number of codec
  */
-string magicNumberOf(
-        bxz::Compression codec) {
+string magicNumberOf(bxz::Compression codec) {
     switch (codec) {
     case bxz::z:
         // Header for gzip
@@ -134,6 +124,9 @@ string magicNumberOf(
         return "\xFD\x37\x7A\x58\x5A\x00";
     case bxz::zstd:
         return "\x28\xB5\x2F\xFD";
+    // cases past this point exit the switch and throw
+    case bxz::plaintext:
+        break;
     }
     throw StabixExcept("Unknown compression codec.");
 }
@@ -143,7 +136,6 @@ string magicNumberOf(
  * @param codec: bxz::Compression codec
  * @return magicNumberCullSize: int size of magic number of codec
  */
-int magicNumberCullSize(
-        bxz::Compression codec) {
+int magicNumberCullSize(bxz::Compression codec) {
     return magicNumberOf(codec).size();
 }
