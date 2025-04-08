@@ -17,7 +17,7 @@ plots/*.txt
 
 # python bindings related
 python_package/dist
+python_package/venv
 python_package/src/stabix.egg-info
-python_package/src/venv
 python_package/src/stabix/stabixcore.so
 **/__pycache__/

@@ -96,7 +96,7 @@ file(GLOB_RECURSE ENTRYPOINT_SOURCES "src/cli/*.cpp")
 list(REMOVE_ITEM SOURCES ${ENTRYPOINT_SOURCES})
 
 SET(PYBIND11_PYTHON_VERSION 3.11.7)
-set(PYTHON_EXECUTABLE "/opt/homebrew/bin/python3")
+# set(PYTHON_EXECUTABLE "/opt/homebrew/bin/python3")
 
 pybind11_add_module(stabixpy MODULE ${SOURCES})
 target_link_libraries(stabixpy PRIVATE bxzstr FastPFOR z pybind11::module)
