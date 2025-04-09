@@ -23,11 +23,11 @@ For manual installation:
 - C++ Standard Library
 - pybind11 (if you're interested in generating python bindings)
 
-or, if you use [mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html): `mamba env create -f stabix_mamba.yml`  
-or, if you use nix: `nix develop`  
-or, if you use nix and direnv: `direnv allow`  
+or, if you use [mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html): `mamba env create -f stabix_mamba.yml`
+or, if you use nix: `nix develop`
+or, if you use nix and direnv: `direnv allow`
 
-nix is recommended but not required.  
+nix is recommended but not required.
 
 ### Build all
 ```bash
@@ -42,25 +42,8 @@ make
 Stabix is a C++ library with a python wrapper. It is recommended to use the
 python wrapper because it's better documented.
 
-**Please refer to instructions on the using the [python wrapper](https://pypi.org/project/stabix/1.0.0/).**  
+**Please refer to instructions on the using the [python wrapper](https://pypi.org/project/stabix/1.0.0/).**
 The latest python wrapper README.md can also be found [internally](python_package/README.md).
-
-In a nutshell:
-```py
-from stabix import Stabix
-
-# Initialize the index
-idx = Stabix("test.tsv", block_size=2000, name="exp1")
-
-# Compress the file
-idx.compress("bz2")
-
-# Add a threshold index for column 8 (e.g., p-values)
-idx.add_threshold_index(8, [0.1])
-
-# Query with a BED file, filtering for p-values < 0.1
-idx.query("test.bed", 8, "< 0.1")
-```
 
 ---
 
