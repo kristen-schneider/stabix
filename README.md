@@ -1,7 +1,11 @@
 # STABIX
 
 Stabix enables efficient queries for bed.files with filters (such as on Genome-Wide Association Study data and a p-value threshold); allowing fast access to variants in specific genomic regions.
-## SETUP
+
+Stabix is a python library with a backing C++ implementation.
+**Please refer to these instructions for using the [python wrapper](https://pypi.org/project/stabix/1.0.0/).**
+
+## Building from source
 
 
 ### Clone
@@ -36,18 +40,6 @@ cd build
 cmake ..
 make
 ```
-
-## Usage
-
-Stabix is a C++ library with a python wrapper. It is recommended to use the
-python wrapper because it's better documented.
-
-**Please refer to instructions on the using the [python wrapper](https://pypi.org/project/stabix/1.0.0/).**
-The latest python wrapper README.md can also be found [internally](python_package/README.md).
-
----
-
-#### But, if you insist, the C++ core library can be used directly:
 
 1.Compile and run COMPRESSION
 ```bash
